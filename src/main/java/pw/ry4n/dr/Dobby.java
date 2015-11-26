@@ -96,8 +96,8 @@ public class Dobby implements Runnable {
 				log("connecting " + localSocket.getInetAddress().getHostName()
 						+ " <-> "
 						+ destinationSocket.getInetAddress().getHostName());
-				Redirector r1 = new Redirector(localSocket, destinationSocket);
-				Redirector r2 = new Redirector(destinationSocket, localSocket);
+				AbstractProxy r1 = new InterceptingProxy(localSocket, destinationSocket);
+				AbstractProxy r2 = new ListeningProxy(destinationSocket, localSocket);
 				r1.couple(r2);
 				r2.couple(r1);
 			} catch (Exception e) {

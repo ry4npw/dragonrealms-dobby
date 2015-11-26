@@ -1,6 +1,7 @@
 package pw.ry4n.dr;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 //import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -10,24 +11,23 @@ import java.net.Socket;
  * A class useful for the proxy server. This class takes over control of newly
  * created connections and redirects the data streams.
  */
-public class Redirector implements Runnable {
-	private Redirector companion = null;
+public abstract class AbstractProxy implements Runnable {
+	private AbstractProxy companion = null;
 	private Socket localSocket, remoteSocket;
-	//private InputStream from;
 	private OutputStream to;
-	//private byte[] buffer = new byte[4096];
 	private BufferedReader in;
-	private final static byte[] NEWLINE = "\n".getBytes();
+	protected final static byte[] NEWLINE = "\n".getBytes();
 
 	/**
 	 * redirector gets the streams from sockets
 	 */
-	public Redirector(Socket local, Socket remote) {
+	public AbstractProxy(Socket local, Socket remote) {
 		try {
 			localSocket = local;
 			remoteSocket = remote;
-			//from = localSocket.getInputStream();
-			in = new BufferedReader(new InputStreamReader(localSocket.getInputStream()));
+			// from = localSocket.getInputStream();
+			in = new BufferedReader(new InputStreamReader(
+					localSocket.getInputStream()));
 			to = remoteSocket.getOutputStream();
 		} catch (Exception e) {
 			System.err.println("redirector: cannot get streams");
@@ -38,7 +38,7 @@ public class Redirector implements Runnable {
 	 * couple this redirector instance with another one (usually the other
 	 * direction of the connection)
 	 */
-	public void couple(Redirector c) {
+	public void couple(AbstractProxy c) {
 		companion = c;
 		Thread listen = new Thread(this);
 		listen.start();
@@ -62,21 +62,14 @@ public class Redirector implements Runnable {
 			while (companion != null) {
 				if ((line = in.readLine()) == null)
 					break;
-				if (line.trim().startsWith(";")) {
-					// do something with line
-					System.out.println("Captured command: " + line);
-				} else {
-					System.out.println(line);
-					to.write(line.getBytes());
-					to.write(NEWLINE);
-				}
+				filter(line, to);
 			}
 		} catch (Exception e) {
 			System.err.println("redirector: connection lost");
 		}
 		try {
 			in.close();
-			//from.close();
+			// from.close();
 			to.close();
 			localSocket.close();
 			remoteSocket.close();
@@ -88,4 +81,26 @@ public class Redirector implements Runnable {
 			io.printStackTrace();
 		}
 	}
+
+	/**
+	 * <p>
+	 * This method is to be overridden to create different types of filters. A
+	 * few examples would include a read-only (or listening) filter, an
+	 * intercepting filter, etc.
+	 * </p>
+	 * 
+	 * <p>
+	 * This filter needs to forward necessary input on, this is accomplished by:
+	 * </p>
+	 * 
+	 * <pre>
+	 * send.write(line);
+	 * send.write(NEWLINE); // \n was stripped by BufferedReader
+	 * </pre>
+	 * 
+	 * @param line
+	 * @throws IOException
+	 */
+	protected abstract void filter(String line, OutputStream send)
+			throws IOException;
 }
