@@ -62,7 +62,7 @@ public abstract class AbstractProxy implements Runnable {
 			while (companion != null) {
 				if ((line = in.readLine()) == null)
 					break;
-				filter(line, to);
+				filter(line);
 			}
 		} catch (Exception e) {
 			System.err.println("redirector: connection lost");
@@ -94,13 +94,16 @@ public abstract class AbstractProxy implements Runnable {
 	 * </p>
 	 * 
 	 * <pre>
-	 * send.write(line);
-	 * send.write(NEWLINE); // \n was stripped by BufferedReader
+	 * send(line);
 	 * </pre>
 	 * 
 	 * @param line
 	 * @throws IOException
 	 */
-	protected abstract void filter(String line, OutputStream send)
-			throws IOException;
+	protected abstract void filter(String line) throws IOException;
+
+	public void send(String line) throws IOException {
+		to.write(line.getBytes());
+		to.write(NEWLINE);
+	}
 }

@@ -1,7 +1,6 @@
 package pw.ry4n.dr;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.Socket;
 
 public class ListeningProxy extends AbstractProxy {
@@ -10,17 +9,16 @@ public class ListeningProxy extends AbstractProxy {
 	}
 
 	@Override
-	protected void filter(String line, OutputStream send) throws IOException {
+	protected void filter(String line) throws IOException {
+		// forward line upstream, do not wait on other logic.
+		send(line);
+
 		if (line.trim().startsWith("GS")) {
 			// TODO figure out the simutronics protocol
-			//
 			// https://github.com/sproctor/warlock-gtk/blob/master/docs/SIMU-PROTOCOL
 		} else {
-			// TODO do something with line, but DO NOT modify it
+			// TODO This is where we can MATCH input.
 			System.out.println(line);
 		}
-
-		send.write(line.getBytes());
-		send.write(NEWLINE);
 	}
 }

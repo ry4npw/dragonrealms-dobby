@@ -1,7 +1,6 @@
 package pw.ry4n.dr;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.Socket;
 
 public class InterceptingProxy extends AbstractProxy {
@@ -10,14 +9,18 @@ public class InterceptingProxy extends AbstractProxy {
 	}
 
 	@Override
-	protected void filter(String line, OutputStream send) throws IOException {
+	protected void filter(String line) throws IOException {
 		if (line.trim().startsWith(";")) {
-			System.out.println("Captured command: " + line.substring(1));
-			// do something with line
+			// capture commands that start with a semicolon
+			String command = line.substring(1);
+
+			// TODO parse command and do something with it
+			System.out.println("Captured command: " + command);
 		} else {
 			System.out.println(line);
-			send.write(line.getBytes());
-			send.write(NEWLINE);
+
+			// all other input should be sent upstream
+			send(line);
 		}
 	}
 }
