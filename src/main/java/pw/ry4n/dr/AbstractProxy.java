@@ -26,8 +26,7 @@ public abstract class AbstractProxy implements Runnable {
 			localSocket = local;
 			remoteSocket = remote;
 			// from = localSocket.getInputStream();
-			in = new BufferedReader(new InputStreamReader(
-					localSocket.getInputStream()));
+			in = new BufferedReader(new InputStreamReader(localSocket.getInputStream()));
 			to = remoteSocket.getOutputStream();
 		} catch (Exception e) {
 			System.err.println("redirector: cannot get streams");
@@ -102,7 +101,19 @@ public abstract class AbstractProxy implements Runnable {
 	 */
 	protected abstract void filter(String line) throws IOException;
 
+	/**
+	 * This method will send a line upstream to the server. This is designed to
+	 * be the injection point and coordinator for all running scripts. Commands
+	 * will be sent in a FIFO queue, and it will retry failed commands based on
+	 * RT. Eventually some commands may be prioritized and skip the queue that
+	 * do not cause RT.
+	 *  
+	 * @param line
+	 * @throws IOException
+	 */
 	public void send(String line) throws IOException {
+		// TODO turn this into a queue to mitigate errors and handle RT and
+		// type ahead line problems
 		to.write(line.getBytes());
 		to.write(NEWLINE);
 	}
