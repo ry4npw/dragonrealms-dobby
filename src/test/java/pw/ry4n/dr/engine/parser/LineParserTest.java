@@ -8,19 +8,21 @@ import pw.ry4n.dr.engine.core.DataCharBuffer;
 public class LineParserTest {
 	@Test
 	public void testParseArguments() {
-		DataCharBuffer buffer = new DataCharBuffer(" ... wait\n".toCharArray());
+		DataCharBuffer buffer = new DataCharBuffer(" \"a string with spaces\" ... wait\n".toCharArray());
 		LineParser parser = new LineParser(buffer, new IndexBuffer(5, false));
 		parser.parseArguments();
-		Assert.assertEquals(2, parser.line.getArguments().size());
-		Assert.assertEquals("...", parser.line.getArguments().get(0));
-		Assert.assertEquals("wait", parser.line.getArguments().get(1));
+		Assert.assertFalse(parser.line.getArguments() == null);
+		Assert.assertEquals(3, parser.line.getArguments().length);
+		Assert.assertEquals("\"a_string_with_spaces\"", parser.line.getArguments()[0]);
+		Assert.assertEquals("...", parser.line.getArguments()[1]);
+		Assert.assertEquals("wait", parser.line.getArguments()[2]);
 	}
 
 	@Test
 	public void testParseNoArguments() {
-		DataCharBuffer buffer = new DataCharBuffer(" \n".toCharArray());
+		DataCharBuffer buffer = new DataCharBuffer("\n".toCharArray());
 		LineParser parser = new LineParser(buffer, new IndexBuffer(5, false));
 		parser.parseArguments();
-		Assert.assertTrue(parser.line.getArguments().isEmpty());;
+		Assert.assertNull(parser.line.getArguments());
 	}
 }

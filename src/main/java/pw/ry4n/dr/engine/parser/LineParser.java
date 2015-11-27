@@ -163,45 +163,32 @@ public class LineParser {
 	}
 
 	/**
-	 * A recursive argument parser that will split the remainder of the line into words.
+	 * Split the remainder of the line into arguments based on whitespace.
 	 */
 	void parseArguments() {
-		if (isEndOfLine()) {
-			return;
-		}
-
-		if (this.dataBuffer.data[this.dataPosition] == ' ' || this.dataBuffer.data[this.dataPosition] == '\t') {
+		if (this.dataBuffer.data[this.dataPosition] == ' ') {
+			// ignore first space
 			this.dataPosition++;
-			parseArguments();
-			return;
 		}
 
-		boolean isWhiteSpace = false;
-		int tempPos = this.dataPosition; 
+		int tempPos = this.dataPosition;
+		boolean inString = false;
 
-		// skip until we hit whitespace again
-		while (!isWhiteSpace) {
-			switch (this.dataBuffer.data[this.dataPosition]) {
-			case ' ':
-			case '\r':
-			case '\n':
-			case '\t':
-				isWhiteSpace = true;
-				break;
-			default:
-				this.dataPosition++;
-				break;
+		while (!isEndOfLine()) {
+			if (this.dataBuffer.data[this.dataPosition] == '"') {
+				inString = !inString;
 			}
+
+			if (inString && this.dataBuffer.data[this.dataPosition] == ' ') {
+				this.dataBuffer.data[this.dataPosition] = '_';
+			}
+
+			this.dataPosition++;
 		}
 
-		System.out.println("dataPosition: " + this.dataPosition);
-
-		if (this.dataPosition > tempPos + 1) {
-			this.line.getArguments().add(new String(this.dataBuffer.data, tempPos, this.dataPosition - tempPos));
+		if (tempPos < this.dataPosition) {
+			this.line.setArguments(new String(this.dataBuffer.data, tempPos, this.dataPosition - tempPos).split(" "));
 		}
-
-		// recursive call
-		parseArguments();
 	}
 
 	private void skipWhiteSpace() {
