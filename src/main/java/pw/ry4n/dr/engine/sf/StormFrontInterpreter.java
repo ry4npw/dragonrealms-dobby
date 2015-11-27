@@ -28,10 +28,6 @@ public class StormFrontInterpreter implements Runnable {
 		this.program = program;
 	}
 
-	public void parseToken() {
-
-	}
-
 	public void run() {
 
 	}
