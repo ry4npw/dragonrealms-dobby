@@ -1,21 +1,21 @@
 package pw.ry4n.dr.engine.sf.model;
 
 public class Commands {
-	public static final byte NOOP = -1;
+	public static final byte NONE = -1;
 	public static final byte ECHO = 1;
 	public static final byte PUT = 2;
 	public static final byte MOVE = 3;
 	public static final byte WAIT = 4;
 	public static final byte NEXTROOM = 5;
-	public static final byte WATIFOR = 6;
+	public static final byte WAITFOR = 6;
 	public static final byte WAITFORRE = 7;
 	public static final byte PAUSE = 8;
 	public static final byte GOTO = 9;
 	public static final byte EXIT = 10;
-	public static final byte MATCH = 11; // MATCH <label> <string>
+	public static final byte MATCH = 11; // MATCH <label> <text>
 	public static final byte MATCHRE = 12; // MATCHRE <label> <regex>
-	public static final byte MATCHWAIT = 13;
-	public static final byte IF_ = 14;
+	public static final byte MATCHWAIT = 13; // MATCHWAIT <timeout>
+	public static final byte IF_ = 14; // IF_<#> <command>, where <#>is the nth argument.
 	public static final byte SHIFT = 15;
 	public static final byte SAVE = 16;
 	public static final byte SETVARIABLE = 17;

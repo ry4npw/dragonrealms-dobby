@@ -51,17 +51,17 @@ public class LineParserTest {
 	}
 
 	@Test
-	public void testHasMoreLinesReturnsFalse() {
+	public void testHasMoreCharsReturnsFalse() {
 		DataCharBuffer dataCharBuffer = new DataCharBuffer("".toCharArray());
 		LineParser lineParser = new LineParser(dataCharBuffer);
-		assertFalse(lineParser.hasMoreLines());
+		assertFalse(lineParser.hasMoreChars());
 	}
 
 	@Test
-	public void testHasMoreLinesReturnsTrue() {
+	public void testHasMoreCharsReturnsTrue() {
 		DataCharBuffer dataCharBuffer = new DataCharBuffer("\n".toCharArray());
 		LineParser lineParser = new LineParser(dataCharBuffer);
-		assertTrue(lineParser.hasMoreLines());
+		assertTrue(lineParser.hasMoreChars());
 	}
 
 	@Test
@@ -82,5 +82,25 @@ public class LineParserTest {
 		assertNotNull(line);
 		assertEquals(Commands.LABEL, line.getCommand());
 		assertEquals("LOOP", line.getArguments()[0]);
+	}
+
+	@Test
+	public void testParseLineWithIf() {
+		DataCharBuffer dataCharBuffer = new DataCharBuffer("IF_1 GOTO doit\nEXIT\ndoit:\nPUT attack %1".toCharArray());
+		LineParser lineParser = new LineParser(dataCharBuffer);
+		Line line = lineParser.parseLine();
+		assertEquals(Commands.IF_, line.getCommand());
+		assertEquals(Commands.GOTO, line.getSubCommand());
+		assertEquals("doit", line.getArguments()[0]);
+	}
+
+	@Test
+	public void testParseLineWithCounter() {
+		DataCharBuffer dataCharBuffer = new DataCharBuffer("counter set 10".toCharArray());
+		LineParser lineParser = new LineParser(dataCharBuffer);
+		Line line = lineParser.parseLine();
+		assertEquals(Commands.COUNTER, line.getCommand());
+		assertEquals(Commands.SET, line.getSubCommand());
+		assertEquals("10", line.getArguments()[0]);
 	}
 }

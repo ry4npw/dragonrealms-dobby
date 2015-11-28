@@ -1,5 +1,7 @@
 package pw.ry4n.dr.engine.sf.model;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
@@ -8,9 +10,9 @@ import pw.ry4n.dr.AbstractProxy;
 import pw.ry4n.dr.engine.sf.StormFrontInterpreter;
 
 public class Program implements Runnable {
-	public List<Line> lines;
-	public Map<String, Integer> labels;
-	public int start;
+	private List<Line> lines = new ArrayList<Line>();
+	private Map<String, Integer> labels = new HashMap<String, Integer>();
+	private int start;
 
 	private BlockingQueue<String> clientInput; // read-only
 	private BlockingQueue<String> serverResponse; // read-only
@@ -39,9 +41,33 @@ public class Program implements Runnable {
 	 * Execute the script.
 	 */
 	public void run() {
-		// decide what engine to run
+		// TODO decide what engine to run
 		Thread script = new Thread(new StormFrontInterpreter(clientInput, serverResponse, send, this));
 		script.start();
+	}
+
+	public List<Line> getLines() {
+		return lines;
+	}
+
+	public void setLines(List<Line> lines) {
+		this.lines = lines;
+	}
+
+	public Map<String, Integer> getLabels() {
+		return labels;
+	}
+
+	public void setLabels(Map<String, Integer> labels) {
+		this.labels = labels;
+	}
+
+	public int getStart() {
+		return start;
+	}
+
+	public void setStart(int start) {
+		this.start = start;
 	}
 
 	public BlockingQueue<String> getClientInput() {

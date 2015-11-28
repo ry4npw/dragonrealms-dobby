@@ -27,13 +27,13 @@ public class LineParser {
 		this.dataPosition = 0;
 	}
 
-	public boolean hasMoreLines() {
+	public boolean hasMoreChars() {
 		return this.dataBuffer.data.length > this.dataPosition;
 	}
 
 	public Line parseLine() {
 		skipWhiteSpace();
-		if (!hasMoreLines()) {
+		if (!hasMoreChars()) {
 			return null;
 		}
 
@@ -53,9 +53,7 @@ public class LineParser {
 					&& (this.dataBuffer.data[this.dataPosition + 4] == 't' || this.dataBuffer.data[this.dataPosition + 4] == 'T')
 					&& (this.dataBuffer.data[this.dataPosition + 5] == 'e' || this.dataBuffer.data[this.dataPosition + 5] == 'E')
 					&& (this.dataBuffer.data[this.dataPosition + 6] == 'r' || this.dataBuffer.data[this.dataPosition + 6] == 'R')) {
-				line.setCommand(Commands.COUNTER);
-				// TODO handle COUNTER {SET|ADD|SUBTRACT|MULTIPLY|DIVIDE}
-				this.dataPosition += 7;
+				parseCounter(line);
 			}
 			break;
 		case 'e':
@@ -89,8 +87,7 @@ public class LineParser {
 			if ((this.dataBuffer.data[this.dataPosition + 1] == 'f' || this.dataBuffer.data[this.dataPosition + 1] == 'F')
 					&& this.dataBuffer.data[this.dataPosition + 2] == '_') {
 				// IF_
-				line.setCommand(Commands.IF_);
-				this.dataPosition += 3;
+				parseIf(line);
 			}
 			break;
 		case 'm':
@@ -203,9 +200,9 @@ public class LineParser {
 					&& (this.dataBuffer.data[this.dataPosition + 4] == 'f' || this.dataBuffer.data[this.dataPosition + 4] == 'F')
 					&& (this.dataBuffer.data[this.dataPosition + 5] == 'o' || this.dataBuffer.data[this.dataPosition + 5] == 'O')
 					&& (this.dataBuffer.data[this.dataPosition + 6] == 'r' || this.dataBuffer.data[this.dataPosition + 6] == 'R')) {
-				// WAITFORRE
-				line.setCommand(Commands.WAITFORRE);
-				this.dataPosition += 9;
+				// WAITFOR
+				line.setCommand(Commands.WAITFOR);
+				this.dataPosition += 7;
 			} else if ((this.dataBuffer.data[this.dataPosition + 1] == 'a' || this.dataBuffer.data[this.dataPosition + 1] == 'A')
 					&& (this.dataBuffer.data[this.dataPosition + 2] == 'i' || this.dataBuffer.data[this.dataPosition + 2] == 'I')
 					&& (this.dataBuffer.data[this.dataPosition + 3] == 't' || this.dataBuffer.data[this.dataPosition + 3] == 'T')) {
@@ -215,9 +212,11 @@ public class LineParser {
 			}
 		}
 
-		parseArguments(line);
+		if (hasMoreChars()) {
+			parseArguments(line);
+		}
 
-		if (line.getCommand() == Commands.NOOP
+		if (line.getCommand() == Commands.NONE
 				&& line.getArguments() != null
 				&& line.getArguments().length > 0
 				&& line.getArguments()[0].endsWith(":")) {
@@ -227,12 +226,125 @@ public class LineParser {
 			line.getArguments()[0] = label.substring(0, label.length() - 1);
 		}
 
-		if (line.getCommand() == Commands.NOOP) {
+		if (line.getCommand() == Commands.NONE) {
 			// ParserException
 			throw new ParserException("Unrecognized command on line " + this.lineCounter);
 		}
 
 		return line;
+	}
+
+	private void parseCounter(Line line) {
+		line.setCommand(Commands.COUNTER);
+		this.dataPosition += 8;
+
+		// handle COUNTER {SET|ADD|SUBTRACT|MULTIPLY|DIVIDE}
+		switch (this.dataBuffer.data[this.dataPosition]) {
+		case 'a':
+		case 'A':
+			if ((this.dataBuffer.data[this.dataPosition + 1] == 'd' || this.dataBuffer.data[this.dataPosition + 1] == 'D')
+					&& (this.dataBuffer.data[this.dataPosition + 2] == 'd' || this.dataBuffer.data[this.dataPosition + 2] == 'D')) {
+				// ADD
+				line.setSubCommand(Commands.ADD);
+				this.dataPosition += 3;
+			}
+			break;
+		case 'd':
+		case 'D':
+			if ((this.dataBuffer.data[this.dataPosition + 1] == 'i' || this.dataBuffer.data[this.dataPosition + 1] == 'I')
+					&& (this.dataBuffer.data[this.dataPosition + 2] == 'v' || this.dataBuffer.data[this.dataPosition + 2] == 'V')
+					&& (this.dataBuffer.data[this.dataPosition + 3] == 'i' || this.dataBuffer.data[this.dataPosition + 3] == 'I')
+					&& (this.dataBuffer.data[this.dataPosition + 4] == 'd' || this.dataBuffer.data[this.dataPosition + 4] == 'D')
+					&& (this.dataBuffer.data[this.dataPosition + 5] == 'e' || this.dataBuffer.data[this.dataPosition + 5] == 'E')) {
+				// DIVIDE
+				line.setSubCommand(Commands.DIVIDE);
+				this.dataPosition += 6;
+			}
+			break;
+		case 'm':
+		case 'M':
+			if ((this.dataBuffer.data[this.dataPosition + 1] == 'u' || this.dataBuffer.data[this.dataPosition + 1] == 'U')
+					&& (this.dataBuffer.data[this.dataPosition + 2] == 'l' || this.dataBuffer.data[this.dataPosition + 2] == 'L')
+					&& (this.dataBuffer.data[this.dataPosition + 3] == 't' || this.dataBuffer.data[this.dataPosition + 3] == 'T')
+					&& (this.dataBuffer.data[this.dataPosition + 4] == 'i' || this.dataBuffer.data[this.dataPosition + 4] == 'I')
+					&& (this.dataBuffer.data[this.dataPosition + 5] == 'p' || this.dataBuffer.data[this.dataPosition + 5] == 'P')
+					&& (this.dataBuffer.data[this.dataPosition + 6] == 'l' || this.dataBuffer.data[this.dataPosition + 6] == 'L')
+					&& (this.dataBuffer.data[this.dataPosition + 7] == 'y' || this.dataBuffer.data[this.dataPosition + 7] == 'Y')) {
+				// MULTIPLY
+				line.setSubCommand(Commands.MULTIPLY);
+				this.dataPosition += 8;
+			}
+			break;
+		case 's':
+		case 'S':
+			if ((this.dataBuffer.data[this.dataPosition + 1] == 'e' || this.dataBuffer.data[this.dataPosition + 1] == 'E')
+					&& (this.dataBuffer.data[this.dataPosition + 2] == 't' || this.dataBuffer.data[this.dataPosition + 2] == 'T')) {
+				// SET
+				line.setSubCommand(Commands.SET);
+				this.dataPosition += 3;
+			} else if ((this.dataBuffer.data[this.dataPosition + 1] == 'u' || this.dataBuffer.data[this.dataPosition + 1] == 'U')
+					&& (this.dataBuffer.data[this.dataPosition + 2] == 'b' || this.dataBuffer.data[this.dataPosition + 2] == 'B')
+					&& (this.dataBuffer.data[this.dataPosition + 3] == 't' || this.dataBuffer.data[this.dataPosition + 3] == 'T')
+					&& (this.dataBuffer.data[this.dataPosition + 4] == 'r' || this.dataBuffer.data[this.dataPosition + 4] == 'R')
+					&& (this.dataBuffer.data[this.dataPosition + 5] == 'a' || this.dataBuffer.data[this.dataPosition + 5] == 'A')
+					&& (this.dataBuffer.data[this.dataPosition + 6] == 'c' || this.dataBuffer.data[this.dataPosition + 6] == 'C')
+					&& (this.dataBuffer.data[this.dataPosition + 7] == 't' || this.dataBuffer.data[this.dataPosition + 7] == 'T')) {
+				// SUBTRACT
+				line.setSubCommand(Commands.SUBTRACT);
+				this.dataPosition += 8;
+			}
+			break;
+		}
+
+		if (line.getSubCommand() == Commands.NONE) {
+			throw new ParserException("counter must be used with one of (SET|ADD|SUBTRACT|MULTIPLY|DIVIDE) on line " + this.lineCounter);
+		}
+	}
+
+	private void parseIf(Line line) {
+		line.setCommand(Commands.IF_);
+		this.dataPosition += 3;
+
+		switch (this.dataBuffer.data[this.dataPosition]) {
+		case '0':
+			line.setN(0);
+			break;
+		case '1':
+			line.setN(1);
+			break;
+		case '2':
+			line.setN(2);
+			break;
+		case '3':
+			line.setN(3);
+			break;
+		case '4':
+			line.setN(4);
+			break;
+		case '5':
+			line.setN(5);
+			break;
+		case '6':
+			line.setN(6);
+			break;
+		case '7':
+			line.setN(7);
+			break;
+		case '8':
+			line.setN(8);
+			break;
+		case '9':
+			line.setN(9);
+			break;
+		default:
+			throw new ParserException("The value following IF_ must be a number between 1 and 9.");
+		}
+
+		this.dataPosition++;
+
+		Line subline = parseLine();
+		line.setSubCommand(subline.getCommand());
+		line.setArguments(subline.getArguments());
 	}
 
 	/**
