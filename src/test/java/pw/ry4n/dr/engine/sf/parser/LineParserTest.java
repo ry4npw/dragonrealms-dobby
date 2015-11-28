@@ -17,14 +17,14 @@ public class LineParserTest {
 		// assert command
 		assertEquals(Commands.MATCH, line.getCommand());
 
-		// assert label and match string
+		// assert label and match string were both parsed
 		assertEquals(2, line.getArguments().length);
 
 		// assert label
 		assertEquals("rt", line.getArguments()[0]);
 
-		// assert arguments
-		assertEquals("... wait", line.getArguments()[1]); // match string
+		// assert match string
+		assertEquals("... wait", line.getArguments()[1]);
 	}
 
 	public void testParseAgumentsWithQuotes() {
