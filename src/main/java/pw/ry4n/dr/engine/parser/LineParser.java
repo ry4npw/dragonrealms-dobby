@@ -4,53 +4,43 @@ import pw.ry4n.dr.engine.core.DataCharBuffer;
 import pw.ry4n.dr.engine.model.Line;
 
 /**
- * split on ", then _ or <space>
- * 
+ * <p>
+ * The line parser will parse each line in the format: <command> (<argument1> ...)
+ * </p>
+ *
  * @author Ryan Powell
  */
 public class LineParser {
 	private DataCharBuffer dataBuffer = null;
-	private IndexBuffer tokenBuffer = null;
 
-	Line line = new Line();
-
-	private int tokenIndex = 0;
 	private int dataPosition = 0;
-	private int tokenLength = 0;
+	int lineCounter = 1;
 
-	public LineParser(IndexBuffer tokenBuffer) {
-		this.tokenBuffer = tokenBuffer;
+	public LineParser(DataCharBuffer dataBuffer) {
+		this.dataBuffer = dataBuffer;
 	}
 
-	public LineParser(DataCharBuffer dataBuffer, IndexBuffer tokenBuffer) {
+	public void reinit(DataCharBuffer dataBuffer) {
 		this.dataBuffer = dataBuffer;
-		this.tokenBuffer = tokenBuffer;
-	}
-
-	public void reinit(DataCharBuffer dataBuffer, IndexBuffer tokenBuffer) {
-		this.dataBuffer = dataBuffer;
-		this.tokenBuffer = tokenBuffer;
-		this.tokenIndex = 0;
 		this.dataPosition = 0;
-		this.tokenLength = 0;
 	}
 
-	public boolean hasMoreTokens() {
-		return (this.dataPosition + this.tokenLength) < this.dataBuffer.length;
+	public boolean hasMoreLines() {
+		return this.dataBuffer.data.length > this.dataPosition;
 	}
 
-	public void parseLine() {
+	public Line parseLine() {
 		skipWhiteSpace();
+		if (!hasMoreLines()) {
+			return null;
+		}
 
-		this.line = new Line();
+		Line line = new Line();
 
-		this.tokenBuffer.position[this.tokenIndex] = this.dataPosition;
-		char nextChar = this.dataBuffer.data[this.dataPosition];
-
-		switch (nextChar) {
+		switch (this.dataBuffer.data[this.dataPosition]) {
 		case '#':
 			// COMMENT
-			this.line.setCommand(TokenTypes.COMMENT);
+			line.setCommand(Commands.COMMENT);
 			skipLine(); // skip comments
 			break;
 		case 'c':
@@ -61,8 +51,8 @@ public class LineParser {
 					&& (this.dataBuffer.data[this.dataPosition + 4] == 't' || this.dataBuffer.data[this.dataPosition + 4] == 'T')
 					&& (this.dataBuffer.data[this.dataPosition + 5] == 'e' || this.dataBuffer.data[this.dataPosition + 5] == 'E')
 					&& (this.dataBuffer.data[this.dataPosition + 6] == 'r' || this.dataBuffer.data[this.dataPosition + 6] == 'R')) {
-				// COUNTER {SET|ADD|SUBTRACT|MULTIPLY|DIVIDE}
-				this.line.setCommand(TokenTypes.COUNTER);
+				line.setCommand(Commands.COUNTER);
+				// TODO handle COUNTER {SET|ADD|SUBTRACT|MULTIPLY|DIVIDE}
 				this.dataPosition += 7;
 			}
 			break;
@@ -72,13 +62,13 @@ public class LineParser {
 					&& (this.dataBuffer.data[this.dataPosition + 2] == 'h' || this.dataBuffer.data[this.dataPosition + 2] == 'H')
 					&& (this.dataBuffer.data[this.dataPosition + 3] == 'o' || this.dataBuffer.data[this.dataPosition + 3] == 'O')) {
 				// ECHO
-				this.line.setCommand(TokenTypes.ECHO);
+				line.setCommand(Commands.ECHO);
 				this.dataPosition += 4;
 			} else if ((this.dataBuffer.data[this.dataPosition + 1] == 'x' || this.dataBuffer.data[this.dataPosition + 1] == 'X')
 					&& (this.dataBuffer.data[this.dataPosition + 2] == 'i' || this.dataBuffer.data[this.dataPosition + 2] == 'I')
 					&& (this.dataBuffer.data[this.dataPosition + 3] == 't' || this.dataBuffer.data[this.dataPosition + 3] == 'T')) {
 				// EXIT
-				this.line.setCommand(TokenTypes.EXIT);
+				line.setCommand(Commands.EXIT);
 				this.dataPosition += 4;
 			}
 			break;
@@ -88,7 +78,7 @@ public class LineParser {
 					&& (this.dataBuffer.data[this.dataPosition + 2] == 't' || this.dataBuffer.data[this.dataPosition + 2] == 'T')
 					&& (this.dataBuffer.data[this.dataPosition + 3] == 'o' || this.dataBuffer.data[this.dataPosition + 3] == 'O')) {
 				// GOTO
-				this.tokenBuffer.type[this.tokenIndex] = TokenTypes.GOTO;
+				line.setCommand(Commands.GOTO);
 				this.dataPosition += 4;
 			}
 			break;
@@ -97,7 +87,7 @@ public class LineParser {
 			if ((this.dataBuffer.data[this.dataPosition + 1] == 'f' || this.dataBuffer.data[this.dataPosition + 1] == 'F')
 					&& this.dataBuffer.data[this.dataPosition + 2] == '_') {
 				// IF_
-				this.tokenBuffer.type[this.tokenIndex] = TokenTypes.IF_;
+				line.setCommand(Commands.IF_);
 				this.dataPosition += 3;
 			}
 			break;
@@ -107,7 +97,7 @@ public class LineParser {
 					&& (this.dataBuffer.data[this.dataPosition + 2] == 'v' || this.dataBuffer.data[this.dataPosition + 2] == 'V')
 					&& (this.dataBuffer.data[this.dataPosition + 3] == 'e' || this.dataBuffer.data[this.dataPosition + 3] == 'E')) {
 				// MOVE
-				this.tokenBuffer.type[this.tokenIndex] = TokenTypes.MOVE;
+				line.setCommand(Commands.MOVE);
 				this.dataPosition += 4;
 			} else if ((this.dataBuffer.data[this.dataPosition + 1] == 'a' || this.dataBuffer.data[this.dataPosition + 1] == 'A')
 					&& (this.dataBuffer.data[this.dataPosition + 2] == 't' || this.dataBuffer.data[this.dataPosition + 2] == 'T')
@@ -116,18 +106,18 @@ public class LineParser {
 				if ((this.dataBuffer.data[this.dataPosition + 5] == 'r' || this.dataBuffer.data[this.dataPosition + 5] == 'R')
 						&& (this.dataBuffer.data[this.dataPosition + 6] == 'e' || this.dataBuffer.data[this.dataPosition + 6] == 'E')) {
 					// MATCHRE
-					line.setCommand(TokenTypes.MATCHRE);
+					line.setCommand(Commands.MATCHRE);
 					this.dataPosition += 7;
 				} else if ((this.dataBuffer.data[this.dataPosition + 5] == 'w' || this.dataBuffer.data[this.dataPosition + 5] == 'W')
 						&& (this.dataBuffer.data[this.dataPosition + 6] == 'a' || this.dataBuffer.data[this.dataPosition + 6] == 'A')
 						&& (this.dataBuffer.data[this.dataPosition + 7] == 'i' || this.dataBuffer.data[this.dataPosition + 7] == 'I')
 						&& (this.dataBuffer.data[this.dataPosition + 8] == 't' || this.dataBuffer.data[this.dataPosition + 8] == 'T')) {
 					// MATCHWAIT
-					line.setCommand(TokenTypes.MATCHWAIT);
+					line.setCommand(Commands.MATCHWAIT);
 					this.dataPosition += 9;
 				} else if (this.dataBuffer.data[this.dataPosition + 5] == ' ') {
 					// MATCH
-					line.setCommand(TokenTypes.MATCH);
+					line.setCommand(Commands.MATCH);
 					this.dataPosition += 5;
 				}
 			}
@@ -142,30 +132,98 @@ public class LineParser {
 					&& (this.dataBuffer.data[this.dataPosition + 6] == 'o' || this.dataBuffer.data[this.dataPosition + 6] == 'O')
 					&& (this.dataBuffer.data[this.dataPosition + 7] == 'm' || this.dataBuffer.data[this.dataPosition + 7] == 'M')) {
 				// NEXTROOM
-				line.setCommand(TokenTypes.NEXTROOM);
+				line.setCommand(Commands.NEXTROOM);
 				this.dataPosition += 8;
 			}
 			break;
-		default:
-			// ParseException
+		case 'p':
+		case 'P':
+			if ((this.dataBuffer.data[this.dataPosition + 1] == 'a' || this.dataBuffer.data[this.dataPosition + 1] == 'A')
+					&& (this.dataBuffer.data[this.dataPosition + 2] == 'u' || this.dataBuffer.data[this.dataPosition + 2] == 'U')
+					&& (this.dataBuffer.data[this.dataPosition + 3] == 's' || this.dataBuffer.data[this.dataPosition + 3] == 'S')
+					&& (this.dataBuffer.data[this.dataPosition + 4] == 'e' || this.dataBuffer.data[this.dataPosition + 4] == 'E')) {
+				// PAUSE
+				line.setCommand(Commands.PAUSE);
+				this.dataPosition += 5;
+			} else if ((this.dataBuffer.data[this.dataPosition + 1] == 'u' || this.dataBuffer.data[this.dataPosition + 1] == 'U')
+					&& (this.dataBuffer.data[this.dataPosition + 2] == 't' || this.dataBuffer.data[this.dataPosition + 2] == 'T')) {
+				// PUT
+				line.setCommand(Commands.PUT);
+				this.dataPosition += 3;
+			}
 			break;
+		case 's':
+		case 'S':
+			if ((this.dataBuffer.data[this.dataPosition + 1] == 'a' || this.dataBuffer.data[this.dataPosition + 1] == 'A')
+					&& (this.dataBuffer.data[this.dataPosition + 2] == 'v' || this.dataBuffer.data[this.dataPosition + 2] == 'V')
+					&& (this.dataBuffer.data[this.dataPosition + 3] == 'e' || this.dataBuffer.data[this.dataPosition + 3] == 'E')) {
+				// SAVE
+				line.setCommand(Commands.SAVE);
+				this.dataPosition += 4;
+			} else if ((this.dataBuffer.data[this.dataPosition + 1] == 'e' || this.dataBuffer.data[this.dataPosition + 1] == 'E')
+					&& (this.dataBuffer.data[this.dataPosition + 2] == 't' || this.dataBuffer.data[this.dataPosition + 2] == 'T')
+					&& (this.dataBuffer.data[this.dataPosition + 3] == 'v' || this.dataBuffer.data[this.dataPosition + 3] == 'V')
+					&& (this.dataBuffer.data[this.dataPosition + 4] == 'a' || this.dataBuffer.data[this.dataPosition + 4] == 'A')
+					&& (this.dataBuffer.data[this.dataPosition + 5] == 'r' || this.dataBuffer.data[this.dataPosition + 5] == 'R')
+					&& (this.dataBuffer.data[this.dataPosition + 6] == 'i' || this.dataBuffer.data[this.dataPosition + 6] == 'I')
+					&& (this.dataBuffer.data[this.dataPosition + 7] == 'a' || this.dataBuffer.data[this.dataPosition + 7] == 'A')
+					&& (this.dataBuffer.data[this.dataPosition + 8] == 'b' || this.dataBuffer.data[this.dataPosition + 8] == 'B')
+					&& (this.dataBuffer.data[this.dataPosition + 9] == 'l' || this.dataBuffer.data[this.dataPosition + 9] == 'L')
+					&& (this.dataBuffer.data[this.dataPosition + 10] == 'e' || this.dataBuffer.data[this.dataPosition + 10] == 'E')) {
+				// SETVARIABLE
+				line.setCommand(Commands.SETVARIABLE);
+				this.dataPosition += 11;
+			} else if ((this.dataBuffer.data[this.dataPosition + 1] == 'h' || this.dataBuffer.data[this.dataPosition + 1] == 'H')
+					&& (this.dataBuffer.data[this.dataPosition + 2] == 'i' || this.dataBuffer.data[this.dataPosition + 2] == 'I')
+					&& (this.dataBuffer.data[this.dataPosition + 3] == 'f' || this.dataBuffer.data[this.dataPosition + 3] == 'F')
+					&& (this.dataBuffer.data[this.dataPosition + 4] == 't' || this.dataBuffer.data[this.dataPosition + 4] == 'T')) {
+				// SHIFT
+				line.setCommand(Commands.SHIFT);
+				this.dataPosition += 5;
+			}
+			break;
+		case 'w':
+		case 'W':
+			if ((this.dataBuffer.data[this.dataPosition + 1] == 'a' || this.dataBuffer.data[this.dataPosition + 1] == 'A')
+					&& (this.dataBuffer.data[this.dataPosition + 2] == 'i' || this.dataBuffer.data[this.dataPosition + 2] == 'I')
+					&& (this.dataBuffer.data[this.dataPosition + 3] == 't' || this.dataBuffer.data[this.dataPosition + 3] == 'T')
+					&& (this.dataBuffer.data[this.dataPosition + 4] == 'f' || this.dataBuffer.data[this.dataPosition + 4] == 'F')
+					&& (this.dataBuffer.data[this.dataPosition + 5] == 'o' || this.dataBuffer.data[this.dataPosition + 5] == 'O')
+					&& (this.dataBuffer.data[this.dataPosition + 6] == 'r' || this.dataBuffer.data[this.dataPosition + 6] == 'R')
+					&& (this.dataBuffer.data[this.dataPosition + 7] == 'r' || this.dataBuffer.data[this.dataPosition + 7] == 'R')
+					&& (this.dataBuffer.data[this.dataPosition + 8] == 'e' || this.dataBuffer.data[this.dataPosition + 8] == 'E')) {
+				// WAITFORRE
+				line.setCommand(Commands.WAITFORRE);
+				this.dataPosition += 9;
+			} else if ((this.dataBuffer.data[this.dataPosition + 1] == 'a' || this.dataBuffer.data[this.dataPosition + 1] == 'A')
+					&& (this.dataBuffer.data[this.dataPosition + 2] == 'i' || this.dataBuffer.data[this.dataPosition + 2] == 'I')
+					&& (this.dataBuffer.data[this.dataPosition + 3] == 't' || this.dataBuffer.data[this.dataPosition + 3] == 'T')
+					&& (this.dataBuffer.data[this.dataPosition + 4] == 'f' || this.dataBuffer.data[this.dataPosition + 4] == 'F')
+					&& (this.dataBuffer.data[this.dataPosition + 5] == 'o' || this.dataBuffer.data[this.dataPosition + 5] == 'O')
+					&& (this.dataBuffer.data[this.dataPosition + 6] == 'r' || this.dataBuffer.data[this.dataPosition + 6] == 'R')) {
+				// WAITFORRE
+				line.setCommand(Commands.WAITFORRE);
+				this.dataPosition += 9;
+			} else if ((this.dataBuffer.data[this.dataPosition + 1] == 'a' || this.dataBuffer.data[this.dataPosition + 1] == 'A')
+					&& (this.dataBuffer.data[this.dataPosition + 2] == 'i' || this.dataBuffer.data[this.dataPosition + 2] == 'I')
+					&& (this.dataBuffer.data[this.dataPosition + 3] == 't' || this.dataBuffer.data[this.dataPosition + 3] == 'T')) {
+				// WAIT
+				line.setCommand(Commands.WAIT);
+				this.dataPosition += 4;
+			}
+		default:
+			// ParserException
+			throw new ParserException("Unrecognized command on line " + this.lineCounter);
 		}
 
-		/*
-		 * PAUSE PUT SAVE SETVARIABLE SHIFT WAIT WAITFORRE WATIFOR
-		 */
-	//}
-
-	parseArguments();
-
-	//this.tokenBuffer.length[this.tokenIndex]=this.tokenLength;
-
+		parseArguments(line);
+		return line;
 	}
 
 	/**
 	 * Split the remainder of the line into arguments based on whitespace.
 	 */
-	void parseArguments() {
+	void parseArguments(Line line) {
 		if (this.dataBuffer.data[this.dataPosition] == ' ') {
 			// ignore first space
 			this.dataPosition++;
@@ -187,23 +245,34 @@ public class LineParser {
 		}
 
 		if (tempPos < this.dataPosition) {
-			this.line.setArguments(new String(this.dataBuffer.data, tempPos, this.dataPosition - tempPos).split(" "));
+			line.setArguments(new String(this.dataBuffer.data, tempPos, this.dataPosition - tempPos).split(" "));
 		}
 	}
 
-	private void skipWhiteSpace() {
+	void skipWhiteSpace() {
 		boolean isWhiteSpace = true;
-		while (isWhiteSpace) {
-			switch (this.dataBuffer.data[this.dataPosition]) {
-			case ' ':
-			case '\r':
-			case '\n':
-			case '\t':
-				this.dataPosition++;
-				break;
-			default:
-				isWhiteSpace = false; // any non white space char will break the while loop
+		try {
+			while (isWhiteSpace) {
+				switch (this.dataBuffer.data[this.dataPosition]) {
+				case '\r':
+					if (this.dataBuffer.data[this.dataPosition + 1] == '\n') {
+						// prevent double counting of a CRLF as 2 lines
+						this.dataPosition++;
+					}
+					// fallthrough (no break!)
+				case '\n':
+					this.lineCounter++;
+					// fallthrough (no break!)
+				case ' ':
+				case '\t':
+					this.dataPosition++;
+					break;
+				default:
+					isWhiteSpace = false; // any non white space char will break the while loop
+				}
 			}
+		} catch (IndexOutOfBoundsException e) {
+			// we reached EOF
 		}
 	}
 
@@ -214,30 +283,7 @@ public class LineParser {
 	}
 
 	boolean isEndOfLine() {
-		return this.dataBuffer.data[this.dataPosition] == '\r' || this.dataBuffer.data[this.dataPosition] == '\n';
-	}
-
-	public void nextToken() {
-		switch (this.tokenBuffer.type[this.tokenIndex]) {
-
-		default: {
-			this.dataPosition += this.tokenLength;
-		}
-		}
-		// this.dataPosition += this.tokenBuffer.length[this.tokenIndex]; //move
-		// data position to end of current token.
-		this.tokenIndex++; // point to next token index array cell.
-	}
-
-	public int tokenPosition() {
-		return this.tokenBuffer.position[this.tokenIndex];
-	}
-
-	public int tokenLength() {
-		return this.tokenBuffer.length[this.tokenIndex];
-	}
-
-	public byte tokenType() {
-		return this.tokenBuffer.type[this.tokenIndex];
+		// EOF or CR or LF
+		return this.dataBuffer.data.length <= this.dataPosition || this.dataBuffer.data[this.dataPosition] == '\r' || this.dataBuffer.data[this.dataPosition] == '\n';
 	}
 }

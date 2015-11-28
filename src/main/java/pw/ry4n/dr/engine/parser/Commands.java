@@ -1,6 +1,7 @@
 package pw.ry4n.dr.engine.parser;
 
-public class TokenTypes {
+public class Commands {
+	public static final byte NOOP = -1;
 	public static final byte ECHO = 1;
 	public static final byte PUT = 2;
 	public static final byte MOVE = 3;
