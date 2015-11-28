@@ -1,4 +1,4 @@
-package pw.ry4n.dr.engine.parser;
+package pw.ry4n.dr.engine.core;
 
 public class ParserException extends RuntimeException {
 	private static final long serialVersionUID = 7664783043495462632L;

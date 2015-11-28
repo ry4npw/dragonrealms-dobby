@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
 import pw.ry4n.dr.AbstractProxy;
-import pw.ry4n.dr.engine.model.Program;
+import pw.ry4n.dr.engine.sf.model.Program;
 
 /**
  * A factory method that takes a StormFront (SF) script file as input and
@@ -29,6 +29,10 @@ public class StormFrontInterpreter implements Runnable {
 	}
 
 	public void run() {
+		// TODO arguments may start or end with quotation marks, remove them
+		// with: argument.replaceAll("\"$|^\"", "");
 
+		// TODO arguments will contain '_' instead of spaces, replac them with:
+		// argument.replaceAll("_", "");
 	}
 }

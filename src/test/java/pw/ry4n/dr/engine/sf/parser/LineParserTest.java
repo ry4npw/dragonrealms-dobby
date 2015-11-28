@@ -1,23 +1,26 @@
-package pw.ry4n.dr.engine.parser;
+package pw.ry4n.dr.engine.sf.parser;
 
 import static org.junit.Assert.*;
 
 import org.junit.Test;
 
 import pw.ry4n.dr.engine.core.DataCharBuffer;
-import pw.ry4n.dr.engine.model.Line;
+import pw.ry4n.dr.engine.sf.model.Line;
+import pw.ry4n.dr.engine.sf.parser.Commands;
+import pw.ry4n.dr.engine.sf.parser.LineParser;
 
 public class LineParserTest {
 	@Test
 	public void testParseLineWithArguments() {
-		DataCharBuffer dataCharBuffer = new DataCharBuffer("match ... wait\n".toCharArray());
+		DataCharBuffer dataCharBuffer = new DataCharBuffer("match RT ... wait\n".toCharArray());
 		LineParser lineParser = new LineParser(dataCharBuffer);
 		Line line = lineParser.parseLine();
 		assertEquals(Commands.MATCH, line.getCommand());
 		assertNotNull(line.getArguments());
-		assertEquals(2, line.getArguments().length);
-		assertEquals("...", line.getArguments()[0]);
-		assertEquals("wait", line.getArguments()[1]);
+		assertEquals(3, line.getArguments().length);
+		assertEquals("RT", line.getArguments()[0]);
+		assertEquals("...", line.getArguments()[1]);
+		assertEquals("wait", line.getArguments()[2]);
 	}
 
 	public void testParseAgumentsWithQuotes() {
@@ -69,5 +72,15 @@ public class LineParserTest {
 		assertNotNull(line);
 		assertEquals(Commands.COMMENT, line.getCommand());
 		assertNull(line.getArguments());
+	}
+
+	@Test
+	public void testParseLabel() {
+		DataCharBuffer dataCharBuffer = new DataCharBuffer("LOOP:\n".toCharArray());
+		LineParser lineParser = new LineParser(dataCharBuffer);
+		Line line = lineParser.parseLine();
+		assertNotNull(line);
+		assertEquals(Commands.LABEL, line.getCommand());
+		assertEquals("LOOP", line.getArguments()[0]);
 	}
 }

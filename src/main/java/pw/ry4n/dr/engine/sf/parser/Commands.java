@@ -1,4 +1,4 @@
-package pw.ry4n.dr.engine.parser;
+package pw.ry4n.dr.engine.sf.parser;
 
 public class Commands {
 	public static final byte NOOP = -1;
@@ -26,4 +26,5 @@ public class Commands {
 	public static final byte MULTIPLY = 22; // follows COUNTER
 	public static final byte DIVIDE = 23; // follows COUNTER
 	public static final byte COMMENT = 24; // #
+	public static final byte LABEL = 25;
 }

@@ -1,7 +1,8 @@
-package pw.ry4n.dr.engine.parser;
+package pw.ry4n.dr.engine.sf.parser;
 
 import pw.ry4n.dr.engine.core.DataCharBuffer;
-import pw.ry4n.dr.engine.model.Line;
+import pw.ry4n.dr.engine.core.ParserException;
+import pw.ry4n.dr.engine.sf.model.Line;
 
 /**
  * <p>
@@ -211,12 +212,25 @@ public class LineParser {
 				line.setCommand(Commands.WAIT);
 				this.dataPosition += 4;
 			}
-		default:
+		}
+
+		parseArguments(line);
+
+		if (line.getCommand() == Commands.NOOP
+				&& line.getArguments() != null
+				&& line.getArguments().length > 0
+				&& line.getArguments()[0].endsWith(":")) {
+			// LABEL:
+			line.setCommand(Commands.LABEL);
+			String label = line.getArguments()[0];
+			line.getArguments()[0] = label.substring(0, label.length() - 1);
+		}
+
+		if (line.getCommand() == Commands.NOOP) {
 			// ParserException
 			throw new ParserException("Unrecognized command on line " + this.lineCounter);
 		}
 
-		parseArguments(line);
 		return line;
 	}
 

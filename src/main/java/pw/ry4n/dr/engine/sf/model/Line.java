@@ -1,4 +1,4 @@
-package pw.ry4n.dr.engine.model;
+package pw.ry4n.dr.engine.sf.model;
 
 public class Line {
 	private byte command;
