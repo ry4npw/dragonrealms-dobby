@@ -79,9 +79,13 @@ public class LineParserTest {
 		DataCharBuffer dataCharBuffer = new DataCharBuffer("LOOP:\n".toCharArray());
 		LineParser lineParser = new LineParser(dataCharBuffer);
 		Line line = lineParser.parseLine();
+
+		// verify label was parsed
 		assertNotNull(line);
 		assertEquals(Commands.LABEL, line.getCommand());
-		assertEquals("LOOP", line.getArguments()[0]);
+
+		// labels should be converted to lowercase
+		assertEquals("loop", line.getArguments()[0]);
 	}
 
 	@Test

@@ -223,7 +223,7 @@ public class LineParser {
 			// LABEL:
 			line.setCommand(Commands.LABEL);
 			String label = line.getArguments()[0];
-			line.getArguments()[0] = label.substring(0, label.length() - 1);
+			line.getArguments()[0] = label.substring(0, label.length() - 1).toLowerCase();
 		}
 
 		if (line.getCommand() == Commands.NONE) {
