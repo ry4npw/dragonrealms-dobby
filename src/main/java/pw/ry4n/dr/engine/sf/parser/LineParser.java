@@ -105,20 +105,23 @@ public class LineParser {
 				if ((this.dataBuffer.data[this.dataPosition + 5] == 'r' || this.dataBuffer.data[this.dataPosition + 5] == 'R')
 						&& (this.dataBuffer.data[this.dataPosition + 6] == 'e' || this.dataBuffer.data[this.dataPosition + 6] == 'E')) {
 					// MATCHRE
-					line.setCommand(Commands.MATCHRE);
 					this.dataPosition += 7;
+					line.setCommand(Commands.MATCHRE);
 				} else if ((this.dataBuffer.data[this.dataPosition + 5] == 'w' || this.dataBuffer.data[this.dataPosition + 5] == 'W')
 						&& (this.dataBuffer.data[this.dataPosition + 6] == 'a' || this.dataBuffer.data[this.dataPosition + 6] == 'A')
 						&& (this.dataBuffer.data[this.dataPosition + 7] == 'i' || this.dataBuffer.data[this.dataPosition + 7] == 'I')
 						&& (this.dataBuffer.data[this.dataPosition + 8] == 't' || this.dataBuffer.data[this.dataPosition + 8] == 'T')) {
 					// MATCHWAIT
-					line.setCommand(Commands.MATCHWAIT);
 					this.dataPosition += 9;
+					line.setCommand(Commands.MATCHWAIT);
 				} else if (this.dataBuffer.data[this.dataPosition + 5] == ' ') {
 					// MATCH
-					line.setCommand(Commands.MATCH);
 					this.dataPosition += 5;
+					line.setCommand(Commands.MATCH);
 				}
+
+				// parse the label and match string
+				parseLabelAndMatchString(line);
 			}
 			break;
 		case 'n':
@@ -232,6 +235,44 @@ public class LineParser {
 		}
 
 		return line;
+	}
+
+	private void parseLabelAndMatchString(Line line) {
+		skipWhiteSpace();
+		if (!hasMoreChars()) {
+			throw new ParserException("MATCH statment on line " + this.lineCounter + " must have a <label> and <match string>.");
+		}
+
+		// parse label
+		int startPosition = this.dataPosition;
+		skipToNextWhiteSpace();
+		String label = new String(this.dataBuffer.data, startPosition, dataPosition - startPosition);
+
+		// parse match string
+		skipWhiteSpace();
+		startPosition = this.dataPosition;
+		skipLine();
+		String matchString = new String(this.dataBuffer.data, startPosition, this.dataPosition - startPosition);
+
+		// set arguments
+		line.setArguments(new String[]{ label.toLowerCase(), matchString });
+	}
+
+	private void skipToNextWhiteSpace() {
+		boolean isWhiteSpace = false;
+		while (!isWhiteSpace) {
+			switch(this.dataBuffer.data[this.dataPosition]) {
+			case '\r':
+			case '\n':
+			case ' ':
+			case '\t':
+				isWhiteSpace = true;
+				break;
+			default:
+				this.dataPosition++;
+				break;
+			}
+		}
 	}
 
 	private void parseCounter(Line line) {

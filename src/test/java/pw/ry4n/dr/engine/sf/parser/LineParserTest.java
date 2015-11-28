@@ -11,22 +11,24 @@ import pw.ry4n.dr.engine.sf.parser.LineParser;
 
 public class LineParserTest {
 	@Test
-	public void testParseLineWithArguments() {
-		DataCharBuffer dataCharBuffer = new DataCharBuffer("match RT ... wait\n".toCharArray());
-		LineParser lineParser = new LineParser(dataCharBuffer);
-		Line line = lineParser.parseLine();
+	public void testParseMatchLineWithArguments() {
+		Line line = parseStringToLine("match RT ... wait\n");
+
+		// assert command
 		assertEquals(Commands.MATCH, line.getCommand());
-		assertNotNull(line.getArguments());
-		assertEquals(3, line.getArguments().length);
-		assertEquals("RT", line.getArguments()[0]);
-		assertEquals("...", line.getArguments()[1]);
-		assertEquals("wait", line.getArguments()[2]);
+
+		// assert label and match string
+		assertEquals(2, line.getArguments().length);
+
+		// assert label
+		assertEquals("rt", line.getArguments()[0]);
+
+		// assert arguments
+		assertEquals("... wait", line.getArguments()[1]); // match string
 	}
 
 	public void testParseAgumentsWithQuotes() {
-		DataCharBuffer dataCharBuffer = new DataCharBuffer("save \"a string with spaces\"".toCharArray());
-		LineParser lineParser = new LineParser(dataCharBuffer);
-		Line line = lineParser.parseLine();
+		Line line = parseStringToLine("save \"a string with spaces\"");
 		assertNotNull(line.getArguments());
 		assertEquals(1, line.getArguments().length);
 		assertEquals("\"a_string_with_spaces\"", line.getArguments()[0]);
@@ -34,8 +36,7 @@ public class LineParserTest {
 
 	@Test
 	public void testParseNoArguments() {
-		DataCharBuffer dataCharBuffer = new DataCharBuffer("\n".toCharArray());
-		LineParser lineParser = new LineParser(dataCharBuffer);
+		LineParser lineParser = createLineParserWithString("\n");
 		Line line = new Line();
 		lineParser.parseArguments(line);
 		assertNull(line.getArguments());
@@ -43,8 +44,7 @@ public class LineParserTest {
 
 	@Test
 	public void testLineCounterIncrementsOnEmptyLine() {
-		DataCharBuffer dataCharBuffer = new DataCharBuffer("\n\n\n".toCharArray());
-		LineParser lineParser = new LineParser(dataCharBuffer);
+		LineParser lineParser = createLineParserWithString("\n\n\n");
 		assertEquals(1, lineParser.lineCounter);
 		lineParser.parseLine();
 		assertEquals(4, lineParser.lineCounter);
@@ -52,23 +52,19 @@ public class LineParserTest {
 
 	@Test
 	public void testHasMoreCharsReturnsFalse() {
-		DataCharBuffer dataCharBuffer = new DataCharBuffer("".toCharArray());
-		LineParser lineParser = new LineParser(dataCharBuffer);
+		LineParser lineParser = createLineParserWithString("");
 		assertFalse(lineParser.hasMoreChars());
 	}
 
 	@Test
 	public void testHasMoreCharsReturnsTrue() {
-		DataCharBuffer dataCharBuffer = new DataCharBuffer("\n".toCharArray());
-		LineParser lineParser = new LineParser(dataCharBuffer);
+		LineParser lineParser = createLineParserWithString("\n");
 		assertTrue(lineParser.hasMoreChars());
 	}
 
 	@Test
 	public void testParseLineWithComment() {
-		DataCharBuffer dataCharBuffer = new DataCharBuffer("# this is a comment\n".toCharArray());
-		LineParser lineParser = new LineParser(dataCharBuffer);
-		Line line = lineParser.parseLine();
+		Line line = parseStringToLine("# this is a comment\n");
 		assertNotNull(line);
 		assertEquals(Commands.COMMENT, line.getCommand());
 		assertNull(line.getArguments());
@@ -76,9 +72,7 @@ public class LineParserTest {
 
 	@Test
 	public void testParseLabel() {
-		DataCharBuffer dataCharBuffer = new DataCharBuffer("LOOP:\n".toCharArray());
-		LineParser lineParser = new LineParser(dataCharBuffer);
-		Line line = lineParser.parseLine();
+		Line line = parseStringToLine("LOOP:\n");
 
 		// verify label was parsed
 		assertNotNull(line);
@@ -90,9 +84,7 @@ public class LineParserTest {
 
 	@Test
 	public void testParseLineWithIf() {
-		DataCharBuffer dataCharBuffer = new DataCharBuffer("IF_1 GOTO doit\nEXIT\ndoit:\nPUT attack %1".toCharArray());
-		LineParser lineParser = new LineParser(dataCharBuffer);
-		Line line = lineParser.parseLine();
+		Line line = parseStringToLine("IF_1 GOTO doit\nEXIT\ndoit:\nPUT attack %1");
 		assertEquals(Commands.IF_, line.getCommand());
 		assertEquals(Commands.GOTO, line.getSubCommand());
 		assertEquals("doit", line.getArguments()[0]);
@@ -100,11 +92,20 @@ public class LineParserTest {
 
 	@Test
 	public void testParseLineWithCounter() {
-		DataCharBuffer dataCharBuffer = new DataCharBuffer("counter set 10".toCharArray());
-		LineParser lineParser = new LineParser(dataCharBuffer);
-		Line line = lineParser.parseLine();
+		Line line = parseStringToLine("counter set 10");
 		assertEquals(Commands.COUNTER, line.getCommand());
 		assertEquals(Commands.SET, line.getSubCommand());
 		assertEquals("10", line.getArguments()[0]);
+	}
+
+	private LineParser createLineParserWithString(String string) {
+		DataCharBuffer dataCharBuffer = new DataCharBuffer(string.toCharArray());
+		return new LineParser(dataCharBuffer);
+	}
+
+	private Line parseStringToLine(String string) {
+		LineParser lineParser = createLineParserWithString(string);
+		Line line = lineParser.parseLine();
+		return line;
 	}
 }

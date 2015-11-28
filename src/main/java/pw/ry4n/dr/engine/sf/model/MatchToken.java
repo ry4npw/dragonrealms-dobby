@@ -1,4 +1,4 @@
-package pw.ry4n.dr.engine.sf;
+package pw.ry4n.dr.engine.sf.model;
 
 public class MatchToken {
 	public static final byte STRING = 1;
