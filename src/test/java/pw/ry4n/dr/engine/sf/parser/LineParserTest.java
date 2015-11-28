@@ -5,8 +5,8 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 
 import pw.ry4n.dr.engine.core.DataCharBuffer;
+import pw.ry4n.dr.engine.sf.model.Commands;
 import pw.ry4n.dr.engine.sf.model.Line;
-import pw.ry4n.dr.engine.sf.parser.Commands;
 import pw.ry4n.dr.engine.sf.parser.LineParser;
 
 public class LineParserTest {

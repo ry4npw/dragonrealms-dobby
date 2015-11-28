@@ -1,4 +1,4 @@
-package pw.ry4n.dr.engine.sf.parser;
+package pw.ry4n.dr.engine.sf.model;
 
 public class Commands {
 	public static final byte NOOP = -1;
