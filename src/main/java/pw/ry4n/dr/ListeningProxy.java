@@ -10,14 +10,14 @@ public class ListeningProxy extends AbstractProxy {
 
 	@Override
 	protected void filter(String line) throws IOException {
-		// forward line upstream, do not wait on other logic.
+		// pass line along
 		send(line);
 
 		if (line.trim().startsWith("GS")) {
-			// TODO figure out the simutronics protocol
+			// TODO parse the simutronics protocol
 			// https://github.com/sproctor/warlock-gtk/blob/master/docs/SIMU-PROTOCOL
 		} else {
-			// TODO This is where we can MATCH input.
+			// TODO do something with this for downstream MATCHing
 			System.out.println(line);
 		}
 	}

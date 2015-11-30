@@ -2,7 +2,6 @@ package pw.ry4n.dr.engine.sf;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
 
 import pw.ry4n.dr.AbstractProxy;
 import pw.ry4n.dr.engine.sf.model.Commands;
@@ -17,8 +16,8 @@ import pw.ry4n.dr.engine.sf.model.Program;
  * @author Ryan Powell
  */
 public class StormFrontInterpreter implements Runnable {
-	private BlockingQueue<String> clientInput; // read-only user input
-	private BlockingQueue<String> serverResponse; // read-only server responses
+	// TODO monitor read-only user input (implement upstream MATCH)
+	// TODO monitor read-only server responses (implement downstream MATCH)
 	private AbstractProxy sendToServer; // proxy to send commands to server
 	private AbstractProxy sendToClient; // proxy to send debug to client
 
@@ -27,46 +26,49 @@ public class StormFrontInterpreter implements Runnable {
 
 	private int currentLineNumber = 0;
 
-	public StormFrontInterpreter(BlockingQueue<String> clientInput, BlockingQueue<String> serverResponse,
-			AbstractProxy sendToServer, AbstractProxy sendToClient, Program program) {
+	private boolean scriptFinished = false;
+
+	public StormFrontInterpreter(AbstractProxy sendToServer, AbstractProxy sendToClient, Program program) {
 		if (program == null) {
 			throw new IllegalArgumentException("Program must not be null!");
 		}
 
-		this.clientInput = clientInput;
-		this.serverResponse = serverResponse;
 		this.sendToServer = sendToServer;
 		this.sendToClient = sendToClient;
 		this.program = program;
 	}
 
 	public void run() {
-		boolean run = true;
 		currentLineNumber = program.getStart();
 
 		try {
-			sendToClient.send("dobby [BeginScript: " + program.getName() + "]");
+			sendToClient.send("dobby [" + program.getName() + ": START]");
 
-			while (run && currentLineNumber < program.getLines().size()) {
-				run = executeLine(program.getLines().get(currentLineNumber));
+			long startTime = System.currentTimeMillis();
+
+			while (!scriptFinished && currentLineNumber < program.getLines().size()) {
+				executeLine(program.getLines().get(currentLineNumber));
 			}
 
-			sendToClient.send("dobby [EndScript: " + program.getName() + "]");
+			scriptFinished = true;
+			long endTime = System.currentTimeMillis();
+
+			sendToClient.send("dobby [" + program.getName() + ": END, completed in " + (endTime - startTime) + "ms]");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
-	private boolean executeLine(Line currentLine) throws IOException {
-		boolean run = true;
+	private void executeLine(Line currentLine) throws IOException {
 		currentLineNumber++;
 
 		switch (currentLine.getCommand()) {
 		case Commands.ECHO:
-			sendToClient.send("dobby [" + program.getName() + ": " + combineAndReplaceArguments(currentLine.getArguments()) + "]");
+			sendToClient.send("dobby [" + program.getName() + ": "
+					+ combineAndReplaceArguments(currentLine.getArguments()) + "]");
 			break;
 		case Commands.EXIT:
-			run = false;
+			scriptFinished = true;
 			break;
 		case Commands.GOTO:
 			String label = currentLine.getArguments()[0];
@@ -81,9 +83,10 @@ public class StormFrontInterpreter implements Runnable {
 		case Commands.PUT:
 			sendToServer.send(combineAndReplaceArguments(currentLine.getArguments()));
 			break;
+		default:
+			// LABEL
+			break;
 		}
-
-		return run;
 	}
 
 	private String combineAndReplaceArguments(String[] arguments) {
@@ -93,10 +96,10 @@ public class StormFrontInterpreter implements Runnable {
 			if (arguments[index].startsWith("%")) {
 				result.append(program.getVariables().get(arguments[index].substring(1)));
 			} else {
-				result.append(replaceUnderscoreWithSpaces(arguments[index]));
+				result.append(formatArguments(arguments[index]));
 			}
 
-			if (index < arguments.length + 1) {
+			if (index < arguments.length - 1) {
 				result.append(' ');
 			}
 		}
@@ -104,16 +107,28 @@ public class StormFrontInterpreter implements Runnable {
 		return result.toString();
 	}
 
-	private String replaceUnderscoreWithSpaces(String string) {
+	/**
+	 * Arguments may contain multiple words that are combined with quotations or
+	 * underscores to be one argument. This method formats those by doing the
+	 * following:
+	 * 
+	 * <ul>
+	 * <li>remove quotation marks at the start or end of the string</li>
+	 * <li>replace all underscores '_' with spaces ' '</li>
+	 * </ul>
+	 * 
+	 * @param string
+	 * @return
+	 */
+	private String formatArguments(String string) {
 		if (string == null) {
 			return null;
 		}
 
-		// arguments may start or end with quotation marks, remove them
-		// with: argument.replaceAll("\"$|^\"", "");
-
-		// arguments will contain '_' instead of spaces, replace them:
-		// argument.replaceAll("_", " ");
 		return string.replaceAll("\"$|^\"", "").replace('_', ' ');
+	}
+
+	public boolean isScriptFinished() {
+		return scriptFinished;
 	}
 }

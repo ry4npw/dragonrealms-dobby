@@ -1,5 +1,7 @@
 package pw.ry4n.dr.engine.sf.model;
 
+import java.util.Arrays;
+
 public class Line {
 	private byte command = -1;
 	private int n = -1;
@@ -12,6 +14,13 @@ public class Line {
 
 	public Line(byte command, String[] arguments) {
 		this.command = command;
+		this.arguments = arguments;
+	}
+
+	public Line(byte command, int n, byte subCommand, String[] arguments) {
+		this.command = command;
+		this.n = n;
+		this.subCommand = subCommand;
 		this.arguments = arguments;
 	}
 
@@ -45,5 +54,11 @@ public class Line {
 
 	public void setArguments(String[] arguments) {
 		this.arguments = arguments;
+	}
+
+	@Override
+	public String toString() {
+		return "Line [command=" + command + ", n=" + n + ", subCommand=" + subCommand + ", arguments="
+				+ Arrays.toString(arguments) + "]";
 	}
 }

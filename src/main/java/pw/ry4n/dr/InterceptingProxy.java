@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 
 import pw.ry4n.dr.engine.sf.model.Line;
 import pw.ry4n.dr.engine.sf.model.Program;
@@ -19,6 +17,9 @@ public class InterceptingProxy extends AbstractProxy {
 
 	@Override
 	protected void filter(String line) throws IOException {
+		// TODO do something with this for upstream MATCHing
+		System.out.println(line);
+
 		if (line.trim().startsWith(";")) {
 			// capture commands that start with a semicolon
 			String input = line.substring(1);
@@ -36,11 +37,6 @@ public class InterceptingProxy extends AbstractProxy {
 					program.setVariables(parseArguments(input.substring(firstSpace)));
 				}
 
-				BlockingQueue<String> clientInput = new ArrayBlockingQueue<String>(64);
-				BlockingQueue<String> serverResponse = new ArrayBlockingQueue<String>(1024);
-
-				program.setClientInput(clientInput);
-				program.setServerResponse(serverResponse);
 				program.setSendToServer(this);
 				program.setSendToClient(companion);
 
@@ -52,9 +48,7 @@ public class InterceptingProxy extends AbstractProxy {
 				e.printStackTrace();
 			}
 		} else {
-			System.out.println(line);
-
-			// all other input should be sent upstream
+			// all other input should be passed along
 			send(line);
 		}
 	}

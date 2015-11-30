@@ -33,7 +33,7 @@ public class FileParser {
 
 		// if the directory does not exist, create it
 		if (!directoryFile.exists()) {
-			// TODO send message downstream
+			// TODO send the following message downstream
 			System.out.println("creating directory: " + directoryFile.getAbsolutePath());
 			directoryFile.mkdir();
 		}

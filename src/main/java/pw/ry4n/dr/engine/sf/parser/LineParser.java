@@ -231,7 +231,7 @@ public class LineParser {
 
 		if (line.getCommand() == Commands.NONE) {
 			// ParserException
-			throw new ParserException("Unrecognized command on line " + this.lineCounter);
+			throw new ParserException(this.lineCounter + ": Unrecognized command");
 		}
 
 		return line;
@@ -240,7 +240,7 @@ public class LineParser {
 	private void parseLabelAndMatchString(Line line) {
 		skipWhiteSpace();
 		if (!hasMoreChars()) {
-			throw new ParserException("MATCH statment on line " + this.lineCounter + " must have a <label> and <match string>.");
+			throw new ParserException(this.lineCounter + ": MATCH statment must have a <label> and <match string>.");
 		}
 
 		// parse label
@@ -338,7 +338,7 @@ public class LineParser {
 		}
 
 		if (line.getSubCommand() == Commands.NONE) {
-			throw new ParserException("counter must be used with one of (SET|ADD|SUBTRACT|MULTIPLY|DIVIDE) on line " + this.lineCounter);
+			throw new ParserException(this.lineCounter + ": COUNTER must be used with one of (SET|ADD|SUBTRACT|MULTIPLY|DIVIDE).");
 		}
 	}
 
@@ -378,7 +378,7 @@ public class LineParser {
 			line.setN(9);
 			break;
 		default:
-			throw new ParserException("The value following IF_ must be a number between 1 and 9.");
+			throw new ParserException(this.lineCounter + ": The value following IF_ must be a number between 1 and 9.");
 		}
 
 		this.dataPosition++;

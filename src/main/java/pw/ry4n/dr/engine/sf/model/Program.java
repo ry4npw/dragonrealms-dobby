@@ -4,31 +4,28 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.BlockingQueue;
 
 import pw.ry4n.dr.AbstractProxy;
 import pw.ry4n.dr.engine.sf.StormFrontInterpreter;
 
 public class Program implements Runnable {
 	private String name;
+	private String type;
 	private List<Line> lines = new ArrayList<Line>();
 	private Map<String, Integer> labels = new HashMap<String, Integer>();
-	private Map<String, String> variables = null;
+	private Map<String, String> variables = new HashMap<String, String>();
 	private int start = 0;
 
-	private BlockingQueue<String> clientInput; // read-only
-	private BlockingQueue<String> serverResponse; // read-only
 	private AbstractProxy sendToServer; // send commands to server
 	private AbstractProxy sendToClient; // send output to client
+
+	Thread runningThread;
 
 	public Program() {
 		// empty constructor
 	}
 
-	public Program(BlockingQueue<String> clientInput, BlockingQueue<String> serverResponse, AbstractProxy sendToServer,
-			AbstractProxy sendToClient) {
-		this.clientInput = clientInput;
-		this.serverResponse = serverResponse;
+	public Program(AbstractProxy sendToServer, AbstractProxy sendToClient) {
 		this.sendToServer = sendToServer;
 		this.sendToClient = sendToClient;
 	}
@@ -37,10 +34,14 @@ public class Program implements Runnable {
 	 * Execute the script.
 	 */
 	public void run() {
-		// TODO decide what engine to run
-		Thread script = new Thread(
-				new StormFrontInterpreter(clientInput, serverResponse, sendToServer, sendToClient, this));
-		script.start();
+		switch (type) {
+		case "sf":
+			runningThread = new Thread(new StormFrontInterpreter(sendToServer, sendToClient, this));
+			break;
+		default:
+			throw new RuntimeException("'" + type + "' is an unsupported script format. Valid formats are: sf");
+		}
+		runningThread.start();
 	}
 
 	public String getName() {
@@ -83,22 +84,6 @@ public class Program implements Runnable {
 		this.start = start;
 	}
 
-	public BlockingQueue<String> getClientInput() {
-		return clientInput;
-	}
-
-	public void setClientInput(BlockingQueue<String> clientInput) {
-		this.clientInput = clientInput;
-	}
-
-	public BlockingQueue<String> getServerResponse() {
-		return serverResponse;
-	}
-
-	public void setServerResponse(BlockingQueue<String> serverResponse) {
-		this.serverResponse = serverResponse;
-	}
-
 	public AbstractProxy getSendToServer() {
 		return sendToServer;
 	}
@@ -113,5 +98,9 @@ public class Program implements Runnable {
 
 	public void setSendToClient(AbstractProxy sendToClient) {
 		this.sendToClient = sendToClient;
+	}
+
+	public Thread getRunningThread() {
+		return runningThread;
 	}
 }
