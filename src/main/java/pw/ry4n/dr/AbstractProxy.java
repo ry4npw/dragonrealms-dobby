@@ -12,10 +12,10 @@ import java.net.Socket;
  * created connections and redirects the data streams.
  */
 public abstract class AbstractProxy implements Runnable {
-	private AbstractProxy companion = null;
-	private Socket localSocket, remoteSocket;
-	private OutputStream to;
-	private BufferedReader in;
+	protected AbstractProxy companion = null;
+	protected Socket localSocket, remoteSocket;
+	protected OutputStream to;
+	protected BufferedReader in;
 	protected final static byte[] NEWLINE = "\n".getBytes();
 
 	/**
@@ -114,7 +114,9 @@ public abstract class AbstractProxy implements Runnable {
 	public void send(String line) throws IOException {
 		// TODO turn this into a queue to mitigate errors and handle RT and
 		// type ahead line problems
+		to.write("dobby [".getBytes());
 		to.write(line.getBytes());
+		to.write("]".getBytes());
 		to.write(NEWLINE);
 	}
 }

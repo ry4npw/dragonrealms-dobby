@@ -74,31 +74,36 @@ public class FileParser {
 		return parseFile(dataCharBuffer);
 	}
 
-	Program parseFile(DataCharBuffer dataCharBuffer) {
+	Program parseFile(DataCharBuffer dataCharBuffer) throws ParserException {
 		LineParser lineParser = new LineParser(dataCharBuffer);
 
 		Program program = new Program();
-		try {
-			while (lineParser.hasMoreChars()) {
-				Line line = lineParser.parseLine();
 
-				if (line != null && line.getCommand() != Commands.COMMENT) {
-					// add the line to the program
-					program.getLines().add(line);
+		while (lineParser.hasMoreChars()) {
+			Line line = lineParser.parseLine();
 
-					switch (line.getCommand()) {
-					case Commands.COMMENT:
-						// TODO verify argument is numeric
-						break;
-					case Commands.LABEL:
-						// additional handling for labels
-						program.getLabels().put(line.getArguments()[0].toLowerCase(), program.getLines().size() - 1);
-						break;
+			if (line != null && line.getCommand() != Commands.COMMENT) {
+				// add the line to the program
+				program.getLines().add(line);
+
+				switch (line.getCommand()) {
+				case Commands.COUNTER:
+					// TODO verify argument is numeric
+					break;
+				case Commands.LABEL:
+					// additional handling for labels
+					String label = line.getArguments()[0].toLowerCase();
+
+					if (label == "start") {
+						// special "start" label
+						program.setStart(program.getLines().size() - 1);
 					}
+
+					// add label to label map
+					program.getLabels().put(label, program.getLines().size() - 1);
+					break;
 				}
 			}
-		} catch (ParserException e) {
-			// TODO return ParserException message to client
 		}
 
 		return program;
