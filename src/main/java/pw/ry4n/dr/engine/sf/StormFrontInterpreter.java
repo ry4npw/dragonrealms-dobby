@@ -177,7 +177,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 		isMatching = false;
 	}
 
-	private void counter(Line currentLine) {
+	void counter(Line currentLine) {
 		switch (currentLine.getSubCommand()) {
 		case Commands.ADD:
 			counter += currentLine.getN();
@@ -199,20 +199,20 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 		}
 	}
 
-	private void echo(Line currentLine) throws IOException {
+	void echo(Line currentLine) throws IOException {
 		sendToClient.send(program.getName() + ": ECHO " + combineAndReplaceArguments(currentLine.getArguments()));
 	}
 
-	private void goTo(Line currentLine) {
+	void goTo(Line currentLine) {
 		String label = combineAndReplaceArguments(currentLine.getArguments());
 		currentLineNumber = program.getLabels().get(label);
 	}
 
-	private void exit() {
+	void exit() {
 		scriptFinished = true;
 	}
 
-	private void if_(Line currentLine) throws IOException {
+	void if_(Line currentLine) throws IOException {
 		if (currentLine.getN() >= program.getVariables().size()) {
 			Line subLine = new Line(currentLine.getSubCommand(), currentLine.getArguments());
 			executeLine(subLine);
@@ -244,7 +244,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 		matchList.add(new MatchToken(MatchToken.REGEX, "^GSo"));
 	}
 
-	private void put(Line currentLine) throws IOException {
+	void put(Line currentLine) throws IOException {
 		String sendLine = combineAndReplaceArguments(currentLine.getArguments());
 		commandSender.enqueue(sendLine);
 		sendToClient.send(program.getName() + ": " + sendLine);

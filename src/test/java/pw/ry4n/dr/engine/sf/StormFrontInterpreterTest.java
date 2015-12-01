@@ -113,14 +113,9 @@ public class StormFrontInterpreterTest {
 
 	@Test
 	public void testNextroom() throws IOException {
-		// mocks
-		AbstractProxy sendToClient = mock(AbstractProxy.class);
-		CommandSender commandSender = mock(CommandSender.class);
-		InterceptingProxy sendToServer = mock(InterceptingProxy.class);
-		when(sendToServer.getCommandSender()).thenReturn(commandSender);
 		Program program = new Program();
+		StormFrontInterpreter interpreter = new StormFrontInterpreter(program);
 
-		StormFrontInterpreter interpreter = new StormFrontInterpreter(sendToServer, sendToClient, program);
 		interpreter.nextroom();
 
 		assertTrue(interpreter.isMatching);

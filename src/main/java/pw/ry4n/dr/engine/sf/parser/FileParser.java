@@ -27,10 +27,9 @@ public class FileParser {
 	}
 
 	public FileParser(String fileName) throws FileNotFoundException, IOException {
-		// expect all scripts to be in ~/Documents/dobby/scripts/
+		// expect all scripts to be in ~/Documents/dobby/
 		String directory = System.getProperty("user.home") + System.getProperty("file.seperator") + "Documents"
-				+ System.getProperty("file.seperator") + "dobby" + System.getProperty("file.seperator") + "scripts"
-				+ System.getProperty("file.seperator");
+				+ System.getProperty("file.seperator") + "dobby" + System.getProperty("file.seperator");
 		String filePath = directory + fileName;
 
 		Path directoryPath = Paths.get(directory);
