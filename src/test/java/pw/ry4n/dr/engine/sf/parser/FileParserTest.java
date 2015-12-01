@@ -18,6 +18,9 @@ public class FileParserTest {
 		FileParser fileParser = new FileParser("look.sf");
 		assertTrue(fileParser.dataCharBuffer.data.length > 0);
 
+		int code = fileParser.dataCharBuffer.data[fileParser.dataCharBuffer.data.length-1];
+		System.out.println(code);
+
 		Program program = new Program();
 		fileParser.parse(program);
 		assertTrue(program.getLabels().containsKey("look"));

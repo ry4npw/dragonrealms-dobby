@@ -28,7 +28,7 @@ public class LineParser {
 	}
 
 	public boolean hasMoreChars() {
-		return this.dataBuffer.data.length > this.dataPosition + 1;
+		return this.dataBuffer.data.length > this.dataPosition && this.dataBuffer.data[this.dataPosition] != '\0';
 	}
 
 	public Line parseLine() {
