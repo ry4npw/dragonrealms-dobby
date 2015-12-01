@@ -16,8 +16,6 @@ import pw.ry4n.dr.engine.sf.model.Program;
 public class FileParserTest {
 	@Test
 	public void testReadFileData() throws IOException, URISyntaxException {
-		// TODO point "look" to a directory in the repository so unit tests are
-		// not dependent on something in the Documents/ directory
 		Path scriptPath = Paths.get(getClass().getResource("/look.sf").toURI());
 
 		FileParser fileParser = new FileParser();
