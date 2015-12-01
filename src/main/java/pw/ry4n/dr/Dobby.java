@@ -3,6 +3,10 @@ import java.net.*;
 import java.io.*;
 import java.util.*;
 
+import pw.ry4n.dr.proxy.AbstractProxy;
+import pw.ry4n.dr.proxy.InterceptingProxy;
+import pw.ry4n.dr.proxy.ListeningProxy;
+
 public class Dobby implements Runnable {
 	String remoteHost;
 	int localPort, remotePort;

@@ -1,12 +1,15 @@
 package pw.ry4n.dr.engine.sf.model;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import pw.ry4n.dr.AbstractProxy;
 import pw.ry4n.dr.engine.sf.StormFrontInterpreter;
+import pw.ry4n.dr.engine.sf.parser.FileParser;
+import pw.ry4n.dr.engine.sf.parser.LineParser;
+import pw.ry4n.dr.proxy.AbstractProxy;
 
 public class Program implements Runnable {
 	private String name;
@@ -19,8 +22,6 @@ public class Program implements Runnable {
 	private AbstractProxy sendToServer; // send commands to server
 	private AbstractProxy sendToClient; // send output to client
 
-	Thread runningThread;
-
 	public Program() {
 		// empty constructor
 	}
@@ -30,18 +31,96 @@ public class Program implements Runnable {
 		this.sendToClient = sendToClient;
 	}
 
+	public Program(String fileName, AbstractProxy clientToServer, AbstractProxy serverToClient) {
+		try {
+			int firstSpace = fileName.indexOf(' ');
+			String scriptName = fileName.substring(0, firstSpace == -1 ? fileName.length() : firstSpace);
+			setName(scriptName);
+			int firstPeriod = scriptName.indexOf('.');
+			setType(scriptName.substring(firstPeriod == -1 ? 0 : firstPeriod));
+			FileParser fileParser = new FileParser(scriptName);
+			fileParser.parse(this);
+
+			if (firstSpace > 0) {
+				setVariables(parseArguments(fileName.substring(firstSpace)));
+			}
+
+			// now set up send
+			this.sendToServer = clientToServer;
+			this.sendToClient = serverToClient;
+
+			run();
+		} catch (Exception e) {
+			if (serverToClient != null) {
+				try {
+					serverToClient.send("dobby [ERROR! " + e.getMessage() + "]");
+				} catch (IOException e1) {
+					System.out.println("ERROR! Unable to write to client stream");
+				}
+			}
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Split arguments based on spaces.
+	 * 
+	 * TODO combine with {@link LineParser#parseArguments(Line)}
+	 * 
+	 * @param arguments
+	 */
+	Map<String, String> parseArguments(String arguments) {
+		if (arguments == null) {
+			return null;
+		}
+
+		char[] argumentChars = arguments.toCharArray();
+
+		int index = 0;
+
+		if (argumentChars[index] == ' ') {
+			index++;
+		}
+
+		int start = index;
+		boolean inString = false;
+
+		while (argumentChars.length > index) {
+			if (argumentChars[index] == '"') {
+				inString = !inString;
+			}
+
+			if (inString && argumentChars[index] == ' ') {
+				argumentChars[index] = '_';
+			}
+
+			index++;
+		}
+
+		Map<String, String> variables = new HashMap<String, String>();
+		if (start < index) {
+			int counter = 0;
+			for (String argument : new String(argumentChars, start, index - start).split(" ")) {
+				counter++;
+				variables.put(String.valueOf(counter), argument);
+			}
+		}
+
+		return variables;
+	}
+
 	/**
 	 * Execute the script.
 	 */
 	public void run() {
 		switch (type) {
 		case "sf":
-			runningThread = new Thread(new StormFrontInterpreter(sendToServer, sendToClient, this));
+			StormFrontInterpreter interpreter = new StormFrontInterpreter(sendToServer, sendToClient, this);
+			interpreter.run();
 			break;
 		default:
 			throw new RuntimeException("'" + type + "' is an unsupported script format. Valid formats are: sf");
 		}
-		runningThread.start();
 	}
 
 	public String getName() {
@@ -50,6 +129,14 @@ public class Program implements Runnable {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
 	}
 
 	public List<Line> getLines() {
@@ -98,9 +185,5 @@ public class Program implements Runnable {
 
 	public void setSendToClient(AbstractProxy sendToClient) {
 		this.sendToClient = sendToClient;
-	}
-
-	public Thread getRunningThread() {
-		return runningThread;
 	}
 }

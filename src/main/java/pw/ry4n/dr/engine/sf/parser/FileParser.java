@@ -23,10 +23,10 @@ public class FileParser {
 		// empty constructor
 	}
 
-	public FileParser(String fileName) throws FileNotFoundException {
+	public FileParser(String fileName) throws FileNotFoundException, IOException {
 		// expect all scripts to be in ~/Documents/dobby/scripts/
 		String directory = System.getProperty("user.home")+File.separator+"Documents"+File.separator+"dobby"+File.separator+"scripts"+File.separator;
-		String path = directory + fileName + ".sf";
+		String path = directory + fileName;
 		FileReader reader = null;
 
 		File directoryFile = new File(directory);
@@ -55,11 +55,6 @@ public class FileParser {
 			fileData.getChars(0, fileData.length() - 1, dataCharBuffer.data, 0);
 
 			reader.close();
-		} catch (FileNotFoundException e) {
-			// TODO catch FileNotFoundException and return it to client
-			System.out.println("Cannot find file: " + path);
-		} catch (IOException e) {
-			System.out.println("Something went wrong reading the script.");
 		} finally {
 			try {
 				if (reader != null) {
@@ -70,14 +65,12 @@ public class FileParser {
 		}
 	}
 
-	public Program parse() {
-		return parseFile(dataCharBuffer);
+	public Program parse(Program program) {
+		return parseFile(program, dataCharBuffer);
 	}
 
-	Program parseFile(DataCharBuffer dataCharBuffer) throws ParserException {
+	Program parseFile(Program program, DataCharBuffer dataCharBuffer) throws ParserException {
 		LineParser lineParser = new LineParser(dataCharBuffer);
-
-		Program program = new Program();
 
 		while (lineParser.hasMoreChars()) {
 			Line line = lineParser.parseLine();

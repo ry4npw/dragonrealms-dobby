@@ -2,7 +2,7 @@ package pw.ry4n.dr.engine.sf.parser;
 
 import static org.junit.Assert.*;
 
-import java.io.FileNotFoundException;
+import java.io.IOException;
 
 import org.junit.Test;
 
@@ -12,21 +12,25 @@ import pw.ry4n.dr.engine.sf.model.Program;
 
 public class FileParserTest {
 	@Test
-	public void testConstructor() throws FileNotFoundException {
+	public void testConstructor() throws IOException {
 		// TODO point "look" to a directory in the repository so unit tests are
 		// not dependent on something in the Documents/ directory
-		FileParser fileParser = new FileParser("look");
+		FileParser fileParser = new FileParser("look.sf");
 		assertTrue(fileParser.dataCharBuffer.data.length > 0);
 
-		Program program = fileParser.parse();
+		Program program = new Program();
+		fileParser.parse(program);
 		assertTrue(program.getLabels().containsKey("look"));
+		assertEquals(9, program.getLines().size());
+		assertEquals(Commands.EXIT, program.getLines().get(8).getCommand());
 	}
 
 	@Test
 	public void testParse() {
 		DataCharBuffer dataCharBuffer = new DataCharBuffer("# a program!\nexit".toCharArray());
 		FileParser fileParser = new FileParser();
-		Program program = fileParser.parseFile(dataCharBuffer);
+		Program program = new Program();
+		fileParser.parseFile(program, dataCharBuffer);
 
 		// assert there were parsed lines
 		assertNotNull(program.getLines());
@@ -43,7 +47,8 @@ public class FileParserTest {
 		DataCharBuffer dataCharBuffer = new DataCharBuffer(
 				("# a better program!\n" + "LOOP:\n" + "MOVE N\n" + "GOTO LOOP\n").toCharArray());
 		FileParser fileParser = new FileParser();
-		Program program = fileParser.parseFile(dataCharBuffer);
+		Program program = new Program();
+		fileParser.parseFile(program, dataCharBuffer);
 
 		// assert that our LOOP label exists
 		assertTrue(program.getLabels().containsKey("loop"));

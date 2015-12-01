@@ -1,4 +1,4 @@
-package pw.ry4n.dr;
+package pw.ry4n.dr.proxy;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -17,8 +17,10 @@ public class ListeningProxy extends AbstractProxy {
 			// TODO parse the simutronics protocol
 			// https://github.com/sproctor/warlock-gtk/blob/master/docs/SIMU-PROTOCOL
 		} else {
-			// TODO do something with this for downstream MATCHing
 			System.out.println(line);
+
+			// notify any listeners
+			notifyAllListeners(line);
 		}
 	}
 }

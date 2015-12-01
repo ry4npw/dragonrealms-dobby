@@ -8,10 +8,10 @@ import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import pw.ry4n.dr.AbstractProxy;
 import pw.ry4n.dr.engine.sf.model.Commands;
 import pw.ry4n.dr.engine.sf.model.Line;
 import pw.ry4n.dr.engine.sf.model.Program;
+import pw.ry4n.dr.proxy.AbstractProxy;
 
 public class StormFrontInterpreterTest {
 	@Test
@@ -25,6 +25,7 @@ public class StormFrontInterpreterTest {
 
 		Program lookProgram = new Program();
 		lookProgram.setName("look");
+		lookProgram.setType("sf");
 		lookProgram.setSendToClient(sendToClient);
 		lookProgram.setSendToServer(sendToServer);
 		lookProgram.getVariables().put("1", "table");
@@ -45,7 +46,6 @@ public class StormFrontInterpreterTest {
 
 		// run the script
 		lookProgram.run();
-		lookProgram.getRunningThread().join();
 
 		// verify mocks
 		verify(sendToServer).send("look in table");

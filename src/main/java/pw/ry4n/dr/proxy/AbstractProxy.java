@@ -1,4 +1,4 @@
-package pw.ry4n.dr;
+package pw.ry4n.dr.proxy;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -6,17 +6,21 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * A class useful for the proxy server. This class takes over control of newly
  * created connections and redirects the data streams.
  */
-public abstract class AbstractProxy implements Runnable {
+public abstract class AbstractProxy implements StreamMonitor, Runnable {
 	protected AbstractProxy companion = null;
 	protected Socket localSocket, remoteSocket;
 	protected OutputStream to;
 	protected BufferedReader in;
 	protected final static byte[] NEWLINE = "\n".getBytes();
+	protected List<StreamListener> streamListeners = Collections.synchronizedList(new ArrayList<StreamListener>());
 
 	/**
 	 * redirector gets the streams from sockets
@@ -107,7 +111,7 @@ public abstract class AbstractProxy implements Runnable {
 	 * will be sent in a FIFO queue, and it will retry failed commands based on
 	 * RT. Eventually some commands may be prioritized and skip the queue that
 	 * do not cause RT.
-	 *  
+	 * 
 	 * @param line
 	 * @throws IOException
 	 */
@@ -118,5 +122,25 @@ public abstract class AbstractProxy implements Runnable {
 		to.write(line.getBytes());
 		to.write("]".getBytes());
 		to.write(NEWLINE);
+	}
+
+	@Override
+	public void subscribe(StreamListener listener) {
+		synchronized(streamListeners) {
+			streamListeners.add(listener);
+		}
+	}
+
+	@Override
+	public void unsubscribe(StreamListener listener) {
+		synchronized(streamListeners) {
+			streamListeners.remove(listener);
+		}
+	}
+
+	protected void notifyAllListeners(String line) {
+		for (StreamListener listener : streamListeners) {
+			listener.notify(line);
+		}
 	}
 }

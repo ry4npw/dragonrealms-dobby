@@ -28,7 +28,7 @@ public class LineParser {
 	}
 
 	public boolean hasMoreChars() {
-		return this.dataBuffer.data.length > this.dataPosition;
+		return this.dataBuffer.data.length > this.dataPosition + 1;
 	}
 
 	public Line parseLine() {
@@ -213,6 +213,7 @@ public class LineParser {
 				line.setCommand(Commands.WAIT);
 				this.dataPosition += 4;
 			}
+			break;
 		}
 
 		if (hasMoreChars()) {
@@ -400,7 +401,7 @@ public class LineParser {
 		int tempPos = this.dataPosition;
 		boolean inString = false;
 
-		while (!isEndOfLine()) {
+		while (hasMoreChars() && !isEndOfLine()) {
 			if (this.dataBuffer.data[this.dataPosition] == '"') {
 				inString = !inString;
 			}
@@ -452,6 +453,6 @@ public class LineParser {
 
 	boolean isEndOfLine() {
 		// EOF or CR or LF
-		return this.dataBuffer.data.length <= this.dataPosition || this.dataBuffer.data[this.dataPosition] == '\r' || this.dataBuffer.data[this.dataPosition] == '\n';
+		return !hasMoreChars() || this.dataBuffer.data[this.dataPosition] == '\r' || this.dataBuffer.data[this.dataPosition] == '\n';
 	}
 }

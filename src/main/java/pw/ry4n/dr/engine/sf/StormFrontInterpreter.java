@@ -1,13 +1,16 @@
 package pw.ry4n.dr.engine.sf;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-import pw.ry4n.dr.AbstractProxy;
 import pw.ry4n.dr.engine.sf.model.Commands;
 import pw.ry4n.dr.engine.sf.model.Line;
 import pw.ry4n.dr.engine.sf.model.MatchToken;
 import pw.ry4n.dr.engine.sf.model.Program;
+import pw.ry4n.dr.proxy.AbstractProxy;
+import pw.ry4n.dr.proxy.StreamListener;
 
 /**
  * A factory method that takes a StormFront (SF) script file as input and
@@ -15,13 +18,12 @@ import pw.ry4n.dr.engine.sf.model.Program;
  * 
  * @author Ryan Powell
  */
-public class StormFrontInterpreter implements Runnable {
-	// TODO monitor read-only user input (implement upstream MATCH)
-	// TODO monitor read-only server responses (implement downstream MATCH)
+public class StormFrontInterpreter implements StreamListener, Runnable {
 	private AbstractProxy sendToServer; // proxy to send commands to server
 	private AbstractProxy sendToClient; // proxy to send debug to client
 
-	private List<MatchToken> matchList;
+	private List<MatchToken> matchList = Collections.synchronizedList(new ArrayList<MatchToken>());
+	private boolean isMatching = false;
 	private Program program;
 
 	private int currentLineNumber = 0;
@@ -39,6 +41,9 @@ public class StormFrontInterpreter implements Runnable {
 	}
 
 	public void run() {
+		sendToServer.subscribe(this);
+		sendToClient.subscribe(this);
+
 		currentLineNumber = program.getStart();
 
 		try {
@@ -57,6 +62,9 @@ public class StormFrontInterpreter implements Runnable {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+
+		sendToServer.unsubscribe(this);
+		sendToClient.unsubscribe(this);
 	}
 
 	private void executeLine(Line currentLine) throws IOException {
@@ -130,5 +138,14 @@ public class StormFrontInterpreter implements Runnable {
 
 	public boolean isScriptFinished() {
 		return scriptFinished;
+	}
+
+	@Override
+	public void notify(String line) {
+		if (isMatching) {
+			synchronized(matchList) {
+				// TODO handle match against line
+			}
+		}
 	}
 }
