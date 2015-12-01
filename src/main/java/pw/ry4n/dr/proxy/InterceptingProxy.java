@@ -12,6 +12,7 @@ public class InterceptingProxy extends AbstractProxy implements StreamListener {
 	private Object monitorObject = new Object();
 	private boolean waitToSend = false;
 	private String lastCommand = null;
+	private long lastCommandSent = -1;
 
 	public InterceptingProxy(Socket local, Socket remote) {
 		super(local, remote);
@@ -56,6 +57,8 @@ public class InterceptingProxy extends AbstractProxy implements StreamListener {
 	 * @throws IOException
 	 */
 	public void enqueue(String line) throws IOException {
+		// TODO move send queue to another thread so it can wait without blocking
+
 		synchronized (sendQueue) {
 			sendQueue.offer(line);
 		}
@@ -74,6 +77,7 @@ public class InterceptingProxy extends AbstractProxy implements StreamListener {
 		synchronized (sendQueue) {
 			lastCommand = sendQueue.remove();
 			send(lastCommand);
+			lastCommandSent = System.currentTimeMillis();
 			waitToSend = true;
 		}
 	}
@@ -82,9 +86,10 @@ public class InterceptingProxy extends AbstractProxy implements StreamListener {
 	public void notify(String line) {
 		synchronized (monitorObject) {
 			if (line.contains("type ahead") || line.startsWith("...wait")) {
-				System.out.println("OOPS! Too fast, need to resend: " + lastCommand);
-				// TODO handle RT and reinsert line at front of queue
-				// (only when the offending command was sent by enqueue and not by client)
+				if (System.currentTimeMillis() - lastCommandSent < 100) {
+					System.out.println("OOPS! Too fast, need to resend: " + lastCommand);
+					// TODO handle RT and reinsert line at front of queue
+				}
 			} else {
 				waitToSend = false;
 				monitorObject.notify();
