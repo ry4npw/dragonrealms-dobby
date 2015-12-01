@@ -7,6 +7,15 @@ public class MatchToken {
 	private byte type;
 	private String matchString;
 
+	public MatchToken() {
+		// empty constructor
+	}
+
+	public MatchToken(byte type, String matchString) {
+		this.type = type;
+		this.matchString = matchString;
+	}
+
 	public byte getType() {
 		return type;
 	}
@@ -21,5 +30,13 @@ public class MatchToken {
 
 	public void setMatchString(String matchString) {
 		this.matchString = matchString;
+	}
+
+	public boolean match(String line) {
+		if (REGEX == type) {
+			return line.matches(matchString);
+		} else {
+			return line.contains(matchString);
+		}
 	}
 }

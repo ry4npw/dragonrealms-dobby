@@ -22,15 +22,6 @@ public class LineParser {
 		this.dataBuffer = dataBuffer;
 	}
 
-	public void reinit(DataCharBuffer dataBuffer) {
-		this.dataBuffer = dataBuffer;
-		this.dataPosition = 0;
-	}
-
-	public boolean hasMoreChars() {
-		return this.dataBuffer.data.length > this.dataPosition && this.dataBuffer.data[this.dataPosition] != '\0';
-	}
-
 	public Line parseLine() {
 		skipWhiteSpace();
 		if (!hasMoreChars()) {
@@ -197,6 +188,7 @@ public class LineParser {
 				// WAITFORRE
 				line.setCommand(Commands.WAITFORRE);
 				this.dataPosition += 9;
+				line.setArguments(new String[] { getRestOfLine() });
 			} else if ((this.dataBuffer.data[this.dataPosition + 1] == 'a' || this.dataBuffer.data[this.dataPosition + 1] == 'A')
 					&& (this.dataBuffer.data[this.dataPosition + 2] == 'i' || this.dataBuffer.data[this.dataPosition + 2] == 'I')
 					&& (this.dataBuffer.data[this.dataPosition + 3] == 't' || this.dataBuffer.data[this.dataPosition + 3] == 'T')
@@ -206,6 +198,7 @@ public class LineParser {
 				// WAITFOR
 				line.setCommand(Commands.WAITFOR);
 				this.dataPosition += 7;
+				line.setArguments(new String[] { getRestOfLine() });
 			} else if ((this.dataBuffer.data[this.dataPosition + 1] == 'a' || this.dataBuffer.data[this.dataPosition + 1] == 'A')
 					&& (this.dataBuffer.data[this.dataPosition + 2] == 'i' || this.dataBuffer.data[this.dataPosition + 2] == 'I')
 					&& (this.dataBuffer.data[this.dataPosition + 3] == 't' || this.dataBuffer.data[this.dataPosition + 3] == 'T')) {
@@ -250,13 +243,18 @@ public class LineParser {
 		String label = new String(this.dataBuffer.data, startPosition, dataPosition - startPosition);
 
 		// parse match string
-		skipWhiteSpace();
-		startPosition = this.dataPosition;
-		skipLine();
-		String matchString = new String(this.dataBuffer.data, startPosition, this.dataPosition - startPosition);
+		String matchString = getRestOfLine();
 
 		// set arguments
 		line.setArguments(new String[]{ label.toLowerCase(), matchString });
+	}
+
+	private String getRestOfLine() {
+		skipWhiteSpace();
+		int startPosition = this.dataPosition;
+		skipLine();
+		String matchString = new String(this.dataBuffer.data, startPosition, this.dataPosition - startPosition);
+		return matchString;
 	}
 
 	private void skipToNextWhiteSpace() {
@@ -416,6 +414,10 @@ public class LineParser {
 		if (tempPos < this.dataPosition) {
 			line.setArguments(new String(this.dataBuffer.data, tempPos, this.dataPosition - tempPos).split(" "));
 		}
+	}
+
+	public boolean hasMoreChars() {
+		return this.dataBuffer.data.length > this.dataPosition && this.dataBuffer.data[this.dataPosition] != '\0';
 	}
 
 	void skipWhiteSpace() {
