@@ -19,7 +19,8 @@ import pw.ry4n.dr.proxy.StreamListener;
  * A factory method that takes a StormFront (SF) script file as input and
  * returns an object representing the program.
  * 
- * @see <a href=https://www.play.net/playdotnet/play/stormfront_scripting.asp>StormFront Scripting Guide</a>
+ * @see <a href=https://www.play.net/playdotnet/play/stormfront_scripting.asp>
+ *      StormFront Scripting Reference</a>
  * 
  * @author Ryan Powell
  */
@@ -149,7 +150,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 			put(currentLine);
 			break;
 		case Commands.SAVE:
-			// TODO
+			save(currentLine);
 			break;
 		case Commands.SETVARIABLE:
 			// TODO
@@ -252,6 +253,10 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 		sendToClient.send(program.getName() + ": " + sendLine);
 	}
 
+	void save(Line currentLine) {
+		program.getVariables().put("s", combineAndReplaceArguments(currentLine.getArguments()));
+	}
+
 	void doWait() {
 		isWaiting = true;
 	}
@@ -264,9 +269,9 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 			String argument = arguments[index];
 
 			if (argument.contains("%")) {
-				replaceVariables(result, argument);
+				replaceVariables(result, formatArgument(argument));
 			} else {
-				result.append(formatArguments(argument));
+				result.append(formatArgument(argument));
 			}
 
 			// combine with spaces
@@ -296,10 +301,9 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 					} else if ("c".equals(variable)) {
 						// c is a special case (counter)
 						result.append(counter);
-					} else if ("s".equals(variable)) {
-						// TODO s is a special case (save variable)
 					} else {
-						// other variables we look up in the program variable list
+						// other variables (including the save %s variable), we
+						// look up in the program variable list
 						String value = program.getVariables().get(variable);
 						if (value != null) {
 							result.append(value);
@@ -348,7 +352,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 	 * @param string
 	 * @return
 	 */
-	private String formatArguments(String string) {
+	private String formatArgument(String string) {
 		if (string == null) {
 			return null;
 		}

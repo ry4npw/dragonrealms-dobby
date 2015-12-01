@@ -1,7 +1,12 @@
 package pw.ry4n.dr.engine.sf;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 
@@ -38,18 +43,18 @@ public class StormFrontInterpreterTest {
 		AbstractProxy sendToClient = mock(AbstractProxy.class);
 		CommandSender commandSender = mock(CommandSender.class);
 		InterceptingProxy sendToServer = mock(InterceptingProxy.class);
+
 		when(sendToServer.getCommandSender()).thenReturn(commandSender);
+		doAnswer(log("commandSender")).when(commandSender).enqueue(anyString());
+		doAnswer(log("sendToClient")).when(sendToClient).send(anyString());
 
-		logProxySend(sendToServer, "sendToServer");
-		logProxySend(sendToClient, "sendToClient");
-
+		// set up program
 		Program program = new Program();
-		program.setName("script");
+		program.setName("if_test");
 		program.setType("sf");
 		program.setSendToClient(sendToClient);
 		program.setSendToServer(sendToServer);
 
-		// set up program
 		program.getVariables().put("1", "table");
 		program.getLines().add(new Line(Commands.IF_, 1, Commands.GOTO, new String[] { "look" }));
 		program.getLines().add(new Line(Commands.EXIT, null));
@@ -78,18 +83,18 @@ public class StormFrontInterpreterTest {
 		AbstractProxy sendToClient = mock(AbstractProxy.class);
 		CommandSender commandSender = mock(CommandSender.class);
 		InterceptingProxy sendToServer = mock(InterceptingProxy.class);
+
 		when(sendToServer.getCommandSender()).thenReturn(commandSender);
+		doAnswer(log("commandSender")).when(commandSender).enqueue(anyString());
+		doAnswer(log("sendToClient")).when(sendToClient).send(anyString());
 
-		logProxySend(sendToServer, "sendToServer");
-		logProxySend(sendToClient, "sendToClient");
-
+		// set up program
 		Program program = new Program();
-		program.setName("script");
+		program.setName("counterTest");
 		program.setType("sf");
 		program.setSendToClient(sendToClient);
 		program.setSendToServer(sendToServer);
 
-		// set up program
 		program.getLines().add(new Line(Commands.COUNTER, 2, Commands.SET, new String[] { "2" }));
 		program.getLines().add(new Line(Commands.GOTO, new String[] { "my%c" }));
 		program.getLines().add(new Line(Commands.LABEL, new String[] { "my1" }));
@@ -108,6 +113,7 @@ public class StormFrontInterpreterTest {
 		// run the script
 		program.run();
 
+		// verify mocks
 		verify(commandSender).enqueue("It was 2");
 	}
 
@@ -124,16 +130,15 @@ public class StormFrontInterpreterTest {
 		assertEquals(MatchToken.REGEX, interpreter.matchList.get(0).getType());
 	}
 
-	private void logProxySend(AbstractProxy proxy, final String proxyName) throws IOException {
-		// log calls to System.out
-		doAnswer(new Answer<Object>() {
+	private Answer<Object> log(final String proxyName) {
+		return new Answer<Object>() {
 			public Object answer(InvocationOnMock invocation) {
 				Object[] args = invocation.getArguments();
 				for (Object arg : args) {
-					System.out.println(proxyName + ".send(" + arg + ")");
+					System.out.println(proxyName + "." + invocation.getMethod().getName() + "(" + arg + ")");
 				}
 				return null;
 			}
-		}).when(proxy).send(anyString());
+		};
 	}
 }
