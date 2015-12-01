@@ -106,8 +106,10 @@ public abstract class AbstractProxy implements StreamMonitor, Runnable {
 	protected abstract void filter(String line) throws IOException;
 
 	public void send(String line) throws IOException {
-		to.write(line.getBytes());
-		to.write(NEWLINE);
+		synchronized(to) {
+			to.write(line.getBytes());
+			to.write(NEWLINE);
+		}
 	}
 
 	@Override

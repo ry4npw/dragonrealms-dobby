@@ -20,7 +20,8 @@ public class Program implements Runnable {
 	private Map<String, String> variables = new HashMap<String, String>();
 	private int start = 0;
 
-	private InterceptingProxy sendToServer; // send commands to server
+	private InterceptingProxy sendToServer; // listen to and send commands to
+											// server
 	private AbstractProxy sendToClient; // send output to client
 
 	public Program() {

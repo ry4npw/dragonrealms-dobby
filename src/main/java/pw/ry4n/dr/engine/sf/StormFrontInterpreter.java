@@ -10,6 +10,7 @@ import pw.ry4n.dr.engine.sf.model.Line;
 import pw.ry4n.dr.engine.sf.model.MatchToken;
 import pw.ry4n.dr.engine.sf.model.Program;
 import pw.ry4n.dr.proxy.AbstractProxy;
+import pw.ry4n.dr.proxy.CommandSender;
 import pw.ry4n.dr.proxy.InterceptingProxy;
 import pw.ry4n.dr.proxy.StreamListener;
 
@@ -20,8 +21,9 @@ import pw.ry4n.dr.proxy.StreamListener;
  * @author Ryan Powell
  */
 public class StormFrontInterpreter implements StreamListener, Runnable {
-	private InterceptingProxy sendToServer; // proxy to send commands to server
-	private AbstractProxy sendToClient; // proxy to send debug to client
+	private CommandSender commandSender; // send commands to server
+	private AbstractProxy sendToServer; // listen to upstream commands from client
+	private AbstractProxy sendToClient; // listen to downstream responses from server and send messages to client
 
 	private List<MatchToken> matchList = Collections.synchronizedList(new ArrayList<MatchToken>());
 	private boolean isMatching = false;
@@ -31,12 +33,14 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 
 	private boolean scriptFinished = false;
 
-	public StormFrontInterpreter(InterceptingProxy sendToServer, AbstractProxy sendToClient, Program program) {
+	public StormFrontInterpreter(InterceptingProxy sendToServer, AbstractProxy sendToClient,
+			Program program) {
 		if (program == null) {
 			throw new IllegalArgumentException("Program must not be null!");
 		}
 
 		this.sendToServer = sendToServer;
+		this.commandSender = sendToServer.getCommandSender();
 		this.sendToClient = sendToClient;
 		this.program = program;
 	}
@@ -56,7 +60,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 				executeLine(program.getLines().get(currentLineNumber));
 			}
 
-			scriptFinished = true;
+			exit();
 			long endTime = System.currentTimeMillis();
 
 			sendToClient.send(program.getName() + ": END, completed in " + (endTime - startTime) + "ms");
@@ -73,30 +77,50 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 
 		switch (currentLine.getCommand()) {
 		case Commands.ECHO:
-			sendToClient.send(program.getName() + ": ECHO " + combineAndReplaceArguments(currentLine.getArguments()));
+			echo(currentLine);
 			break;
 		case Commands.EXIT:
-			scriptFinished = true;
+			exit();
 			break;
 		case Commands.GOTO:
-			String label = currentLine.getArguments()[0];
-			currentLineNumber = program.getLabels().get(label);
+			goTo(currentLine);
 			break;
 		case Commands.IF_:
-			if (currentLine.getN() >= program.getVariables().size()) {
-				Line subLine = new Line(currentLine.getSubCommand(), currentLine.getArguments());
-				executeLine(subLine);
-			}
+			if_(currentLine);
 			break;
 		case Commands.PUT:
-			String sendLine = combineAndReplaceArguments(currentLine.getArguments());
-			sendToServer.enqueue(sendLine);
-			sendToClient.send(program.getName() + ": " + sendLine); 
+			put(currentLine);
 			break;
 		default:
 			// LABEL
 			break;
 		}
+	}
+
+	private void put(Line currentLine) throws IOException {
+		String sendLine = combineAndReplaceArguments(currentLine.getArguments());
+		commandSender.enqueue(sendLine);
+		sendToClient.send(program.getName() + ": " + sendLine);
+	}
+
+	private void if_(Line currentLine) throws IOException {
+		if (currentLine.getN() >= program.getVariables().size()) {
+			Line subLine = new Line(currentLine.getSubCommand(), currentLine.getArguments());
+			executeLine(subLine);
+		}
+	}
+
+	private void goTo(Line currentLine) {
+		String label = currentLine.getArguments()[0];
+		currentLineNumber = program.getLabels().get(label);
+	}
+
+	private void exit() {
+		scriptFinished = true;
+	}
+
+	private void echo(Line currentLine) throws IOException {
+		sendToClient.send(program.getName() + ": ECHO " + combineAndReplaceArguments(currentLine.getArguments()));
 	}
 
 	private String combineAndReplaceArguments(String[] arguments) {
@@ -145,7 +169,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 	@Override
 	public void notify(String line) {
 		if (isMatching) {
-			synchronized(matchList) {
+			synchronized (matchList) {
 				// TODO handle match against line
 			}
 		}

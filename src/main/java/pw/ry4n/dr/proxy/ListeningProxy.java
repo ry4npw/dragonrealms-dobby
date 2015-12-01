@@ -16,12 +16,10 @@ public class ListeningProxy extends AbstractProxy {
 		if (line.trim().startsWith("GS")) {
 			// TODO parse the simutronics protocol
 			// https://github.com/sproctor/warlock-gtk/blob/master/docs/SIMU-PROTOCOL
-		} else {
-			System.out.println(line);
-
-			// notify any listeners
-			notifyAllListeners(line);
 		}
+
+		// notify any listeners
+		notifyAllListeners(line);
 	}
 
 	@Override
