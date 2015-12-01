@@ -11,7 +11,7 @@ public class ListeningProxy extends AbstractProxy {
 	@Override
 	protected void filter(String line) throws IOException {
 		// pass line along
-		send(line);
+		super.send(line);
 
 		if (line.trim().startsWith("GS")) {
 			// TODO parse the simutronics protocol
@@ -22,5 +22,13 @@ public class ListeningProxy extends AbstractProxy {
 			// notify any listeners
 			notifyAllListeners(line);
 		}
+	}
+
+	@Override
+	public void send(String line) throws IOException {
+		to.write("dobby [".getBytes());
+		to.write(line.getBytes());
+		to.write("]".getBytes());
+		to.write(NEWLINE);
 	}
 }

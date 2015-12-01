@@ -118,9 +118,7 @@ public abstract class AbstractProxy implements StreamMonitor, Runnable {
 	public void send(String line) throws IOException {
 		// TODO turn this into a queue to mitigate errors and handle RT and
 		// type ahead line problems
-		to.write("dobby [".getBytes());
 		to.write(line.getBytes());
-		to.write("]".getBytes());
 		to.write(NEWLINE);
 	}
 

@@ -37,7 +37,7 @@ public class Program implements Runnable {
 			String scriptName = fileName.substring(0, firstSpace == -1 ? fileName.length() : firstSpace);
 			setName(scriptName);
 			int firstPeriod = scriptName.indexOf('.');
-			setType(scriptName.substring(firstPeriod == -1 ? 0 : firstPeriod));
+			setType(scriptName.substring(firstPeriod == -1 || scriptName.length() < firstPeriod ? 0 : firstPeriod + 1));
 			FileParser fileParser = new FileParser(scriptName);
 			fileParser.parse(this);
 
