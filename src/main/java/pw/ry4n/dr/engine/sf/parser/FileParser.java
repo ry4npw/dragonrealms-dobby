@@ -1,9 +1,12 @@
 package pw.ry4n.dr.engine.sf.parser;
 
-import java.io.File;
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import pw.ry4n.dr.engine.core.DataCharBuffer;
 import pw.ry4n.dr.engine.core.ParserException;
@@ -25,22 +28,29 @@ public class FileParser {
 
 	public FileParser(String fileName) throws FileNotFoundException, IOException {
 		// expect all scripts to be in ~/Documents/dobby/scripts/
-		String directory = System.getProperty("user.home")+File.separator+"Documents"+File.separator+"dobby"+File.separator+"scripts"+File.separator;
-		String path = directory + fileName;
-		FileReader reader = null;
+		String directory = System.getProperty("user.home") + System.getProperty("file.seperator") + "Documents"
+				+ System.getProperty("file.seperator") + "dobby" + System.getProperty("file.seperator") + "scripts"
+				+ System.getProperty("file.seperator");
+		String filePath = directory + fileName;
 
-		File directoryFile = new File(directory);
+		Path directoryPath = Paths.get(directory);
+		Path path = Paths.get(filePath);
 
 		// if the directory does not exist, create it
-		if (!directoryFile.exists()) {
+		if (!Files.exists(directoryPath)) {
 			// TODO send the following message downstream
-			System.out.println("creating directory: " + directoryFile.getAbsolutePath());
-			directoryFile.mkdir();
+			System.out.println("creating script directory: " + directoryPath.toAbsolutePath());
+			Files.createDirectory(directoryPath);
 		}
 
+		readFileData(path);
+	}
+
+	void readFileData(Path path) throws IOException {
+		BufferedReader reader = null;
+
 		try {
-			File file = new File(path);
-			reader = new FileReader(file);
+			reader = Files.newBufferedReader(path, Charset.defaultCharset());
 
 			char[] buf = new char[1024];
 			int numRead = 0;
@@ -81,7 +91,12 @@ public class FileParser {
 
 				switch (line.getCommand()) {
 				case Commands.COUNTER:
-					// TODO verify argument is numeric
+					try {
+						// test for an integer
+						line.setN(Integer.parseInt(line.getArguments()[0]));
+					} catch (NumberFormatException e) {
+						throw new ParserException("COUNTER value must be an integer.");
+					}
 					break;
 				case Commands.LABEL:
 					// additional handling for labels
