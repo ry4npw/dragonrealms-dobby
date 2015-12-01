@@ -34,6 +34,7 @@ public class Dobby implements Runnable {
 			server = new ServerSocket(localPort);
 		} catch (Exception e) {
 			System.err.println("proxy: error: cannot create server socket");
+			e.printStackTrace();
 		}
 		log("listening on port " + localPort);
 

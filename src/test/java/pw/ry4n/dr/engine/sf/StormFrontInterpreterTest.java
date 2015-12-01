@@ -12,13 +12,14 @@ import pw.ry4n.dr.engine.sf.model.Commands;
 import pw.ry4n.dr.engine.sf.model.Line;
 import pw.ry4n.dr.engine.sf.model.Program;
 import pw.ry4n.dr.proxy.AbstractProxy;
+import pw.ry4n.dr.proxy.InterceptingProxy;
 
 public class StormFrontInterpreterTest {
 	@Test
 	public void testRun() throws IOException, InterruptedException {
 		// mocks
 		AbstractProxy sendToClient = mock(AbstractProxy.class);
-		AbstractProxy sendToServer = mock(AbstractProxy.class);
+		InterceptingProxy sendToServer = mock(InterceptingProxy.class);
 
 		logProxySend(sendToServer, "sendToServer");
 		logProxySend(sendToClient, "sendToClient");
@@ -48,10 +49,10 @@ public class StormFrontInterpreterTest {
 		lookProgram.run();
 
 		// verify mocks
-		verify(sendToServer).send("look in table");
-		verify(sendToServer).send("look on table");
-		verify(sendToServer).send("look under table");
-		verify(sendToServer).send("look behind table");
+		verify(sendToServer).enqueue("look in table");
+		verify(sendToServer).enqueue("look on table");
+		verify(sendToServer).enqueue("look under table");
+		verify(sendToServer).enqueue("look behind table");
 	}
 
 	private void logProxySend(AbstractProxy proxy, final String proxyName) throws IOException {

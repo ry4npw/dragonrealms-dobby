@@ -10,6 +10,7 @@ import pw.ry4n.dr.engine.sf.model.Line;
 import pw.ry4n.dr.engine.sf.model.MatchToken;
 import pw.ry4n.dr.engine.sf.model.Program;
 import pw.ry4n.dr.proxy.AbstractProxy;
+import pw.ry4n.dr.proxy.InterceptingProxy;
 import pw.ry4n.dr.proxy.StreamListener;
 
 /**
@@ -19,7 +20,7 @@ import pw.ry4n.dr.proxy.StreamListener;
  * @author Ryan Powell
  */
 public class StormFrontInterpreter implements StreamListener, Runnable {
-	private AbstractProxy sendToServer; // proxy to send commands to server
+	private InterceptingProxy sendToServer; // proxy to send commands to server
 	private AbstractProxy sendToClient; // proxy to send debug to client
 
 	private List<MatchToken> matchList = Collections.synchronizedList(new ArrayList<MatchToken>());
@@ -30,7 +31,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 
 	private boolean scriptFinished = false;
 
-	public StormFrontInterpreter(AbstractProxy sendToServer, AbstractProxy sendToClient, Program program) {
+	public StormFrontInterpreter(InterceptingProxy sendToServer, AbstractProxy sendToClient, Program program) {
 		if (program == null) {
 			throw new IllegalArgumentException("Program must not be null!");
 		}
@@ -47,7 +48,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 		currentLineNumber = program.getStart();
 
 		try {
-			sendToClient.send("dobby [" + program.getName() + ": START]");
+			sendToClient.send(program.getName() + ": START");
 
 			long startTime = System.currentTimeMillis();
 
@@ -58,7 +59,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 			scriptFinished = true;
 			long endTime = System.currentTimeMillis();
 
-			sendToClient.send("dobby [" + program.getName() + ": END, completed in " + (endTime - startTime) + "ms]");
+			sendToClient.send(program.getName() + ": END, completed in " + (endTime - startTime) + "ms");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -72,8 +73,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 
 		switch (currentLine.getCommand()) {
 		case Commands.ECHO:
-			sendToClient.send("dobby [" + program.getName() + ": "
-					+ combineAndReplaceArguments(currentLine.getArguments()) + "]");
+			sendToClient.send(program.getName() + ": ECHO " + combineAndReplaceArguments(currentLine.getArguments()));
 			break;
 		case Commands.EXIT:
 			scriptFinished = true;
@@ -89,7 +89,9 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 			}
 			break;
 		case Commands.PUT:
-			sendToServer.send(combineAndReplaceArguments(currentLine.getArguments()));
+			String sendLine = combineAndReplaceArguments(currentLine.getArguments());
+			sendToServer.enqueue(sendLine);
+			sendToClient.send(program.getName() + ": " + sendLine); 
 			break;
 		default:
 			// LABEL

@@ -10,6 +10,7 @@ import pw.ry4n.dr.engine.sf.StormFrontInterpreter;
 import pw.ry4n.dr.engine.sf.parser.FileParser;
 import pw.ry4n.dr.engine.sf.parser.LineParser;
 import pw.ry4n.dr.proxy.AbstractProxy;
+import pw.ry4n.dr.proxy.InterceptingProxy;
 
 public class Program implements Runnable {
 	private String name;
@@ -19,19 +20,19 @@ public class Program implements Runnable {
 	private Map<String, String> variables = new HashMap<String, String>();
 	private int start = 0;
 
-	private AbstractProxy sendToServer; // send commands to server
+	private InterceptingProxy sendToServer; // send commands to server
 	private AbstractProxy sendToClient; // send output to client
 
 	public Program() {
 		// empty constructor
 	}
 
-	public Program(AbstractProxy sendToServer, AbstractProxy sendToClient) {
+	public Program(InterceptingProxy sendToServer, AbstractProxy sendToClient) {
 		this.sendToServer = sendToServer;
 		this.sendToClient = sendToClient;
 	}
 
-	public Program(String fileName, AbstractProxy clientToServer, AbstractProxy serverToClient) {
+	public Program(String fileName, InterceptingProxy clientToServer, AbstractProxy serverToClient) {
 		try {
 			int firstSpace = fileName.indexOf(' ');
 			String scriptName = fileName.substring(0, firstSpace == -1 ? fileName.length() : firstSpace);
@@ -48,8 +49,6 @@ public class Program implements Runnable {
 			// now set up send
 			this.sendToServer = clientToServer;
 			this.sendToClient = serverToClient;
-
-			run();
 		} catch (Exception e) {
 			if (serverToClient != null) {
 				try {
@@ -175,7 +174,7 @@ public class Program implements Runnable {
 		return sendToServer;
 	}
 
-	public void setSendToServer(AbstractProxy sendToServer) {
+	public void setSendToServer(InterceptingProxy sendToServer) {
 		this.sendToServer = sendToServer;
 	}
 
