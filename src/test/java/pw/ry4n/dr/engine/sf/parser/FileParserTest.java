@@ -32,7 +32,7 @@ public class FileParserTest {
 		assertEquals(Commands.EXIT, program.getLines().get(7).getCommand());
 	}
 
-	//@Test
+	@Test
 	public void testParse() {
 		DataCharBuffer dataCharBuffer = new DataCharBuffer("# a program!\nexit".toCharArray());
 		FileParser fileParser = new FileParser();
@@ -49,7 +49,7 @@ public class FileParserTest {
 		assertEquals(Commands.EXIT, program.getLines().get(0).getCommand());
 	}
 
-	//@Test
+	@Test
 	public void testParseWithLabel() {
 		DataCharBuffer dataCharBuffer = new DataCharBuffer(
 				("# a better program!\n" + "LOOP:\n" + "MOVE N\n" + "GOTO LOOP\n").toCharArray());
