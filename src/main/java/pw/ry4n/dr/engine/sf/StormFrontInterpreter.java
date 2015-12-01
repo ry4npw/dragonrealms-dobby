@@ -19,6 +19,8 @@ import pw.ry4n.dr.proxy.StreamListener;
  * A factory method that takes a StormFront (SF) script file as input and
  * returns an object representing the program.
  * 
+ * @see <a href=https://www.play.net/playdotnet/play/stormfront_scripting.asp>StormFront Scripting Guide</a>
+ * 
  * @author Ryan Powell
  */
 public class StormFrontInterpreter implements StreamListener, Runnable {
