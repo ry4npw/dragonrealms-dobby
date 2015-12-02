@@ -6,9 +6,20 @@ Dobby is a Java-based scripting proxy for [DragonRealms](https://www.play.net/dr
 
 Dobby is a house elf (creatures that are sworn to serve their master wizards). This proxy is supposed to do a similar function, help you.
 
+## Why Java?
+
+I decided to write dobby in Java for two reasons:
+
+1. Java has pretty good cross-platform support; dobby should (one day) run on Windows, Mac OS, and Linux.
+2. My personal preference, and hey, this is for me.
+
+## How it works
+
+This section is in progress.
+
 ## How do I run it?
 
-Getting started requires you to modify your /etc/hosts file to redirect DragonRealms traffic through your proxy. These steps should get simpler as development continues. One day all you may have to do is double-click dobby.jar and start your DR client!
+Getting started requires you to modify your /etc/hosts file to redirect DragonRealms traffic through your proxy. These steps should get simpler as development continues. One day all you may have to do is double-click dobby.jar and then open your client!
 
 1. Add the following to your /etc/hosts file:
 
@@ -28,17 +39,15 @@ $ java -jar dobby-<version>.jar 4901 199.188.208.5 4901
 
 ## How do I use it?
 
-Once running, you interact with dobby by sending commands to the server. Dobby will intercept your commands that start with a semicolon (;) and 
+Once running, you interact with dobby by sending commands to the server. Dobby will intercept any command you send that starts with a semicolon (;).
 
 ### Scripting
 
-Right now dobby supports StormFront (.sf) scripts that are in you Documents/dobby/ folder.
+Right now dobby supports StormFront (.sf) scripts that are in you Documents/dobby/ folder. The goal is to finish the full support of these scripts first. Dobby is not limited to one script at a time, but currently there's no way to stop a script once it starts (short of stopping dobby itself). Commands to list/stop/pause running scripts are in the works.
 
-```
-;look.sf table
-```
+Dobby uses a CommandQueue to send all dobby-generated commands (user input is passed through to the server immediately). The command queue is a FIFO queue that automatically WAITs between commands and for roundtime. If a command fails because of type ahead or roundtime conditions, it generally will retry that command again. The goal is to make scripting simpler.
 
-Will run the [look.sf](https://github.com/ry4npw/dragonrealms-dobby/blob/master/src/test/resources/look.sf) script (assuming it's in the right place!). You'll end up seeing something like this:
+`;look.sf table` will run the [look.sf](https://github.com/ry4npw/dragonrealms-dobby/blob/master/src/test/resources/look.sf) script (assuming it's in the right place!). You'll end up seeing something like this:
 
 ```
 >;look.sf table
@@ -56,3 +65,29 @@ dobby [look.sf: look behind table]
 dobby [look.sf: END, completed in 593ms]
 There is nothing behind there.
 ```
+
+### Future
+
+I have plans to make Dobby a lot more powerful, working across sessions on the same machine. Here are some of my ideas in no particular order:
+
+* list/stop/pause currently running scripts
+
+* support other scripting languages such as Genie, YASSE, Lich, and other interpreted languages such as JavaScript or Python.
+
+* timed/scheduled commands
+```
+>;every 91 seconds PREDICT WEATHER
+```
+
+* support sending commands for other characters on the same computer (ask <character> to <command>)
+```
+>;ask weensie to TEACH PADHG FORGING
+```
+
+* add percentages to HEALTH/MANA. also add numerals to appraisals and combat messages.
+
+* auto-mapping, with support for Genie map repository
+
+* a RESTful interface to return real-time character information, this could make it easy to create a single-page HTML application to add things like health/spirit/stamina/fatigue bars to clients such as Avalon.
+
+* XML support
