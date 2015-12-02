@@ -28,8 +28,8 @@ public class FileParser {
 
 	public FileParser(String fileName) throws FileNotFoundException, IOException {
 		// expect all scripts to be in ~/Documents/dobby/
-		String directory = System.getProperty("user.home") + System.getProperty("file.seperator") + "Documents"
-				+ System.getProperty("file.seperator") + "dobby" + System.getProperty("file.seperator");
+		String directory = System.getProperty("user.home") + System.getProperty("file.separator") + "Documents"
+				+ System.getProperty("file.separator") + "dobby" + System.getProperty("file.separator");
 		String filePath = directory + fileName;
 
 		Path directoryPath = Paths.get(directory);
