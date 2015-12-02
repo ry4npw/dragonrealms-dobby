@@ -15,7 +15,7 @@ I decided to write dobby in Java for two reasons:
 
 ## How it works
 
-This section is in progress.
+Dobby is a telnet proxy that basically sits in-between your client and the DR server. This mean that dobby can modify your commands en-route to the server (aliasing) or send others on your behalf (scripting).
 
 ## How do I run it?
 
@@ -34,7 +34,7 @@ $ sudo vi /etc/hosts
 2. Run a proxy for the DR game server.
 
 ```bash
-$ java -jar dobby-<version>.jar 4901 199.188.208.5 4901
+$ java -jar dobby-{version}.jar 4901 199.188.208.5 4901
 ```
 
 ## How do I use it?
@@ -79,7 +79,7 @@ I have plans to make Dobby a lot more powerful, working across sessions on the s
 >;every 91 seconds PREDICT WEATHER
 ```
 
-* support sending commands for other characters on the same computer (ask <character> to <command>)
+* support sending commands for other characters on the same computer (ask {toon} to {command})
 ```
 >;ask weensie to TEACH PADHG FORGING
 ```
