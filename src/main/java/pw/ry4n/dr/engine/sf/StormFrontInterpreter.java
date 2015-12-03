@@ -74,18 +74,14 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 			while (!scriptFinished && currentLineNumber < program.getLines().size()) {
 				synchronized (monitorObject) {
 					while (isMatching) {
-						System.out.println("waiting for match...");
 						try {
 							if (matchTimeout > 0) {
 								monitorObject.wait(matchTimeout);
-
-								// in the event of a timeout, clear the match
-								// list and flag
-								isMatching = false;
-								matchList.clear();
 							} else {
 								monitorObject.wait();
 							}
+							isMatching = false;
+							matchList.clear();
 						} catch (InterruptedException e) {
 							// do nothing
 						}
@@ -227,7 +223,6 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 
 	void match(Line currentLine) {
 		synchronized (matchList) {
-			matchList.clear();
 			matchList.add(
 					new MatchToken(MatchToken.STRING, currentLine.getArguments()[0], currentLine.getArguments()[1]));
 		}
@@ -235,7 +230,6 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 
 	void matchre(Line currentLine) {
 		synchronized (matchList) {
-			matchList.clear();
 			matchList.add(
 					new MatchToken(MatchToken.REGEX, currentLine.getArguments()[0], currentLine.getArguments()[1]));
 		}
@@ -409,13 +403,16 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 		return scriptFinished;
 	}
 
+	public void setScriptFinished(boolean scriptFinished) {
+		this.scriptFinished = scriptFinished;
+	}
+
 	@Override
 	public void notify(String line) {
 		synchronized (monitorObject) {
 			if (isMatching) {
 				MatchToken token = match(line);
 				if (token != null) {
-					isMatching = false;
 					goTo(token.getLabel());
 					monitorObject.notify();
 				}

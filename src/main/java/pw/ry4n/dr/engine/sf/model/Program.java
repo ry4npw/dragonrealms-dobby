@@ -24,6 +24,8 @@ public class Program implements Runnable {
 											// server
 	private AbstractProxy sendToClient; // send output to client
 
+	private StormFrontInterpreter interpreter = null;
+
 	public Program() {
 		// empty constructor
 	}
@@ -115,11 +117,17 @@ public class Program implements Runnable {
 	public void run() {
 		switch (type) {
 		case "sf":
-			StormFrontInterpreter interpreter = new StormFrontInterpreter(sendToServer, sendToClient, this);
+			interpreter = new StormFrontInterpreter(sendToServer, sendToClient, this);
 			interpreter.run();
 			break;
 		default:
 			throw new RuntimeException("'" + type + "' is an unsupported script format. Valid formats are: sf");
+		}
+	}
+
+	public void stop() {
+		if (interpreter != null) {
+			interpreter.setScriptFinished(true);
 		}
 	}
 

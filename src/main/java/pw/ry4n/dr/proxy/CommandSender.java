@@ -10,6 +10,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 public class CommandSender implements Runnable, StreamListener {
 	private Queue<String> sendQueue = new ArrayBlockingQueue<String>(64);
 	private boolean waitingForResponse = false;
+	private boolean waitForRT = false;
 	private String lastCommand = null;
 	private long roundTimeOver = -1;
 
@@ -53,6 +54,7 @@ public class CommandSender implements Runnable, StreamListener {
 				// TODO reinsert lastCommand at front of queue
 
 				updateRoundtime(line);
+				waitForRT = true;
 			} else if (line.contains("type ahead")) {
 				System.out.println("OOPS! Too fast, need to resend: " + lastCommand);
 				// TODO reinsert lastCommand at front of queue
@@ -89,7 +91,14 @@ public class CommandSender implements Runnable, StreamListener {
 			return;
 		}
 
-		// TODO RT handling/blocking
+		// RT handling/blocking
+		if (waitForRT) {
+			if (inRoundtime()) {
+				return;
+			} else {
+				waitForRT = false;
+			}
+		}
 
 		synchronized (sendQueue) {
 			lastCommand = sendQueue.poll();
@@ -117,7 +126,7 @@ public class CommandSender implements Runnable, StreamListener {
 				processSendQueue();
 			}
 
-		}, 0, 50);
+		}, 0, 20);
 	}
 
 	private boolean inRoundtime() {
