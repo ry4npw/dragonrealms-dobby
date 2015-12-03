@@ -25,7 +25,7 @@ public class InterceptingProxy extends AbstractProxy {
 
 	@Override
 	protected void filter(String line) throws IOException {
-		System.out.println(line);
+		System.out.println(">" + line);
 
 		if (line.trim().startsWith(";")) {
 			// capture commands that start with a semicolon
