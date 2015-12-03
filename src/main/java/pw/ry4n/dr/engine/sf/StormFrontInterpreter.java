@@ -2,6 +2,7 @@ package pw.ry4n.dr.engine.sf;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
@@ -31,17 +32,18 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 	private AbstractProxy sendToClient; // listen to downstream responses from
 										// server and send messages to client
 
-	List<MatchToken> matchList = Collections.synchronizedList(new ArrayList<MatchToken>());
-	long matchTimeout = 200;
-	private Object monitorObject = new Object(); // thread synchronization
-	boolean isMatching = false;
-	boolean isWaiting = false;
 	private Program program;
-
 	private int counter = 0;
 	private int currentLineNumber = 0;
-
 	private boolean scriptFinished = false;
+	private Object monitorObject = new Object(); // thread synchronization
+
+	List<MatchToken> matchList = Collections.synchronizedList(new ArrayList<MatchToken>());
+	long matchTimeout = 200;
+	boolean isMatching = false;
+
+	boolean isWaiting = false;
+	MatchToken waitMatch = null;
 
 	StormFrontInterpreter(Program program) {
 		this.program = program;
@@ -70,6 +72,33 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 			long startTime = System.currentTimeMillis();
 
 			while (!scriptFinished && currentLineNumber < program.getLines().size()) {
+				synchronized (monitorObject) {
+					while (isMatching) {
+						System.out.println("waiting for match...");
+						try {
+							if (matchTimeout > 0) {
+								monitorObject.wait(matchTimeout);
+
+								// in the event of a timeout, clear the match
+								// list and flag
+								isMatching = false;
+								matchList.clear();
+							} else {
+								monitorObject.wait();
+							}
+						} catch (InterruptedException e) {
+							// do nothing
+						}
+					}
+					while (isWaiting) {
+						try {
+							monitorObject.wait();
+						} catch (InterruptedException e) {
+							// do nothing
+						}
+					}
+				}
+
 				executeLine(program.getLines().get(currentLineNumber));
 			}
 
@@ -86,29 +115,6 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 	}
 
 	private void executeLine(Line currentLine) throws IOException {
-		synchronized (monitorObject) {
-			while (isMatching) {
-				System.out.println("waiting for match...");
-				try {
-					if (matchTimeout > 0) {
-						monitorObject.wait(matchTimeout);
-						clearMatchList();
-					} else {
-						monitorObject.wait();
-					}
-				} catch (InterruptedException e) {
-					// do nothing
-				}
-			}
-			while (isWaiting) {
-				try {
-					monitorObject.wait();
-				} catch (InterruptedException e) {
-					// do nothing
-				}
-			}
-		}
-
 		currentLineNumber++;
 
 		switch (currentLine.getCommand()) {
@@ -144,7 +150,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 			nextroom();
 			break;
 		case Commands.PAUSE:
-			// TODO
+			pause(currentLine);
 			break;
 		case Commands.PUT:
 			put(currentLine);
@@ -153,31 +159,24 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 			save(currentLine);
 			break;
 		case Commands.SETVARIABLE:
-			// TODO
+			setVariable(currentLine);
 			break;
 		case Commands.SHIFT:
-			// TODO
+			shiftVariables();
 			break;
 		case Commands.WAIT:
 			doWait();
 			break;
 		case Commands.WAITFOR:
-			match(currentLine);
-			matchwait(null);
+			waitfor(currentLine);
 			break;
 		case Commands.WAITFORRE:
-			matchre(currentLine);
-			matchwait(null);
+			waitforre(currentLine);
 			break;
 		default:
 			// assume LABEL
 			break;
 		}
-	}
-
-	private void clearMatchList() {
-		matchList.clear();
-		isMatching = false;
 	}
 
 	void counter(Line currentLine) {
@@ -208,6 +207,10 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 
 	void goTo(Line currentLine) {
 		String label = combineAndReplaceArguments(currentLine.getArguments());
+		goTo(label);
+	}
+
+	void goTo(String label) {
 		currentLineNumber = program.getLabels().get(label);
 	}
 
@@ -223,15 +226,19 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 	}
 
 	void match(Line currentLine) {
-		matchList.clear();
-		matchList.add(new MatchToken(MatchToken.STRING, currentLine.getArguments()[0]));
+		synchronized (matchList) {
+			matchList.clear();
+			matchList.add(
+					new MatchToken(MatchToken.STRING, currentLine.getArguments()[0], currentLine.getArguments()[1]));
+		}
 	}
 
 	void matchre(Line currentLine) {
-		isMatching = true;
-		matchTimeout = 0;
-		matchList.clear();
-		matchList.add(new MatchToken(MatchToken.REGEX, currentLine.getArguments()[0]));
+		synchronized (matchList) {
+			matchList.clear();
+			matchList.add(
+					new MatchToken(MatchToken.REGEX, currentLine.getArguments()[0], currentLine.getArguments()[1]));
+		}
 	}
 
 	void matchwait(Line currentLine) {
@@ -240,11 +247,21 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 				: new Float(1000 * Float.valueOf(currentLine.getArguments()[0])).longValue();
 	}
 
+	void pause(Line currentLine) {
+		int duration = 1000;
+		if (currentLine != null && currentLine.getArguments() != null && currentLine.getArguments().length > 0) {
+			duration = new Float(1000 * Float.parseFloat(currentLine.getArguments()[0])).intValue();
+		}
+		try {
+			Thread.sleep(duration);
+		} catch (InterruptedException e) {
+			// do not worry about interrupts
+		}
+	}
+
 	void nextroom() {
-		isMatching = true; // wait for match
-		matchTimeout = 0; // do not timeout
-		matchList.clear();
-		matchList.add(new MatchToken(MatchToken.REGEX, "^GSo"));
+		waitMatch = new MatchToken(MatchToken.REGEX, "^GSo");
+		isWaiting = true; // wait until new room name is sent
 	}
 
 	void put(Line currentLine) throws IOException {
@@ -257,7 +274,35 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 		program.getVariables().put("s", combineAndReplaceArguments(currentLine.getArguments()));
 	}
 
+	void setVariable(Line currentLine) {
+		String key = currentLine.getArguments()[0];
+		String value = combineAndReplaceArguments(
+				Arrays.copyOfRange(currentLine.getArguments(), 1, currentLine.getArguments().length));
+		program.getVariables().put(key, value);
+	}
+
+	void shiftVariables() {
+		for (int i = 1; i < 10; i++) {
+			String value = program.getVariables().get(i);
+			if (value != null) {
+				program.getVariables().remove(i);
+				program.getVariables().put(String.valueOf(i - 1), value);
+			}
+		}
+	}
+
 	void doWait() {
+		waitMatch = null;
+		isWaiting = true;
+	}
+
+	void waitfor(Line currentLine) {
+		waitMatch = new MatchToken(MatchToken.STRING, currentLine.getArguments()[0]);
+		isWaiting = true;
+	}
+
+	void waitforre(Line currentLine) {
+		waitMatch = new MatchToken(MatchToken.REGEX, currentLine.getArguments()[0]);
 		isWaiting = true;
 	}
 
@@ -368,23 +413,35 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 	public void notify(String line) {
 		synchronized (monitorObject) {
 			if (isMatching) {
-				if (match(line)) {
+				MatchToken token = match(line);
+				if (token != null) {
+					isMatching = false;
+					goTo(token.getLabel());
 					monitorObject.notify();
-					clearMatchList();
-				} else if (isWaiting) {
-					monitorObject.notify();
+				}
+			} else if (isWaiting) {
+				if (waitMatch != null) {
+					if (waitMatch.match(line)) {
+						isWaiting = false;
+						waitMatch = null;
+						monitorObject.notify();
+					}
+				} else {
 					isWaiting = false;
+					monitorObject.notify();
 				}
 			}
 		}
 	}
 
-	private boolean match(String line) {
-		for (MatchToken token : matchList) {
-			if (token.match(line)) {
-				return true;
+	private MatchToken match(String line) {
+		synchronized (matchList) {
+			for (MatchToken token : matchList) {
+				if (token.match(line)) {
+					return token;
+				}
 			}
+			return null;
 		}
-		return false;
 	}
 }

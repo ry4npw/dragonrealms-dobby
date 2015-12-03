@@ -91,3 +91,6 @@ I have plans to make Dobby a lot more powerful, working across sessions on the s
 * a RESTful interface to return real-time character information, this could make it easy to create a single-page HTML application to add things like health/spirit/stamina/fatigue bars to clients such as Avalon. Or by combining dobby services you could create a display of all your friends, their health/spirit/stamina/fatigue, location, and etc. User interfaces could also be done in the browser for things like script writing/management, or even for mapping programs.
 
 * XML support
+
+* upstream proxy support (for playing around firewalls)
+

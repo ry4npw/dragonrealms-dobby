@@ -5,6 +5,7 @@ public class MatchToken {
 	public static final byte REGEX = 2;
 
 	private byte type;
+	private String label;
 	private String matchString;
 
 	public MatchToken() {
@@ -16,12 +17,26 @@ public class MatchToken {
 		this.matchString = matchString;
 	}
 
+	public MatchToken(byte type, String label, String matchString) {
+		this.type = type;
+		this.label = label;
+		this.matchString = matchString;
+	}
+
 	public byte getType() {
 		return type;
 	}
 
 	public void setType(byte type) {
 		this.type = type;
+	}
+
+	public String getLabel() {
+		return label;
+	}
+
+	public void setLabel(String label) {
+		this.label = label;
 	}
 
 	public String getMatchString() {
