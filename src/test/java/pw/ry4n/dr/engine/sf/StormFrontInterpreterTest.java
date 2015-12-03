@@ -124,10 +124,8 @@ public class StormFrontInterpreterTest {
 
 		interpreter.nextroom();
 
-		assertTrue(interpreter.isMatching);
-		assertEquals(0, interpreter.matchTimeout);
-		assertEquals(1, interpreter.matchList.size());
-		assertEquals(MatchToken.REGEX, interpreter.matchList.get(0).getType());
+		assertTrue(interpreter.isWaiting);
+		assertEquals(MatchToken.REGEX, interpreter.waitForMatchToken.getType());
 	}
 
 	private Answer<Object> log(final String proxyName) {

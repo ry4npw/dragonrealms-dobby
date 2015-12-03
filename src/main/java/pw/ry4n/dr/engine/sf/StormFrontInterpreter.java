@@ -43,7 +43,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 	boolean isMatching = false;
 
 	boolean isWaiting = false;
-	MatchToken waitMatch = null;
+	MatchToken waitForMatchToken = null;
 
 	StormFrontInterpreter(Program program) {
 		this.program = program;
@@ -260,7 +260,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 	}
 
 	void nextroom() {
-		waitMatch = new MatchToken(MatchToken.REGEX, "^GSo");
+		waitForMatchToken = new MatchToken(MatchToken.REGEX, "^GSo");
 		isWaiting = true; // wait until new room name is sent
 	}
 
@@ -292,17 +292,17 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 	}
 
 	void doWait() {
-		waitMatch = null;
+		waitForMatchToken = null;
 		isWaiting = true;
 	}
 
 	void waitfor(Line currentLine) {
-		waitMatch = new MatchToken(MatchToken.STRING, currentLine.getArguments()[0]);
+		waitForMatchToken = new MatchToken(MatchToken.STRING, currentLine.getArguments()[0]);
 		isWaiting = true;
 	}
 
 	void waitforre(Line currentLine) {
-		waitMatch = new MatchToken(MatchToken.REGEX, currentLine.getArguments()[0]);
+		waitForMatchToken = new MatchToken(MatchToken.REGEX, currentLine.getArguments()[0]);
 		isWaiting = true;
 	}
 
@@ -420,10 +420,10 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 					monitorObject.notify();
 				}
 			} else if (isWaiting) {
-				if (waitMatch != null) {
-					if (waitMatch.match(line)) {
+				if (waitForMatchToken != null) {
+					if (waitForMatchToken.match(line)) {
 						isWaiting = false;
-						waitMatch = null;
+						waitForMatchToken = null;
 						monitorObject.notify();
 					}
 				} else {
