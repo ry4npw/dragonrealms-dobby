@@ -2,6 +2,7 @@ package pw.ry4n.dr.proxy;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 //import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -17,6 +18,7 @@ import java.util.List;
 public abstract class AbstractProxy implements StreamMonitor, Runnable {
 	protected AbstractProxy companion = null;
 	protected Socket localSocket, remoteSocket;
+	protected InputStream from;
 	protected OutputStream to;
 	protected BufferedReader in;
 	protected final static byte[] NEWLINE = "\n".getBytes();
@@ -29,8 +31,8 @@ public abstract class AbstractProxy implements StreamMonitor, Runnable {
 		try {
 			localSocket = local;
 			remoteSocket = remote;
-			// from = localSocket.getInputStream();
-			in = new BufferedReader(new InputStreamReader(localSocket.getInputStream()));
+			from = localSocket.getInputStream();
+			in = new BufferedReader(new InputStreamReader(from));
 			to = remoteSocket.getOutputStream();
 		} catch (Exception e) {
 			System.err.println("redirector: cannot get streams");
@@ -106,7 +108,7 @@ public abstract class AbstractProxy implements StreamMonitor, Runnable {
 	protected abstract void filter(String line) throws IOException;
 
 	public void send(String line) throws IOException {
-		synchronized(to) {
+		synchronized (to) {
 			to.write(line.getBytes());
 			to.write(NEWLINE);
 		}
@@ -114,14 +116,14 @@ public abstract class AbstractProxy implements StreamMonitor, Runnable {
 
 	@Override
 	public void subscribe(StreamListener listener) {
-		synchronized(streamListeners) {
+		synchronized (streamListeners) {
 			streamListeners.add(listener);
 		}
 	}
 
 	@Override
 	public void unsubscribe(StreamListener listener) {
-		synchronized(streamListeners) {
+		synchronized (streamListeners) {
 			streamListeners.remove(listener);
 		}
 	}

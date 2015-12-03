@@ -87,8 +87,9 @@ public class LineParser {
 					&& (this.dataBuffer.data[this.dataPosition + 2] == 'v' || this.dataBuffer.data[this.dataPosition + 2] == 'V')
 					&& (this.dataBuffer.data[this.dataPosition + 3] == 'e' || this.dataBuffer.data[this.dataPosition + 3] == 'E')) {
 				// MOVE
-				line.setCommand(Commands.MOVE);
 				this.dataPosition += 4;
+				line.setCommand(Commands.MOVE);
+				parseLabelAndMatchString(line);
 			} else if ((this.dataBuffer.data[this.dataPosition + 1] == 'a' || this.dataBuffer.data[this.dataPosition + 1] == 'A')
 					&& (this.dataBuffer.data[this.dataPosition + 2] == 't' || this.dataBuffer.data[this.dataPosition + 2] == 'T')
 					&& (this.dataBuffer.data[this.dataPosition + 3] == 'c' || this.dataBuffer.data[this.dataPosition + 3] == 'C')
@@ -98,6 +99,7 @@ public class LineParser {
 					// MATCHRE
 					this.dataPosition += 7;
 					line.setCommand(Commands.MATCHRE);
+					parseLabelAndMatchString(line);
 				} else if ((this.dataBuffer.data[this.dataPosition + 5] == 'w' || this.dataBuffer.data[this.dataPosition + 5] == 'W')
 						&& (this.dataBuffer.data[this.dataPosition + 6] == 'a' || this.dataBuffer.data[this.dataPosition + 6] == 'A')
 						&& (this.dataBuffer.data[this.dataPosition + 7] == 'i' || this.dataBuffer.data[this.dataPosition + 7] == 'I')
@@ -109,10 +111,8 @@ public class LineParser {
 					// MATCH
 					this.dataPosition += 5;
 					line.setCommand(Commands.MATCH);
+					parseLabelAndMatchString(line);
 				}
-
-				// parse the label and match string
-				parseLabelAndMatchString(line);
 			}
 			break;
 		case 'n':

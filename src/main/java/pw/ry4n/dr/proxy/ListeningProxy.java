@@ -28,7 +28,6 @@ public class ListeningProxy extends AbstractProxy {
 				if ((count = from.read(buffer)) < 0)
 					break;
 				to.write(buffer, 0, count);
-				System.out.println(new String(buffer, 0, count));
 				filter(new String(buffer, 0, count));
 			}
 		} catch (Exception e) {
@@ -54,7 +53,7 @@ public class ListeningProxy extends AbstractProxy {
 		String[] lines = buffer.split("\n");
 
 		for (String line : lines) {
-			if (line.trim().startsWith("GS")) {
+			if (line.startsWith("GS")) {
 				// TODO parse the simutronics protocol
 				// https://github.com/sproctor/warlock-gtk/blob/master/docs/SIMU-PROTOCOL
 			}

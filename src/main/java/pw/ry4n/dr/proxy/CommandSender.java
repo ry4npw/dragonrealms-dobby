@@ -3,14 +3,14 @@ package pw.ry4n.dr.proxy;
 import java.io.IOException;
 import java.util.Queue;
 import java.util.Scanner;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ArrayBlockingQueue;
 
 public class CommandSender implements Runnable, StreamListener {
 	private Queue<String> sendQueue = new ArrayBlockingQueue<String>(64);
-	private Object monitorObject = new Object();
 	private boolean waitingForResponse = false;
 	private String lastCommand = null;
-	private long lastCommandSent = -1;
 	private long roundTimeOver = -1;
 
 	private AbstractProxy sendProxy;
@@ -39,49 +39,27 @@ public class CommandSender implements Runnable, StreamListener {
 		synchronized (sendQueue) {
 			sendQueue.offer(line);
 		}
-
-		synchronized (monitorObject) {
-			while (waitingForResponse || inRoundtime()) {
-				try {
-					monitorObject.wait();
-				} catch (InterruptedException e) {
-					// moving on
-				}
-			}
-		}
-
-		synchronized (sendQueue) {
-			lastCommand = sendQueue.remove();
-			getSendProxy().send(lastCommand);
-			lastCommandSent = System.currentTimeMillis();
-			waitingForResponse = true;
-		}
 	}
 
 	@Override
 	public void notify(String line) {
-		synchronized (monitorObject) {
-			if (line.startsWith("Roundtime: ")) {
-				updateRoundtime(line);
-			}
+		if (line.startsWith("Roundtime: ")) {
+			updateRoundtime(line);
+		}
 
-			if (line.startsWith("...wait") && justSentCommand()) {
+		if (justSentCommand()) {
+			if (line.startsWith("...wait")) {
 				System.out.println("In RT, resending: " + lastCommand);
-				// TODO reinsert line at front of queue
+				// TODO reinsert lastCommand at front of queue
 
 				updateRoundtime(line);
-			} else if (line.contains("type ahead") && justSentCommand()) {
+			} else if (line.contains("type ahead")) {
 				System.out.println("OOPS! Too fast, need to resend: " + lastCommand);
-				// TODO reinsert line at front of queue
-
-				if (!inRoundtime()) {
-					// pause for 0.2 seconds
-					roundTimeOver = System.currentTimeMillis() + 200;
-				}
+				// TODO reinsert lastCommand at front of queue
+	
 			}
 
 			waitingForResponse = false;
-			monitorObject.notify();
 		}
 	}
 
@@ -106,9 +84,40 @@ public class CommandSender implements Runnable, StreamListener {
 		}
 	}
 
+	private void processSendQueue() {
+		if (sendQueue.isEmpty()) {
+			return;
+		}
+
+		// TODO RT handling/blocking
+
+		synchronized (sendQueue) {
+			lastCommand = sendQueue.poll();
+			if (lastCommand != null) {
+				try {
+					getSendProxy().send(lastCommand);
+					System.out.println("[CommandSender] " + lastCommand);
+					waitingForResponse = true;
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
 	@Override
 	public void run() {
 		outputStreamMonitor.subscribe(this);
+
+		Timer t = new Timer();
+
+		t.scheduleAtFixedRate(new TimerTask() {
+			@Override
+			public void run() {
+				processSendQueue();
+			}
+
+		}, 0, 50);
 	}
 
 	private boolean inRoundtime() {
@@ -116,7 +125,7 @@ public class CommandSender implements Runnable, StreamListener {
 	}
 
 	private boolean justSentCommand() {
-		return System.currentTimeMillis() - lastCommandSent < 100;
+		return waitingForResponse;
 	}
 
 	public AbstractProxy getSendProxy() {
