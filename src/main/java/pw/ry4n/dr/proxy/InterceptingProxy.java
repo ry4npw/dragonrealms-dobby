@@ -10,7 +10,6 @@ import pw.ry4n.dr.engine.sf.model.Program;
 public class InterceptingProxy extends AbstractProxy {
 	CommandSender commandSender;
 	private List<Program> scripts = new ArrayList<Program>();
-	private List<Thread> threads = new ArrayList<Thread>();
 
 	public InterceptingProxy(Socket local, Socket remote) {
 		super(local, remote);
@@ -35,16 +34,15 @@ public class InterceptingProxy extends AbstractProxy {
 			// capture commands that start with a semicolon
 			String input = line.substring(1);
 
-			// parse command and do something with it
-			System.out.println("input: " + input);
-			if ("stop".equalsIgnoreCase(input)) {
-				for (Program script : scripts) {
-					// signal all scripts to stop executing
-					script.stop();
-				}
-				for (Thread t : threads) {
-					// interrupt any waiting threads so they can end
-					t.interrupt();
+			// handle commands
+			if (input != null && input.toLowerCase().startsWith("list")) {
+				echoScripts();
+			} else if (input != null && input.toLowerCase().startsWith("stop")) {
+				int spaceAt = input.indexOf(' ');
+				if (spaceAt >= 4) {
+					stopScript(input.substring(spaceAt + 1));
+				} else {
+					stopAllScripts();
 				}
 			} else {
 				// else script
@@ -52,7 +50,7 @@ public class InterceptingProxy extends AbstractProxy {
 				scripts.add(script);
 				Thread t = new Thread(script);
 				t.start();
-				threads.add(t);
+				script.setThread(t);
 			}
 		} else {
 			// all other input should be passed along to server
@@ -60,6 +58,50 @@ public class InterceptingProxy extends AbstractProxy {
 
 			// and to any listeners
 			notifyAllListeners(line);
+		}
+	}
+
+	private void echoScripts() throws IOException {
+		if (scripts.isEmpty()) {
+			companion.send("No running scripts.");
+			return;
+		}
+
+		StringBuilder list = new StringBuilder();
+		list.append("Running scripts:");
+
+		for (int i = 0; i < scripts.size(); i++) {
+			list.append("\n      ");
+			list.append(i).append(": ").append(scripts.get(i).getName()).append(".").append(scripts.get(i).getType());
+		}
+
+		if (companion != null) {
+			companion.send(list.toString());
+		}
+	}
+
+	private void stopAllScripts() {
+		for (Program script : scripts) {
+			stopScript(script);
+		}
+	}
+
+	private void stopScript(String argument) {
+		stopScript(Integer.parseInt(argument));
+	}
+
+	private void stopScript(int i) {
+		if (i >= 0 && i < scripts.size()) {
+			stopScript(scripts.get(i));
+		}
+	}
+
+	private void stopScript(Program script) {
+		if (script != null) {
+			// signal all scripts to stop executing
+			script.stop();
+			// interrupt any waiting threads so they can end
+			script.getThread().interrupt();
 		}
 	}
 

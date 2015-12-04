@@ -128,6 +128,14 @@ public class StormFrontInterpreterTest {
 		assertEquals(MatchToken.REGEX, interpreter.waitForMatchToken.getType());
 	}
 
+	public void testFormatArgument() {
+		Program program = new Program();
+		StormFrontInterpreter interpreter = new StormFrontInterpreter(program);
+
+		assertEquals("dust bunn", interpreter.formatArgument("dust_bunn"));
+		assertEquals("dust bunn", interpreter.formatArgument("\"dust_bunn\""));
+	}
+
 	private Answer<Object> log(final String proxyName) {
 		return new Answer<Object>() {
 			public Object answer(InvocationOnMock invocation) {

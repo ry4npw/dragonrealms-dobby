@@ -345,7 +345,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 						// look up in the program variable list
 						String value = program.getVariables().get(variable);
 						if (value != null) {
-							result.append(value);
+							result.append(formatArgument(value));
 						}
 					}
 				} else {
@@ -371,7 +371,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 				} else {
 					result.append(' ');
 				}
-				result.append(value);
+				result.append(formatArgument(value));
 			}
 		}
 
@@ -391,7 +391,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 	 * @param string
 	 * @return
 	 */
-	private String formatArgument(String string) {
+	String formatArgument(String string) {
 		if (string == null) {
 			return null;
 		}

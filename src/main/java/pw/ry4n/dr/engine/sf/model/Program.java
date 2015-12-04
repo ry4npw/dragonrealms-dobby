@@ -19,6 +19,7 @@ public class Program implements Runnable {
 	private Map<String, Integer> labels = new HashMap<String, Integer>();
 	private Map<String, String> variables = new HashMap<String, String>();
 	private int start = 0;
+	private Thread thread;
 
 	private InterceptingProxy sendToServer; // listen to and send commands to
 											// server
@@ -193,5 +194,13 @@ public class Program implements Runnable {
 
 	public void setSendToClient(AbstractProxy sendToClient) {
 		this.sendToClient = sendToClient;
+	}
+
+	public Thread getThread() {
+		return thread;
+	}
+
+	public void setThread(Thread thread) {
+		this.thread = thread;
 	}
 }
