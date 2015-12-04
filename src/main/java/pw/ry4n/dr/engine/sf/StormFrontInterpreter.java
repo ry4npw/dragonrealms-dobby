@@ -431,14 +431,13 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 		}
 	}
 
-	private MatchToken match(String line) {
-		synchronized (matchList) {
-			for (MatchToken token : matchList) {
-				if (token.match(line)) {
-					return token;
-				}
+	private synchronized MatchToken match(String line) {
+		for (MatchToken token : matchList) {
+			if (token.match(line)) {
+				isMatching = false; // set this flag as soon as possible
+				return token;
 			}
-			return null;
 		}
+		return null;
 	}
 }
