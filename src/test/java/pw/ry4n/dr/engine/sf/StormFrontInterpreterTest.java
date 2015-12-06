@@ -18,6 +18,7 @@ import pw.ry4n.dr.engine.sf.model.Commands;
 import pw.ry4n.dr.engine.sf.model.Line;
 import pw.ry4n.dr.engine.sf.model.MatchToken;
 import pw.ry4n.dr.engine.sf.model.Program;
+import pw.ry4n.dr.engine.sf.model.State;
 import pw.ry4n.dr.proxy.AbstractProxy;
 import pw.ry4n.dr.proxy.CommandSender;
 import pw.ry4n.dr.proxy.InterceptingProxy;
@@ -124,7 +125,7 @@ public class StormFrontInterpreterTest {
 
 		interpreter.nextroom();
 
-		assertTrue(interpreter.isWaiting);
+		assertTrue(interpreter.state == State.WAITING);
 		assertEquals(MatchToken.REGEX, interpreter.waitForMatchToken.getType());
 	}
 

@@ -22,8 +22,8 @@ public class ListeningProxy extends AbstractProxy {
 
 		int count;
 		try {
-			// TODO using a BufferedReader breaks things in Avalon, need
-			// straight throughput on the listener
+			// using a BufferedReader breaks things in Avalon (missing
+			// newlines?), need straight throughput on the listener
 			while (companion != null) {
 				if ((count = from.read(buffer)) < 0)
 					break;
@@ -50,11 +50,12 @@ public class ListeningProxy extends AbstractProxy {
 
 	@Override
 	protected void filter(String buffer) throws IOException {
+		System.out.println(buffer);
 		String[] lines = buffer.split("\n");
 
 		for (String line : lines) {
 			if (line.startsWith("GS")) {
-				// TODO parse the simutronics protocol
+				// TODO parse the simutronics protocol to expose data
 				// https://github.com/sproctor/warlock-gtk/blob/master/docs/SIMU-PROTOCOL
 			}
 

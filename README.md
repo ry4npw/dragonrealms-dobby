@@ -41,6 +41,23 @@ $ java -jar dobby-{version}.jar 4901 199.188.208.5 4901
 
 Once running, you interact with dobby by sending commands to the server. Dobby will intercept any command you send that starts with a semicolon (;).
 
+### Dobby commands
+
+####List
+* `list` will list all currently running scripts.
+
+####Pause
+* `pause` will pause all currently running scripts.
+* `pause #` will pause the specified script, where # is the numeric identifier from `list`.
+
+####Resume
+* `resume` will resume all currently paused scripts.
+* `resume #` will resume the specified script, where # is the numeric identifier from `list`.
+
+####Stop
+* `stop` will stop all currently running scripts.
+* `stop #` will stop the specified script, where # is the numeric identifier from `list`.
+
 ### Scripting
 
 Right now dobby supports StormFront (.sf) scripts that are in you Documents/dobby/ folder. The goal is to finish the full support of these scripts first. Dobby is not limited to one script at a time, but currently there's no way to stop a script once it starts (short of stopping dobby itself). Commands to list/stop/pause running scripts are in the works.
@@ -56,7 +73,7 @@ dobby [look.sf: look in table]
 There is nothing in there.
 >
 dobby [look.sf: look on table]
-On the long stone table you see some flight glue, a band, a band,  and a glass of potato peel vodka.
+On the long stone table you see some flight glue, a band, a band, and a glass of potato peel vodka.
 >
 dobby [look.sf: look under table]
 There is nothing under there.
@@ -82,6 +99,14 @@ I have plans to make Dobby a lot more powerful, working across sessions on the s
 * support sending commands for other characters on the same computer (ask {toon} to {command})
 ```
 >;ask weensie to TEACH PADHG FORGING
+```
+
+* repeat last X commands
+```
+>order 2
+>order 2
+>stow nugget
+>;repeat 3
 ```
 
 * add percentages to HEALTH/MANA. also add numerals to appraisals and combat messages.

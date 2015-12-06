@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import pw.ry4n.dr.engine.sf.model.Program;
+import pw.ry4n.dr.engine.sf.model.State;
 
 public class InterceptingProxy extends AbstractProxy {
 	CommandSender commandSender;
@@ -36,7 +37,21 @@ public class InterceptingProxy extends AbstractProxy {
 
 			// handle commands
 			if (input != null && input.toLowerCase().startsWith("list")) {
-				echoScripts();
+				list();
+			} else if (input != null && input.toLowerCase().startsWith("pause")) {
+				int spaceAt = input.indexOf(' ');
+				if (spaceAt >= 4) {
+					pauseScript(input.substring(spaceAt + 1));
+				} else {
+					pauseAllScripts();
+				}
+			} else if (input != null && input.toLowerCase().startsWith("resume")) {
+				int spaceAt = input.indexOf(' ');
+				if (spaceAt >= 4) {
+					resumeScript(input.substring(spaceAt + 1));
+				} else {
+					resumeAllScripts();
+				}
 			} else if (input != null && input.toLowerCase().startsWith("stop")) {
 				int spaceAt = input.indexOf(' ');
 				if (spaceAt >= 4) {
@@ -61,7 +76,9 @@ public class InterceptingProxy extends AbstractProxy {
 		}
 	}
 
-	private void echoScripts() throws IOException {
+	private void list() throws IOException {
+		cleanStoppedScriptsList();
+
 		if (scripts.isEmpty()) {
 			companion.send("No running scripts.");
 			return;
@@ -78,6 +95,60 @@ public class InterceptingProxy extends AbstractProxy {
 		if (companion != null) {
 			companion.send(list.toString());
 		}
+	}
+
+	private void cleanStoppedScriptsList() {
+		List<Program> stoppedScripts = new ArrayList<Program>();
+
+		for (Program script : scripts) {
+			if (script.getState() == State.STOPPED) {
+				stoppedScripts.add(script);
+			}
+		}
+
+		for (Program script : stoppedScripts) {
+			scripts.remove(script);
+		}
+	}
+
+	private void pauseAllScripts() {
+		for (Program script : scripts) {
+			pauseScript(script);
+		}
+	}
+
+	private void pauseScript(String argument) {
+		pauseScript(Integer.parseInt(argument));
+	}
+
+	private void pauseScript(int i) {
+		if (i >= 0 && i < scripts.size()) {
+			pauseScript(scripts.get(i));
+		}
+	}
+
+	private void pauseScript(Program script) {
+		script.pause();
+	}
+
+	private void resumeAllScripts() {
+		for (Program script : scripts) {
+			resumeScript(script);
+		}
+	}
+
+	private void resumeScript(String argument) {
+		resumeScript(Integer.parseInt(argument));
+	}
+
+	private void resumeScript(int i) {
+		if (i >= 0 && i < scripts.size()) {
+			resumeScript(scripts.get(i));
+		}
+	}
+
+	private void resumeScript(Program script) {
+		script.resume();
 	}
 
 	private void stopAllScripts() {

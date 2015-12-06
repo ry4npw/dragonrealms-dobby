@@ -58,7 +58,7 @@ public class CommandSender implements Runnable, StreamListener {
 			} else if (line.contains("type ahead")) {
 				System.out.println("OOPS! Too fast, need to resend: " + lastCommand);
 				// TODO reinsert lastCommand at front of queue
-	
+
 			}
 
 			waitingForResponse = false;

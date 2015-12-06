@@ -126,9 +126,29 @@ public class Program implements Runnable {
 		}
 	}
 
+	public State getState() {
+		if (interpreter != null) {
+			return interpreter.getState();
+		}
+
+		return State.STOPPED;
+	}
+
+	public void pause() {
+		if (interpreter != null) {
+			interpreter.pauseScript();
+		}
+	}
+
+	public void resume() {
+		if (interpreter != null) {
+			interpreter.resumeScript();
+		}
+	}
+
 	public void stop() {
 		if (interpreter != null) {
-			interpreter.setScriptFinished(true);
+			interpreter.stopScript();
 		}
 	}
 
