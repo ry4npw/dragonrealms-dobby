@@ -32,7 +32,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 										// client
 	private AbstractProxy sendToClient; // listen to downstream responses from
 										// server and send messages to client
-	
+
 	private Object monitorObject = new Object(); // thread synchronization
 
 	private Program program;
@@ -90,7 +90,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 							} else {
 								monitorObject.wait();
 							}
-							resumeScript();
+							stopWaiting();
 							matchList.clear();
 						} catch (InterruptedException e) {
 							// do nothing

@@ -85,11 +85,12 @@ public class InterceptingProxy extends AbstractProxy {
 		}
 
 		StringBuilder list = new StringBuilder();
-		list.append("Running scripts:");
+		list.append("Active scripts:");
 
 		for (int i = 0; i < scripts.size(); i++) {
 			list.append("\n      ");
-			list.append(i).append(": ").append(scripts.get(i).getName()).append(".").append(scripts.get(i).getType());
+			list.append(i).append(": ").append(scripts.get(i).getName()).append(" ")
+					.append(scripts.get(i).getState().name());
 		}
 
 		if (companion != null) {
