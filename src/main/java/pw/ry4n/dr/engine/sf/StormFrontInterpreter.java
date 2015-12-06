@@ -439,6 +439,13 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 		}
 	}
 
+	public void stopWaiting() {
+		if (state == State.PAUSED) {
+			return;
+		}
+		resumeScript();
+	}
+
 	@Override
 	public void notify(String line) {
 		if (line.startsWith("Roundtime: ")) {
@@ -457,15 +464,13 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 			case WAITING:
 				if (waitForMatchToken != null) {
 					if (waitForMatchToken.match(line)) {
-						resumeScript();
 						waitForMatchToken = null;
-						monitorObject.notify();
+						stopWaiting();
 					}
 				} else {
 					// wait for RT
 					if (!inRoundtime()) {
-						resumeScript();
-						monitorObject.notify();
+						stopWaiting();
 					}
 				}
 				break;
@@ -478,7 +483,9 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 	private synchronized MatchToken match(String line) {
 		for (MatchToken token : matchList) {
 			if (token.match(line)) {
-				resumeScript();
+				if (state != State.PAUSED) {
+					state = State.RUNNING;
+				}
 				return token;
 			}
 		}
