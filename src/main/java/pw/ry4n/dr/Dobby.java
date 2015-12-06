@@ -1,4 +1,5 @@
 package pw.ry4n.dr;
+
 import java.net.*;
 import java.io.*;
 import java.util.*;
@@ -9,8 +10,10 @@ import pw.ry4n.dr.proxy.ListeningProxy;
 
 public class Dobby implements Runnable {
 	String remoteHost;
-	int localPort, remotePort;
-	Thread listener, connection;
+	int localPort;
+	int remotePort;
+	Thread listener;
+	Thread connection;
 
 	ServerSocket server;
 
@@ -26,8 +29,8 @@ public class Dobby implements Runnable {
 	 */
 	public Dobby(int lport, String raddr, int rport) {
 		localPort = lport;
-		remoteHost = raddr;
-		remotePort = rport;
+		// remoteHost = raddr;
+		// remotePort = rport;
 
 		log("destination host is " + remoteHost + " at port " + remotePort);
 		try {
@@ -52,28 +55,31 @@ public class Dobby implements Runnable {
 	 *            The command line arguments
 	 */
 	public static void main(String args[]) {
-		String remoteHost = "";
-		int localPort = 0, remotePort = 0;
+		String remoteHost = null;
+		int localPort = 4901, remotePort = 4901;
 
 		if (args.length < 2) {
-			System.err.println("proxy: usage: proxy <port> "
-					+ "<destination host> [<destination port>]");
-			System.exit(1);
-		}
-		try {
-			localPort = Integer.parseInt(args[0]);
-		} catch (Exception e) {
-			System.err.println("proxy: parameter <port>: number expected");
-			System.exit(1);
-		}
-		remoteHost = args[1];
-		if (args.length > 2) {
 			try {
-				remotePort = Integer.parseInt(args[2]);
+				InetAddress address = InetAddress.getByName("dr.simutronics.net");
+				remoteHost = address.getHostAddress();
+			} catch (UnknownHostException e) {
+				System.err.println("proxy: unable to resovle IP for dr.simutronics.net");
+			}
+		} else {
+			try {
+				localPort = Integer.parseInt(args[0]);
 			} catch (Exception e) {
-				System.err.println("proxy: parameter <destination port>: "
-						+ "number expected");
+				System.err.println("proxy: parameter <port>: number expected");
 				System.exit(1);
+			}
+			remoteHost = args[1];
+			if (args.length > 2) {
+				try {
+					remotePort = Integer.parseInt(args[2]);
+				} catch (Exception e) {
+					System.err.println("proxy: parameter <destination port>: " + "number expected");
+					System.exit(1);
+				}
 			}
 		}
 
@@ -94,12 +100,10 @@ public class Dobby implements Runnable {
 				System.err.println("proxy: error: accept connection failed");
 				continue;
 			}
-			log("accepted connection from "
-					+ localSocket.getInetAddress().getHostName());
+			log("accepted connection from " + localSocket.getInetAddress().getHostName());
 			try {
 				Socket destinationSocket = new Socket(remoteHost, remotePort);
-				log("connecting " + localSocket.getInetAddress().getHostName()
-						+ " <-> "
+				log("connecting " + localSocket.getInetAddress().getHostName() + " <-> "
 						+ destinationSocket.getInetAddress().getHostName());
 				AbstractProxy r1 = new InterceptingProxy(localSocket, destinationSocket);
 				AbstractProxy r2 = new ListeningProxy(destinationSocket, localSocket);
@@ -108,8 +112,7 @@ public class Dobby implements Runnable {
 			} catch (Exception e) {
 				System.err.println("proxy: error: cannot create sockets");
 				try {
-					DataOutputStream os = new DataOutputStream(
-							localSocket.getOutputStream());
+					DataOutputStream os = new DataOutputStream(localSocket.getOutputStream());
 					os.writeChars("Remote host refused connection.\n");
 					localSocket.close();
 				} catch (IOException ioe) {
