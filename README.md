@@ -34,7 +34,14 @@ $ sudo vi /etc/hosts
 2. Run a proxy for the DR game server.
 
 ```bash
-$ java -jar dobby-{version}.jar 4901 199.188.208.5 4901
+$ java -jar dobby-{version}.jar
+```
+
+Optionally, you can connect to an upstream proxy (for chaining to get around firewalls):
+
+```bash
+$ java -jar dobby-{version}.jar {localPort} {remoteIP} {remotePort}
+$ java -jar dobby-{version}.jar 4901 upstream.proxy.server.com 80
 ```
 
 ## How do I use it?
@@ -87,8 +94,6 @@ There is nothing behind there.
 
 I have plans to make Dobby a lot more powerful, working across sessions on the same machine. Here are some of my ideas in no particular order:
 
-* list/stop/pause currently running scripts
-
 * support other scripting languages such as Genie, YASSE, Lich, and other interpreted languages such as JavaScript or Python.
 
 * timed/scheduled commands
@@ -101,11 +106,14 @@ I have plans to make Dobby a lot more powerful, working across sessions on the s
 >;ask weensie to TEACH PADHG FORGING
 ```
 
-* repeat last X commands
+* repeat last X commands sent by client (should work with RT and type ahead)
 ```
 >order 2
+The attendant says, "You can purchase a massive coal nugget for 212 Kronars.  Just order it again and we'll see it done!"
 >order 2
+The attendant takes some coins from you and hands you a massive coal nugget.
 >stow nugget
+You put your nugget in your brewer's knapsack.
 >;repeat 3
 ```
 
@@ -113,7 +121,9 @@ I have plans to make Dobby a lot more powerful, working across sessions on the s
 
 * auto-mapping, with support for Genie map repository
 
-* a RESTful interface to return real-time character information, this could make it easy to create a single-page HTML application to add things like health/spirit/stamina/fatigue bars to clients such as Avalon. Or by combining dobby services you could create a display of all your friends, their health/spirit/stamina/fatigue, location, and etc. User interfaces could also be done in the browser for things like script writing/management, or even for mapping programs.
+* GS* variable parsing of the [SIMU-PROTOCOL](https://github.com/sproctor/warlock-gtk/blob/master/docs/SIMU-PROTOCOL)
+
+* (post GS* parsing) a RESTful interface to return real-time character information, this could make it easy to create a single-page HTML application to add things like health/spirit/stamina/fatigue bars to clients such as Avalon. Or by combining dobby services you could create a display of all your friends, their health/spirit/stamina/fatigue, location, and etc. User interfaces could also be done in the browser for things like script writing/management, or even for mapping programs.
 
 * XML support
 

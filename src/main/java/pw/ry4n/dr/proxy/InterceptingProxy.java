@@ -32,47 +32,48 @@ public class InterceptingProxy extends AbstractProxy {
 		System.out.println(">" + line);
 
 		if (line.trim().startsWith(";")) {
-			// capture commands that start with a semicolon
-			String input = line.substring(1);
-
-			// handle commands
-			if (input != null && input.toLowerCase().startsWith("list")) {
-				list();
-			} else if (input != null && input.toLowerCase().startsWith("pause")) {
-				int spaceAt = input.indexOf(' ');
-				if (spaceAt >= 4) {
-					pauseScript(input.substring(spaceAt + 1));
-				} else {
-					pauseAllScripts();
-				}
-			} else if (input != null && input.toLowerCase().startsWith("resume")) {
-				int spaceAt = input.indexOf(' ');
-				if (spaceAt >= 4) {
-					resumeScript(input.substring(spaceAt + 1));
-				} else {
-					resumeAllScripts();
-				}
-			} else if (input != null && input.toLowerCase().startsWith("stop")) {
-				int spaceAt = input.indexOf(' ');
-				if (spaceAt >= 4) {
-					stopScript(input.substring(spaceAt + 1));
-				} else {
-					stopAllScripts();
-				}
-			} else {
-				// else script
-				Program script = new Program(input, this, companion);
-				scripts.add(script);
-				Thread t = new Thread(script);
-				t.start();
-				script.setThread(t);
-			}
+			// handle dobby commands (any line starting with a semicolon)
+			handleCommand(line.substring(1));
 		} else {
 			// all other input should be passed along to server
 			send(line);
 
 			// and to any listeners
 			notifyAllListeners(line);
+		}
+	}
+
+	private void handleCommand(String input) throws IOException {
+		if (input != null && input.toLowerCase().startsWith("list")) {
+			list();
+		} else if (input != null && input.toLowerCase().startsWith("pause")) {
+			int spaceAt = input.indexOf(' ');
+			if (spaceAt >= 4) {
+				pauseScript(input.substring(spaceAt + 1));
+			} else {
+				pauseAllScripts();
+			}
+		} else if (input != null && input.toLowerCase().startsWith("resume")) {
+			int spaceAt = input.indexOf(' ');
+			if (spaceAt >= 4) {
+				resumeScript(input.substring(spaceAt + 1));
+			} else {
+				resumeAllScripts();
+			}
+		} else if (input != null && input.toLowerCase().startsWith("stop")) {
+			int spaceAt = input.indexOf(' ');
+			if (spaceAt >= 4) {
+				stopScript(input.substring(spaceAt + 1));
+			} else {
+				stopAllScripts();
+			}
+		} else {
+			// else script
+			Program script = new Program(input, this, companion);
+			scripts.add(script);
+			Thread t = new Thread(script);
+			t.start();
+			script.setThread(t);
 		}
 	}
 

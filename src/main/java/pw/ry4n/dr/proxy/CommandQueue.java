@@ -38,7 +38,7 @@ public class CommandQueue implements Runnable, StreamListener {
 	 */
 	public void enqueue(String line) throws IOException {
 		synchronized (sendQueue) {
-			sendQueue.offer(line);
+			sendQueue.offerLast(line);
 		}
 	}
 
@@ -50,13 +50,13 @@ public class CommandQueue implements Runnable, StreamListener {
 
 		if (justSentCommand()) {
 			if (line.startsWith("...wait")) {
-				System.out.println("In RT, resending: " + lastCommand);
-				sendQueue.push(lastCommand);
+				System.out.println("OOPS! In RT, resending: " + lastCommand);
+				sendQueue.offerFirst(lastCommand);
 				updateRoundtime(line);
 				waitForRT = true;
 			} else if (line.contains("type ahead")) {
-				System.out.println("OOPS! Too fast, need to resend: " + lastCommand);
-				sendQueue.push("lastCommand");
+				System.out.println("OOPS! Exceeded type ahead limit, resending:" + lastCommand);
+				sendQueue.offerFirst("lastCommand");
 			}
 
 			waitingForResponse = false;
@@ -91,15 +91,17 @@ public class CommandQueue implements Runnable, StreamListener {
 
 		// RT handling/blocking
 		if (waitForRT) {
+			// TODO do not block commands that work while in RT: EXPERIENCE, etc
 			if (inRoundtime()) {
 				return;
 			} else {
+				// no longer in roundTime, so do not wait
 				waitForRT = false;
 			}
 		}
 
 		synchronized (sendQueue) {
-			lastCommand = sendQueue.poll();
+			lastCommand = sendQueue.pollFirst();
 			if (lastCommand != null) {
 				try {
 					getSendProxy().send(lastCommand);
@@ -118,6 +120,7 @@ public class CommandQueue implements Runnable, StreamListener {
 
 		Timer t = new Timer();
 
+		// attempt to send the next command every 10ms
 		t.scheduleAtFixedRate(new TimerTask() {
 			@Override
 			public void run() {
