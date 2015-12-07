@@ -9,7 +9,7 @@ import pw.ry4n.dr.engine.sf.model.Program;
 import pw.ry4n.dr.engine.sf.model.State;
 
 public class InterceptingProxy extends AbstractProxy {
-	CommandSender commandSender;
+	CommandQueue commandSender;
 	private List<Program> scripts = new ArrayList<Program>();
 
 	public InterceptingProxy(Socket local, Socket remote) {
@@ -19,7 +19,7 @@ public class InterceptingProxy extends AbstractProxy {
 	@Override
 	public void run() {
 		if (companion != null) {
-			commandSender = new CommandSender(this, companion);
+			commandSender = new CommandQueue(this, companion);
 			Thread messageQueue = new Thread(commandSender);
 			messageQueue.start();
 		}
@@ -177,11 +177,11 @@ public class InterceptingProxy extends AbstractProxy {
 		}
 	}
 
-	public CommandSender getCommandSender() {
+	public CommandQueue getCommandSender() {
 		return commandSender;
 	}
 
-	public void setCommandSender(CommandSender commandSender) {
+	public void setCommandSender(CommandQueue commandSender) {
 		this.commandSender = commandSender;
 	}
 }

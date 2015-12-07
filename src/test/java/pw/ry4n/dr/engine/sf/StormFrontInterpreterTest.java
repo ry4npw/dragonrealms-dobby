@@ -20,7 +20,7 @@ import pw.ry4n.dr.engine.sf.model.MatchToken;
 import pw.ry4n.dr.engine.sf.model.Program;
 import pw.ry4n.dr.engine.sf.model.State;
 import pw.ry4n.dr.proxy.AbstractProxy;
-import pw.ry4n.dr.proxy.CommandSender;
+import pw.ry4n.dr.proxy.CommandQueue;
 import pw.ry4n.dr.proxy.InterceptingProxy;
 
 public class StormFrontInterpreterTest {
@@ -42,7 +42,7 @@ public class StormFrontInterpreterTest {
 	public void testRunWithIf() throws IOException, InterruptedException {
 		// mocks
 		AbstractProxy sendToClient = mock(AbstractProxy.class);
-		CommandSender commandSender = mock(CommandSender.class);
+		CommandQueue commandSender = mock(CommandQueue.class);
 		InterceptingProxy sendToServer = mock(InterceptingProxy.class);
 
 		when(sendToServer.getCommandSender()).thenReturn(commandSender);
@@ -82,7 +82,7 @@ public class StormFrontInterpreterTest {
 	public void testRunWithCounter() throws IOException {
 		// mocks
 		AbstractProxy sendToClient = mock(AbstractProxy.class);
-		CommandSender commandSender = mock(CommandSender.class);
+		CommandQueue commandSender = mock(CommandQueue.class);
 		InterceptingProxy sendToServer = mock(InterceptingProxy.class);
 
 		when(sendToServer.getCommandSender()).thenReturn(commandSender);

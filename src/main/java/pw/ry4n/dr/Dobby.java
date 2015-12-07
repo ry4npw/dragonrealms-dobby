@@ -64,6 +64,11 @@ public class Dobby implements Runnable {
 			try {
 				InetAddress address = InetAddress.getByName("dr.simutronics.net");
 				remoteHost = address.getHostAddress();
+
+				if ("127.0.0.1".equals(remoteHost)) {
+					System.err.println("proxy: You need to remove the dr.simutronics.net entry from /etc/hosts");
+					System.exit(1);
+				}
 			} catch (UnknownHostException e) {
 				System.err.println("proxy: unable to resovle IP for dr.simutronics.net");
 			}

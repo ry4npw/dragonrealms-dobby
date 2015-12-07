@@ -44,25 +44,25 @@ Once running, you interact with dobby by sending commands to the server. Dobby w
 ### Dobby commands
 
 ####List
-* `list` will list all currently running scripts.
+* `;list` will list all currently active scripts, this includes running and paused scripts.
 
 ####Pause
-* `pause` will pause all currently running scripts.
-* `pause #` will pause the specified script, where # is the numeric identifier from `list`.
+* `;pause` will pause all currently running scripts.
+* `;pause #` will pause the specified script, where # is the numeric identifier from `;list`.
 
 ####Resume
-* `resume` will resume all currently paused scripts.
-* `resume #` will resume the specified script, where # is the numeric identifier from `list`.
+* `;resume` will resume all currently paused scripts.
+* `;resume #` will resume the specified script, where # is the numeric identifier from `;list`.
 
 ####Stop
-* `stop` will stop all currently running scripts.
-* `stop #` will stop the specified script, where # is the numeric identifier from `list`.
+* `;stop` will stop all currently running scripts.
+* `;stop #` will stop the specified script, where # is the numeric identifier from `;list`.
 
 ### Scripting
 
 Right now dobby supports StormFront (.sf) scripts that are in you Documents/dobby/ folder. The goal is to finish the full support of these scripts first. Dobby is not limited to one script at a time, but currently there's no way to stop a script once it starts (short of stopping dobby itself). Commands to list/stop/pause running scripts are in the works.
 
-Dobby uses a CommandQueue to send all dobby-generated commands (user input is passed through to the server immediately). The command queue is a FIFO queue that automatically WAITs between commands and for roundtime. If a command fails because of type ahead or roundtime conditions, it generally will retry that command again. The goal is to make scripting simpler.
+Dobby uses a command queue to send all dobby-generated commands (user input is still passed through to the server immediately). The command queue is a FIFO queue that automatically WAITs between commands and for roundtime. If a command fails because of type ahead or roundtime conditions, it generally will retry that command again. However, there is a limit of the size of the command queue. If your script sends too many commands it may eventually fail.
 
 `;look.sf table` will run the [look.sf](https://github.com/ry4npw/dragonrealms-dobby/blob/master/src/test/resources/look.sf) script (assuming it's in the right place!). You'll end up seeing something like this:
 

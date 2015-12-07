@@ -13,7 +13,7 @@ import pw.ry4n.dr.engine.sf.model.MatchToken;
 import pw.ry4n.dr.engine.sf.model.Program;
 import pw.ry4n.dr.engine.sf.model.State;
 import pw.ry4n.dr.proxy.AbstractProxy;
-import pw.ry4n.dr.proxy.CommandSender;
+import pw.ry4n.dr.proxy.CommandQueue;
 import pw.ry4n.dr.proxy.InterceptingProxy;
 import pw.ry4n.dr.proxy.StreamListener;
 
@@ -27,7 +27,7 @@ import pw.ry4n.dr.proxy.StreamListener;
  * @author Ryan Powell
  */
 public class StormFrontInterpreter implements StreamListener, Runnable {
-	private CommandSender commandSender; // send commands to server
+	private CommandQueue commandSender; // send commands to server
 	private AbstractProxy sendToServer; // listen to upstream commands from
 										// client
 	private AbstractProxy sendToClient; // listen to downstream responses from
@@ -98,7 +98,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 							// triggers, and the script gets a "...wait" on the
 							// next command. To reduce this, let's add a buffer
 							// for the script to parse Roundtime.
-							Thread.sleep(25);
+							Thread.sleep(10);
 						} catch (InterruptedException e) {
 							// do nothing
 						}

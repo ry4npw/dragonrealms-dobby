@@ -1,14 +1,14 @@
 package pw.ry4n.dr.proxy;
 
 import java.io.IOException;
-import java.util.Queue;
+import java.util.Deque;
 import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
-public class CommandSender implements Runnable, StreamListener {
-	private Queue<String> sendQueue = new ArrayBlockingQueue<String>(64);
+public class CommandQueue implements Runnable, StreamListener {
+	private Deque<String> sendQueue = new ConcurrentLinkedDeque<String>();
 	private boolean waitingForResponse = false;
 	private boolean waitForRT = false;
 	private String lastCommand = null;
@@ -17,11 +17,11 @@ public class CommandSender implements Runnable, StreamListener {
 	private AbstractProxy sendProxy;
 	private StreamMonitor outputStreamMonitor;
 
-	CommandSender() {
+	CommandQueue() {
 		// package private constructor for unit tests
 	}
 
-	public CommandSender(AbstractProxy sendProxy, StreamMonitor outputStreamMonitor) {
+	public CommandQueue(AbstractProxy sendProxy, StreamMonitor outputStreamMonitor) {
 		this.sendProxy = sendProxy;
 		this.outputStreamMonitor = outputStreamMonitor;
 	}
@@ -51,14 +51,12 @@ public class CommandSender implements Runnable, StreamListener {
 		if (justSentCommand()) {
 			if (line.startsWith("...wait")) {
 				System.out.println("In RT, resending: " + lastCommand);
-				// TODO reinsert lastCommand at front of queue
-
+				sendQueue.push(lastCommand);
 				updateRoundtime(line);
 				waitForRT = true;
 			} else if (line.contains("type ahead")) {
 				System.out.println("OOPS! Too fast, need to resend: " + lastCommand);
-				// TODO reinsert lastCommand at front of queue
-
+				sendQueue.push("lastCommand");
 			}
 
 			waitingForResponse = false;
@@ -126,7 +124,7 @@ public class CommandSender implements Runnable, StreamListener {
 				processSendQueue();
 			}
 
-		}, 0, 20);
+		}, 0, 10);
 	}
 
 	private boolean inRoundtime() {
