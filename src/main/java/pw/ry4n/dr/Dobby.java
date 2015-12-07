@@ -29,8 +29,8 @@ public class Dobby implements Runnable {
 	 */
 	public Dobby(int lport, String raddr, int rport) {
 		localPort = lport;
-		// remoteHost = raddr;
-		// remotePort = rport;
+		remoteHost = raddr;
+		remotePort = rport;
 
 		log("destination host is " + remoteHost + " at port " + remotePort);
 		try {
@@ -58,6 +58,8 @@ public class Dobby implements Runnable {
 		String remoteHost = null;
 		int localPort = 4901, remotePort = 4901;
 
+		System.out.println("proxy: arguments = " + args.length);
+
 		if (args.length < 2) {
 			try {
 				InetAddress address = InetAddress.getByName("dr.simutronics.net");
@@ -66,13 +68,15 @@ public class Dobby implements Runnable {
 				System.err.println("proxy: unable to resovle IP for dr.simutronics.net");
 			}
 		} else {
+			remoteHost = args[1];
+
 			try {
 				localPort = Integer.parseInt(args[0]);
 			} catch (Exception e) {
 				System.err.println("proxy: parameter <port>: number expected");
 				System.exit(1);
 			}
-			remoteHost = args[1];
+
 			if (args.length > 2) {
 				try {
 					remotePort = Integer.parseInt(args[2]);

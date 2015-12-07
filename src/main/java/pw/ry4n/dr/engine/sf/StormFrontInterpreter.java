@@ -92,6 +92,13 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 							}
 							stopWaiting();
 							matchList.clear();
+
+							// Often a match comes before a RT parse. This
+							// becomes annoying when the match happens, the goto
+							// triggers, and the script gets a "...wait" on the
+							// next command. To reduce this, let's add a buffer
+							// for the script to parse Roundtime.
+							Thread.sleep(25);
 						} catch (InterruptedException e) {
 							// do nothing
 						}
