@@ -4,6 +4,12 @@ import java.net.*;
 import java.io.*;
 import java.util.*;
 
+import javax.naming.Context;
+import javax.naming.NamingException;
+import javax.naming.directory.Attributes;
+import javax.naming.directory.DirContext;
+import javax.naming.directory.InitialDirContext;
+
 import pw.ry4n.dr.proxy.AbstractProxy;
 import pw.ry4n.dr.proxy.InterceptingProxy;
 import pw.ry4n.dr.proxy.ListeningProxy;
@@ -62,15 +68,20 @@ public class Dobby implements Runnable {
 
 		if (args.length < 2) {
 			try {
-				InetAddress address = InetAddress.getByName("dr.simutronics.net");
-				remoteHost = address.getHostAddress();
+				Properties env = new Properties();
+				env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.dns.DnsContextFactory");
+				DirContext ictx = new InitialDirContext(env);
 
-				if ("127.0.0.1".equals(remoteHost)) {
-					System.err.println("proxy: You need to remove the dr.simutronics.net entry from /etc/hosts");
-					System.exit(1);
+				String domain = "dr.simutronics.net";
+
+				while (remoteHost == null && domain != null) {
+					Attributes attributes = ictx.getAttributes(domain, new String[] { "A", "CNAME" });
+					remoteHost = getValueFromAttributes(attributes, "A");
+					domain = getValueFromAttributes(attributes, "CNAME");
 				}
-			} catch (UnknownHostException e) {
-				System.err.println("proxy: unable to resovle IP for dr.simutronics.net");
+			} catch (NamingException e) {
+				System.err.println("proxy: unable to resolve IP for dr.simutronics.net");
+				System.exit(1);
 			}
 		} else {
 			remoteHost = args[1];
@@ -93,6 +104,10 @@ public class Dobby implements Runnable {
 		}
 
 		new Dobby(localPort, remoteHost, (remotePort == 0 ? 23 : remotePort));
+	}
+
+	private static String getValueFromAttributes(Attributes attributes, String id) throws NamingException {
+		return attributes.get(id) == null ? null : (String) attributes.get(id).get(0);
 	}
 
 	/**
