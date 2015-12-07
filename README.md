@@ -4,7 +4,7 @@ Dobby is a Java-based scripting proxy for [DragonRealms](https://www.play.net/dr
 
 ## Why the name?
 
-Dobby is a house elf (creatures that are sworn to serve their master wizards). This proxy is supposed to do a similar function, help you.
+Dobby is a house elf (creatures that are sworn to serve their master wizards). This proxy is supposed to do a similar function, help you while playing DR.
 
 ## Why Java?
 
@@ -15,34 +15,49 @@ I decided to write dobby in Java for two reasons:
 
 ## How it works
 
-Dobby is a telnet proxy that basically sits in-between your client and the DR server. This mean that dobby can modify your commands en-route to the server (aliasing) or send others on your behalf (scripting).
+Dobby is a telnet proxy that sits in-between your client and the DR server. This mean that dobby can intercept and modify your commands en-route to the server (aliasing) or send commands on your behalf (scripting).
+
+<pre>
+client <-> dobby <-> dr.simutronics.net
+</pre>
+
+It does not change your client experience (highlights, windows, etc) directly, but does add features to your client. You interact with dobby by typing special commands that start with a semicolon (;).
 
 ## How do I run it?
 
-Getting started requires you to modify your /etc/hosts file to redirect DragonRealms traffic through your proxy. These steps should get simpler as development continues. One day all you may have to do is double-click dobby.jar and then open your client!
+### Windows
 
-1. Add the following to your /etc/hosts file:
+Dobby is currently untested on Windows, and may require some tweaks to run.
 
+### Linux / Mac OS X
+
+#### Startup
+
+1. Download dobby-{version}.jar and place it in your ~/Documents/dobby directory.
+2. Open Terminal.app, and run the following commands. ''Note: You may need to enter your password after typing the `sudo` command.''
 ```bash
-$ sudo vi /etc/hosts
+$ cd ~/Documents/dobby
+$ sudo java -jar dobby-{version}.jar
 ```
 
-```
-127.0.0.1   dr.simutronics.net
-```
+##### Advanced Startup
 
-2. Run a proxy for the DR game server.
-
-```bash
-$ java -jar dobby-{version}.jar
-```
-
-Optionally, you can connect to an upstream proxy (for chaining to get around firewalls):
+You can connect to an upstream proxy. This is useful for getting around firewalls:
 
 ```bash
 $ java -jar dobby-{version}.jar {localPort} {remoteIP} {remotePort}
 $ java -jar dobby-{version}.jar 4901 upstream.proxy.server.com 80
 ```
+
+You can also have dobby connect through a SOCKS 5 proxy:
+
+```bash
+$ java -Dhttp.proxyHost=socks.example.com -Dhttp.proxyPort=1080 -jar dobby-{version}.jar
+```
+
+#### Shutdown
+
+To shutdown dobby, you can close your Terminal window or click on the Terminal window and press control + c on your keyboard.
 
 ## How do I use it?
 
