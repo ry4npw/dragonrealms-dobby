@@ -2,6 +2,8 @@
 
 Dobby is a Java-based scripting proxy for [DragonRealms](https://www.play.net/dr/) (aka DR). The idea is that it works with, rather than replacing your client. You probably heard of the [Lich Project](https://lichproject.org), this does something like that.
 
+To date, dobby has been tested on Mac with the Avalon client.
+
 ## Why the name?
 
 Dobby is a house elf (creatures that are sworn to serve their master wizards). This proxy is supposed to do a similar function, help you while playing DR.
@@ -11,7 +13,7 @@ Dobby is a house elf (creatures that are sworn to serve their master wizards). T
 I decided to write dobby in Java for two reasons:
 
 1. Java has pretty good cross-platform support; dobby should (one day) run on Windows, Mac OS, and Linux.
-2. My personal preference, and hey, this is for me.
+2. My personal preference, and hey, this is really for me.
 
 ## How it works
 
@@ -21,23 +23,33 @@ Dobby is a telnet proxy that sits in-between your client and the DR server. This
 client <-> dobby <-> dr.simutronics.net
 </pre>
 
-It does not change your client experience (highlights, windows, etc) directly, but does add features to your client. You interact with dobby by typing special commands that start with a semicolon (;).
+Dobby does not change your client experience (highlights, windows, etc) directly, but will add features to your client. You interact with dobby by typing special commands that start with a semicolon (;).
 
 ## How do I run it?
 
 ### Windows
 
-Dobby is currently untested on Windows, and may require some tweaks to run.
+Dobby is currently untested on Windows, and may require some tweaks to run. I also have not tried it with XML streams that the StormFront and Genie clients use, but maybe one day...
 
 ### Linux / Mac OS X
+
+Dobby works great with Avalon on Mac.
 
 #### Startup
 
 1. Download dobby-{version}.jar and place it in your ~/Documents/dobby directory.
-2. Open Terminal.app, and run the following commands. ''Note: You may need to enter your password after typing the `sudo` command.''
+2. Redirect your DR traffic through dobby by editing /etc/hosts:
+```bash
+$ sudo vi /etc/hosts
+```
+and add this line:
+```
+127.0.0.1 dr.simutronics.net
+```
+3. Open Terminal.app, and run the following commands. ''Note: You may need to enter your password after typing the `sudo` command.''
 ```bash
 $ cd ~/Documents/dobby
-$ sudo java -jar dobby-{version}.jar
+$ java -jar dobby-{version}.jar
 ```
 
 ##### Advanced Startup
@@ -80,7 +92,7 @@ Once running, you interact with dobby by sending commands to the server. Dobby w
 
 ### Scripting
 
-Right now dobby supports StormFront (.sf) scripts that are in your Documents/dobby/ folder. The goal is to finish the full support of these scripts first. Dobby is not limited to one script at a time, but executing too many scripts could cause unexpected behavior with MATCHWAIT and RT issues, this is the scripter's issue to deal with.
+Dobby supports StormFront (.sf) scripts that are in your Documents/dobby/ folder. The goal is to finish the full support of StormFront scripts first, then I will create a Genie interpreter that will work with a flat file for global variables. Dobby is not limited to running just one or two script at a time, but executing too many scripts could cause unexpected behavior with RT issues and competion for sending commands, this is the scripter/user's issue to deal with.
 
 Dobby uses a command queue to send all dobby-generated commands (user input is still passed through to the server immediately). The command queue is a FIFO queue that automatically WAITs between commands and for roundtime. If a command fails because of type ahead or roundtime conditions, it generally will retry that command again. If your script is dependent on a command to be executed within a certain amount of time and the CommandQueue is waiting on a long RT from some other action, your script may fail.
 
@@ -127,16 +139,16 @@ You put your nugget in your brewer's knapsack.
 >;repeat 3
 ```
 
-* support other scripting languages such as Genie, YASSE, Lich, and other interpreted languages such as JavaScript or Python.
+* support other scripting languages such as running Genie scripts, or maybe other interpreted languages such as JavaScript and Python.
 
 * add percentages to HEALTH/MANA. also add numerals to appraisals and combat messages.
-
-* auto-mapping, support for Genie map repository, and an HTML map interface for movement.
 
 * GS* variable parsing of the [SIMU-PROTOCOL](https://github.com/sproctor/warlock-gtk/blob/master/docs/SIMU-PROTOCOL)
 
 * XML parsing, including exposing those elements as variables to scripts
 
 * (post parsing) a RESTful interface to return real-time character information, this could make it easy to create a single-page HTML application to add things like health/spirit/stamina/fatigue bars to clients such as Avalon. Or by combining dobby services you could create a display of all your friends, their health/spirit/stamina/fatigue, location, and etc. User interfaces could also be done in the browser for things like script writing/management, or even for mapping programs.
+
+* auto-mapping, support for Genie map repository, and an HTML map interface for movement.
 
 * upstream proxy support (for playing around firewalls)
