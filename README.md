@@ -43,16 +43,14 @@ $ sudo java -jar dobby-{version}.jar
 ##### Advanced Startup
 
 You can connect to an upstream proxy. This is useful for getting around firewalls:
-
 ```bash
 $ java -jar dobby-{version}.jar {localPort} {remoteIP} {remotePort}
 $ java -jar dobby-{version}.jar 4901 upstream.proxy.server.com 80
 ```
 
 You can also have dobby connect through a SOCKS 5 proxy:
-
 ```bash
-$ java -Dhttp.proxyHost=socks.example.com -Dhttp.proxyPort=1080 -jar dobby-{version}.jar
+$ java -DsocksProxyHost=socks.example.com -DsocksProxyPort=1080 -jar dobby-{version}.jar
 ```
 
 #### Shutdown
@@ -82,12 +80,11 @@ Once running, you interact with dobby by sending commands to the server. Dobby w
 
 ### Scripting
 
-Right now dobby supports StormFront (.sf) scripts that are in you Documents/dobby/ folder. The goal is to finish the full support of these scripts first. Dobby is not limited to one script at a time, but currently there's no way to stop a script once it starts (short of stopping dobby itself). Commands to list/stop/pause running scripts are in the works.
+Right now dobby supports StormFront (.sf) scripts that are in your Documents/dobby/ folder. The goal is to finish the full support of these scripts first. Dobby is not limited to one script at a time, but executing too many scripts could cause unexpected behavior with MATCHWAIT and RT issues, this is the scripter's issue to deal with.
 
-Dobby uses a command queue to send all dobby-generated commands (user input is still passed through to the server immediately). The command queue is a FIFO queue that automatically WAITs between commands and for roundtime. If a command fails because of type ahead or roundtime conditions, it generally will retry that command again. However, there is a limit of the size of the command queue. If your script sends too many commands it may eventually fail.
+Dobby uses a command queue to send all dobby-generated commands (user input is still passed through to the server immediately). The command queue is a FIFO queue that automatically WAITs between commands and for roundtime. If a command fails because of type ahead or roundtime conditions, it generally will retry that command again. If your script is dependent on a command to be executed within a certain amount of time and the CommandQueue is waiting on a long RT from some other action, your script may fail.
 
 `;look.sf table` will run the [look.sf](https://github.com/ry4npw/dragonrealms-dobby/blob/master/src/test/resources/look.sf) script (assuming it's in the right place!). You'll end up seeing something like this:
-
 ```
 >;look.sf table
 dobby [look.sf: START]
@@ -108,8 +105,6 @@ There is nothing behind there.
 ### Future
 
 I have plans to make Dobby a lot more powerful, working across sessions on the same machine. Here are some of my ideas in no particular order:
-
-* support other scripting languages such as Genie, YASSE, Lich, and other interpreted languages such as JavaScript or Python.
 
 * timed/scheduled commands
 ```
@@ -132,15 +127,16 @@ You put your nugget in your brewer's knapsack.
 >;repeat 3
 ```
 
+* support other scripting languages such as Genie, YASSE, Lich, and other interpreted languages such as JavaScript or Python.
+
 * add percentages to HEALTH/MANA. also add numerals to appraisals and combat messages.
 
-* auto-mapping, with support for Genie map repository
+* auto-mapping, support for Genie map repository, and an HTML map interface for movement.
 
 * GS* variable parsing of the [SIMU-PROTOCOL](https://github.com/sproctor/warlock-gtk/blob/master/docs/SIMU-PROTOCOL)
 
-* (post GS* parsing) a RESTful interface to return real-time character information, this could make it easy to create a single-page HTML application to add things like health/spirit/stamina/fatigue bars to clients such as Avalon. Or by combining dobby services you could create a display of all your friends, their health/spirit/stamina/fatigue, location, and etc. User interfaces could also be done in the browser for things like script writing/management, or even for mapping programs.
+* XML parsing, including exposing those elements as variables to scripts
 
-* XML support
+* (post parsing) a RESTful interface to return real-time character information, this could make it easy to create a single-page HTML application to add things like health/spirit/stamina/fatigue bars to clients such as Avalon. Or by combining dobby services you could create a display of all your friends, their health/spirit/stamina/fatigue, location, and etc. User interfaces could also be done in the browser for things like script writing/management, or even for mapping programs.
 
 * upstream proxy support (for playing around firewalls)
-

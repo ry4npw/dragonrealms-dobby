@@ -127,7 +127,7 @@ public class CommandQueue implements Runnable, StreamListener {
 				processSendQueue();
 			}
 
-		}, 0, 10);
+		}, 0, 20);
 	}
 
 	private boolean inRoundtime() {

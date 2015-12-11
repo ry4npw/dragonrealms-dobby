@@ -78,6 +78,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 					while (state == State.PAUSED || state == State.WAITING) {
 						try {
 							monitorObject.wait();
+							waitForRoundtime();
 						} catch (InterruptedException e) {
 							// do nothing
 						}
@@ -92,14 +93,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 							}
 							stopWaiting();
 							matchList.clear();
-
-							// Often a match comes before a RT parse. This
-							// becomes annoying when the match happens, the goto
-							// triggers, and the script gets a "...wait" on the
-							// next command. To reduce this, let's add a delay
-							// before continuing to allow the interpreter to
-							// see and parse the Roundtime.
-							Thread.sleep(10);
+							waitForRoundtime();
 						} catch (InterruptedException e) {
 							// do nothing
 						}
@@ -262,17 +256,24 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 	}
 
 	void pause(Line currentLine) {
-		int duration = 1000;
-		if (currentLine != null && currentLine.getArguments() != null && currentLine.getArguments().length > 0) {
-			duration = new Float(1000 * Float.parseFloat(currentLine.getArguments()[0])).intValue();
-		}
 		try {
+			int duration = 1000;
+
+			if (currentLine != null && currentLine.getArguments() != null && currentLine.getArguments().length > 0) {
+				duration = new Float(1000 * Float.parseFloat(currentLine.getArguments()[0])).intValue();
+			}
+
 			long roundTimeLeft = roundTimeOver - System.currentTimeMillis();
+
 			if (duration > roundTimeLeft) {
 				Thread.sleep(duration);
 			} else if (roundTimeLeft > 0) {
 				Thread.sleep(roundTimeLeft);
 			}
+
+			// sometimes pause is triggered before RT is parsed always check for
+			// more RT before continuing.
+			waitForRoundtime();
 		} catch (InterruptedException e) {
 			// do not worry about interrupts
 		}
@@ -454,6 +455,13 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 		resumeScript();
 	}
 
+	void waitForRoundtime() throws InterruptedException {
+		long roundTimeLeft = roundTimeOver - System.currentTimeMillis();
+		if (roundTimeLeft > 0) {
+			Thread.sleep(roundTimeLeft);
+		}
+	}
+
 	@Override
 	public void notify(String line) {
 		if (line.startsWith("Roundtime: ")) {
@@ -476,10 +484,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 						stopWaiting();
 					}
 				} else {
-					// wait for RT
-					if (!inRoundtime()) {
-						stopWaiting();
-					}
+					stopWaiting();
 				}
 				break;
 			default:
@@ -498,10 +503,6 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 			}
 		}
 		return null;
-	}
-
-	private boolean inRoundtime() {
-		return System.currentTimeMillis() < roundTimeOver;
 	}
 
 	void updateRoundtime(String line) {

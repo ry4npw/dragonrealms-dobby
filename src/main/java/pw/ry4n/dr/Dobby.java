@@ -64,8 +64,6 @@ public class Dobby implements Runnable {
 		String remoteHost = null;
 		int localPort = 4901, remotePort = 4901;
 
-		System.out.println("proxy: arguments = " + args.length);
-
 		if (args.length < 2) {
 			try {
 				Properties env = new Properties();
