@@ -39,14 +39,14 @@ Dobby works great with Avalon on Mac.
 
 1. Download dobby-{version}.jar and place it in your ~/Documents/dobby directory.
 2. Redirect your DR traffic through dobby via `sudo vi /etc/hosts` and add the entry:
-  ```bash
-  127.0.0.1 dr.simutronics.net
-  ```
+```bash
+127.0.0.1 dr.simutronics.net
+```
 3. Open Terminal.app, and run the following commands. _Note: You may need to enter your password after typing the `sudo` command._
-  ```bash
-  $ cd ~/Documents/dobby
-  $ java -jar dobby-{version}.jar
-  ```
+```bash
+$ cd ~/Documents/dobby
+$ java -jar dobby-{version}.jar
+```
 
 ##### Advanced Startup
 
