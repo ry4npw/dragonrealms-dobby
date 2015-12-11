@@ -114,6 +114,15 @@ public class Dobby implements Runnable {
 	 * destination-host and one for destination-host - local-host.
 	 */
 	public void run() {
+		// TODO add logic to add /etc/hosts entry
+
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			public void run() {
+				// TODO add logic to revert /etc/hosts entry
+				System.out.println("Exiting dobby.");
+			}
+		});
+
 		while (true) {
 			Socket localSocket = null;
 			try {

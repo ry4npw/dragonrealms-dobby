@@ -91,11 +91,12 @@ Once running, you interact with dobby by sending commands to the server. Dobby w
 
 ### Scripting
 
-Dobby supports StormFront (.sf) scripts that are in your Documents/dobby/ folder. The goal is to finish the full support of StormFront scripts first, then I will create a Genie interpreter that will work with a flat file for global variables. Dobby is not limited to running just one or two script at a time, but executing too many scripts could cause unexpected behavior with RT issues and competion for sending commands, this is the scripter/user's issue to deal with.
+Dobby will support StormFront (identified by the .sf extension) scripts that are in your Documents/dobby/ folder. Dobby uses the extension to determine which type of script you wish to run, in the future it is planned to support additional formats. The goal is to work out some bugs with StormFront scripts first, then develop a Genie interpreter that will include a flat file for global variables. Dobby is not limited to running just one or two script at a time, but executing too many scripts could cause unexpected behavior with RT issues and competion for sending commands, this is the scripter/user's issue to deal with.
 
 Dobby uses a command queue to send all dobby-generated commands (user input is still passed through to the server immediately). The command queue is a FIFO queue that automatically WAITs between commands and for roundtime. If a command fails because of type ahead or roundtime conditions, it generally will retry that command again. If your script is dependent on a command to be executed within a certain amount of time and the CommandQueue is waiting on a long RT from some other action, your script may fail.
 
-`;look.sf table` will run the [look.sf](https://github.com/ry4npw/dragonrealms-dobby/blob/master/src/test/resources/look.sf) script (assuming it's in the right place!). You'll end up seeing something like this:
+`;look.sf table` will run the [look.sf](https://github.com/ry4npw/dragonrealms-dobby/blob/master/src/test/resources/look.sf) script (assuming it's in the right place!) with table as the %1 variable. In your client, you will end up seeing something like this:
+
 ```
 >;look.sf table
 dobby [look.sf: START]
@@ -117,26 +118,29 @@ There is nothing behind there.
 
 I have plans to make Dobby a lot more powerful, working across sessions on the same machine. Here are some of my ideas in no particular order:
 
-* timed/scheduled commands
-```
->;every 91 seconds PREDICT WEATHER
-```
+* timed/scheduled commands (every {time} {unit} {command})
+
+    ```
+    >;every 91 seconds PREDICT WEATHER
+    ```
 
 * support sending commands for other characters on the same computer (ask {toon} to {command})
-```
->;ask weensie to TEACH PADHG FORGING
-```
+
+    ```
+    >;ask weensie to TEACH PADHG FORGING
+    ```
 
 * repeat last X commands sent by client (should work with RT and type ahead)
-```
->order 2
-The attendant says, "You can purchase a massive coal nugget for 212 Kronars.  Just order it again and we'll see it done!"
->order 2
-The attendant takes some coins from you and hands you a massive coal nugget.
->stow nugget
-You put your nugget in your brewer's knapsack.
->;repeat 3
-```
+
+    ```
+    >order 2
+    The attendant says, "You can purchase a massive coal nugget for 212 Kronars.  Just order it again and we'll see it done!"
+    >order 2
+    The attendant takes some coins from you and hands you a massive coal nugget.
+    >stow nugget
+    You put your nugget in your brewer's knapsack.
+    >;repeat 3
+    ```
 
 * support other scripting languages such as running Genie scripts, or maybe other interpreted languages such as JavaScript and Python.
 
