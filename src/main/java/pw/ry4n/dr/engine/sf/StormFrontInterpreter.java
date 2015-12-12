@@ -482,7 +482,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 
 	@Override
 	public void notify(String line) {
-		if (line.startsWith("Roundtime: ")) {
+		if (line.startsWith("Roundtime: ") || line.startsWith("[Roundtime ")) {
 			// TODO roundtime could/should be tracked for all scripts globally
 			updateRoundtime(line);
 		}
