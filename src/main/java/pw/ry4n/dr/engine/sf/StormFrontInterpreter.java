@@ -69,13 +69,13 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 		state = State.RUNNING;
 
 		try {
-			sendToClient.send(program.getName() + ": START");
+			sendMessageToClient("START");
 
 			long startTime = System.currentTimeMillis();
 
 			while (state != State.STOPPED && currentLineNumber < program.getLines().size()) {
 				synchronized (monitorObject) {
-					while (state == State.PAUSED || state == State.WAITING) {
+					while (State.PAUSED.equals(state) || State.WAITING.equals(state)) {
 						try {
 							monitorObject.wait();
 							waitForRoundtime();
@@ -106,7 +106,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 			exit();
 			long endTime = System.currentTimeMillis();
 
-			sendToClient.send(program.getName() + ": END, completed in " + (endTime - startTime) + "ms");
+			sendMessageToClient("END, completed in " + (endTime - startTime) + "ms");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -115,7 +115,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 		sendToClient.unsubscribe(this);
 	}
 
-	private void executeLine(Line currentLine) throws IOException {
+	void executeLine(Line currentLine) throws IOException {
 		currentLineNumber++;
 
 		switch (currentLine.getCommand()) {
@@ -203,7 +203,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 	}
 
 	void echo(Line currentLine) throws IOException {
-		sendToClient.send(program.getName() + ": ECHO " + combineAndReplaceArguments(currentLine.getArguments()));
+		sendMessageToClient("ECHO " + combineAndReplaceArguments(currentLine.getArguments()));
 	}
 
 	void goTo(Line currentLine) {
@@ -217,7 +217,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 		} else {
 			try {
 				state = State.STOPPED;
-				sendToClient.send(program.getName() + ": ERROR! Label" + label + " does not exist.");
+				sendMessageToClient("ERROR! Label" + label + " does not exist.");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -287,7 +287,11 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 	void put(Line currentLine) throws IOException {
 		String sendLine = combineAndReplaceArguments(currentLine.getArguments());
 		commandSender.enqueue(sendLine);
-		sendToClient.send(program.getName() + ": " + sendLine);
+		sendMessageToClient(sendLine);
+	}
+
+	void sendMessageToClient(String message) throws IOException {
+		sendToClient.send(program.getName() + ": " + message);
 	}
 
 	void save(Line currentLine) {
@@ -326,7 +330,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 		state = State.WAITING;
 	}
 
-	private String combineAndReplaceArguments(String[] arguments) {
+	String combineAndReplaceArguments(String[] arguments) {
 		StringBuilder result = new StringBuilder();
 
 		// loop through arguments
@@ -385,7 +389,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 		}
 	}
 
-	private String getVariable0() {
+	String getVariable0() {
 		StringBuffer result = new StringBuffer();
 		boolean first = true;
 
@@ -439,20 +443,34 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 		synchronized (monitorObject) {
 			state = State.PAUSED;
 		}
+		try {
+			sendMessageToClient("PAUSED");
+		} catch (IOException e) {
+			// ignore problems sending message to client
+		}
 	}
 
 	public void resumeScript() {
+		try {
+			sendMessageToClient("RUNNING");
+			resume();
+		} catch (IOException e) {
+			// ignore problems sending message to client
+		}
+	}
+
+	void resume() {
 		synchronized (monitorObject) {
 			state = State.RUNNING;
 			monitorObject.notify();
 		}
 	}
 
-	public void stopWaiting() {
+	void stopWaiting() {
 		if (state == State.PAUSED) {
 			return;
 		}
-		resumeScript();
+		resume();
 	}
 
 	void waitForRoundtime() throws InterruptedException {
@@ -465,7 +483,12 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 	@Override
 	public void notify(String line) {
 		if (line.startsWith("Roundtime: ")) {
+			// TODO roundtime could/should be tracked for all scripts globally
 			updateRoundtime(line);
+		}
+
+		if (State.PAUSED.equals(state)) {
+			return;
 		}
 
 		synchronized (monitorObject) {
@@ -493,12 +516,14 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 		}
 	}
 
-	private synchronized MatchToken match(String line) {
+	synchronized MatchToken match(String line) {
+		if (State.PAUSED.equals(state)) {
+			return null;
+		}
+
 		for (MatchToken token : matchList) {
 			if (token.match(line)) {
-				if (state != State.PAUSED) {
-					state = State.RUNNING;
-				}
+				state = State.RUNNING;
 				return token;
 			}
 		}

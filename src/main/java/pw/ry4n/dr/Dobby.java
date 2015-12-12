@@ -119,7 +119,7 @@ public class Dobby implements Runnable {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			public void run() {
 				// TODO add logic to revert /etc/hosts entry
-				System.out.println("Exiting dobby.");
+				log("exiting");
 			}
 		});
 
@@ -131,7 +131,9 @@ public class Dobby implements Runnable {
 				System.err.println("proxy: error: accept connection failed");
 				continue;
 			}
+
 			log("accepted connection from " + localSocket.getInetAddress().getHostName());
+
 			try {
 				Socket destinationSocket = new Socket(remoteHost, remotePort);
 				log("connecting " + localSocket.getInetAddress().getHostName() + " <-> "
@@ -155,6 +157,6 @@ public class Dobby implements Runnable {
 	}
 
 	private void log(String msg) {
-		System.out.println("proxy: [" + new Date() + "] " + msg);
+		System.out.println("[" + new Date() + "] proxy: " + msg);
 	}
 }

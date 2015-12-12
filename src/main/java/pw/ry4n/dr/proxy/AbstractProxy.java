@@ -71,7 +71,6 @@ public abstract class AbstractProxy implements StreamMonitor, Runnable {
 			}
 		} catch (Exception e) {
 			System.err.println("redirector: connection lost");
-			e.printStackTrace();
 		}
 		try {
 			in.close();
