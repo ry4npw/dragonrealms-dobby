@@ -73,7 +73,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 
 			long startTime = System.currentTimeMillis();
 
-			while (state != State.STOPPED && currentLineNumber < program.getLines().size()) {
+			while (!State.STOPPED.equals(state) && currentLineNumber < program.getLines().size()) {
 				synchronized (monitorObject) {
 					while (State.PAUSED.equals(state) || State.WAITING.equals(state)) {
 						try {
@@ -280,6 +280,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 	}
 
 	void nextroom() {
+		// wait for room change
 		waitForMatchToken = new MatchToken(MatchToken.REGEX, "^GSo");
 		state = State.WAITING;
 	}
@@ -441,8 +442,11 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 
 	public void pauseScript() {
 		synchronized (monitorObject) {
-			state = State.PAUSED;
+			if (!State.STOPPED.equals(state)) {
+				state = State.PAUSED;
+			}
 		}
+
 		try {
 			sendMessageToClient("PAUSED");
 		} catch (IOException e) {
@@ -451,23 +455,27 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 	}
 
 	public void resumeScript() {
-		try {
-			sendMessageToClient("RUNNING");
-			resume();
-		} catch (IOException e) {
-			// ignore problems sending message to client
-		}
+		resume();
 	}
 
 	void resume() {
+		if (State.STOPPED.equals(state)) {
+			return;
+		}
+
 		synchronized (monitorObject) {
-			state = State.RUNNING;
-			monitorObject.notify();
+			try {
+				state = State.RUNNING;
+				sendMessageToClient("RUNNING");
+				monitorObject.notify();
+			} catch (IOException e) {
+				// ignore problems sending message to client
+			}
 		}
 	}
 
 	void stopWaiting() {
-		if (state == State.PAUSED) {
+		if (State.PAUSED.equals(state) || State.STOPPED.equals(state)) {
 			return;
 		}
 		resume();
@@ -487,7 +495,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 			updateRoundtime(line);
 		}
 
-		if (State.PAUSED.equals(state)) {
+		if (State.PAUSED.equals(state) || State.STOPPED.equals(state)) {
 			return;
 		}
 
@@ -517,7 +525,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 	}
 
 	synchronized MatchToken match(String line) {
-		if (State.PAUSED.equals(state)) {
+		if (State.PAUSED.equals(state) || State.STOPPED.equals(state)) {
 			return null;
 		}
 

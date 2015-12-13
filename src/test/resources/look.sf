@@ -2,9 +2,9 @@ if_1 goto look
 exit
 
 look:
-put look in %1
-put look on %1
-put look under %1
-put look behind %1
-exit
+	put look in %1
+	put look on %1
+	put look under %1
+	put look behind %1
+	exit
 
