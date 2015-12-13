@@ -75,29 +75,27 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 			long startTime = System.currentTimeMillis();
 
 			while (!State.STOPPED.equals(state) && currentLineNumber < program.getLines().size()) {
-				synchronized (monitorObject) {
-					while (State.PAUSED.equals(state) || State.WAITING.equals(state)) {
-						try {
-							monitorObject.wait();
-							waitForRoundtime();
-						} catch (InterruptedException e) {
-							// do nothing
-						}
+				while (State.PAUSED.equals(state) || State.WAITING.equals(state)) {
+					try {
+						monitorObject.wait();
+						waitForRoundtime();
+					} catch (InterruptedException e) {
+						// do nothing
 					}
+				}
 
-					while (state == State.MATCHING) {
-						try {
-							if (matchTimeout > 0) {
-								monitorObject.wait(matchTimeout);
-							} else {
-								monitorObject.wait();
-							}
-							stopWaiting();
-							matchList.clear();
-							waitForRoundtime();
-						} catch (InterruptedException e) {
-							// do nothing
+				while (state == State.MATCHING) {
+					try {
+						if (matchTimeout > 0) {
+							monitorObject.wait(matchTimeout);
+						} else {
+							monitorObject.wait();
 						}
+						stopWaiting();
+						matchList.clear();
+						waitForRoundtime();
+					} catch (InterruptedException e) {
+						// do nothing
 					}
 				}
 

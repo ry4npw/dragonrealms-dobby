@@ -44,7 +44,7 @@ public class CommandQueue implements Runnable, StreamListener {
 
 	@Override
 	public void notify(String line) {
-		if (line.startsWith("Roundtime: ")) {
+		if (line.startsWith("Roundtime: ") || line.startsWith("[Roundtime ")) {
 			updateRoundtime(line);
 		}
 
