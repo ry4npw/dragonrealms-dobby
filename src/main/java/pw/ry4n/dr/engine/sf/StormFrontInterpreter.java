@@ -467,10 +467,10 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 				if (State.PAUSED.equals(state)) {
 					// when paused, revert state to lastState
 					state = lastState;
+					sendMessageToClient("RUNNING");
 				} else {
 					state = State.RUNNING;
 				}
-				sendMessageToClient("RUNNING");
 				monitorObject.notify();
 			} catch (IOException e) {
 				// ignore problems sending message to client
