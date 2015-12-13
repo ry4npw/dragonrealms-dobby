@@ -103,7 +103,7 @@ public class InterceptingProxy extends AbstractProxy {
 		List<Program> stoppedScripts = new ArrayList<Program>();
 
 		for (Program script : scripts) {
-			if (script.getState() == State.STOPPED) {
+			if (State.STOPPED.equals(script.getState())) {
 				stoppedScripts.add(script);
 			}
 		}
@@ -150,7 +150,10 @@ public class InterceptingProxy extends AbstractProxy {
 	}
 
 	private void resumeScript(Program script) {
-		script.resume();
+		if (State.PAUSED.equals(script.getState())) {
+			// only resume paused scripts
+			script.resume();
+		}
 	}
 
 	private void stopAllScripts() {

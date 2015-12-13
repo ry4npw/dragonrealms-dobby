@@ -455,10 +455,6 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 	}
 
 	public void resumeScript() {
-		resume();
-	}
-
-	void resume() {
 		if (State.STOPPED.equals(state)) {
 			return;
 		}
@@ -478,7 +474,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 		if (State.PAUSED.equals(state) || State.STOPPED.equals(state)) {
 			return;
 		}
-		resume();
+		resumeScript();
 	}
 
 	void waitForRoundtime() throws InterruptedException {
