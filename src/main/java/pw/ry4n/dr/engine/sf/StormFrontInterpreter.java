@@ -45,6 +45,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 
 	State state = State.INITIALIZING;
 	private long roundTimeOver = 0;
+	private State lastState = null;
 
 	StormFrontInterpreter(Program program) {
 		this.program = program;
@@ -443,6 +444,8 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 	public void pauseScript() {
 		synchronized (monitorObject) {
 			if (!State.STOPPED.equals(state)) {
+				// remember lastState for pausing
+				lastState = state;
 				state = State.PAUSED;
 			}
 		}
@@ -461,7 +464,12 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 
 		synchronized (monitorObject) {
 			try {
-				state = State.RUNNING;
+				if (State.PAUSED.equals(state)) {
+					// when paused, revert state to lastState
+					state = lastState;
+				} else {
+					state = State.RUNNING;
+				}
 				sendMessageToClient("RUNNING");
 				monitorObject.notify();
 			} catch (IOException e) {
@@ -472,8 +480,10 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 
 	void stopWaiting() {
 		if (State.PAUSED.equals(state) || State.STOPPED.equals(state)) {
+			// do not change state when PAUSED or STOPPED
 			return;
 		}
+
 		resumeScript();
 	}
 
@@ -487,12 +497,8 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 	@Override
 	public void notify(String line) {
 		if (line.startsWith("Roundtime: ") || line.startsWith("[Roundtime ")) {
-			// TODO roundtime could/should be tracked for all scripts globally
+			// TODO roundtime could/should be tracked globally for character
 			updateRoundtime(line);
-		}
-
-		if (State.PAUSED.equals(state) || State.STOPPED.equals(state)) {
-			return;
 		}
 
 		synchronized (monitorObject) {
@@ -531,6 +537,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 				return token;
 			}
 		}
+
 		return null;
 	}
 

@@ -55,9 +55,10 @@ public class ListeningProxy extends AbstractProxy {
 
 		for (String line : lines) {
 			if (line.startsWith("GS")) {
-				// TODO parse the simutronics protocol to expose data
+				// TODO parse the simutronics protocol data to character object
 				// https://github.com/sproctor/warlock-gtk/blob/master/docs/SIMU-PROTOCOL
 			}
+			// TODO put gloabl roundtime on character object
 
 			// notify any listeners
 			notifyAllListeners(line);

@@ -35,7 +35,7 @@ public abstract class AbstractProxy implements StreamMonitor, Runnable {
 			in = new BufferedReader(new InputStreamReader(from));
 			to = remoteSocket.getOutputStream();
 		} catch (Exception e) {
-			System.err.println("redirector: cannot get streams");
+			System.err.println("proxy: cannot get streams");
 		}
 	}
 
@@ -70,7 +70,7 @@ public abstract class AbstractProxy implements StreamMonitor, Runnable {
 				filter(line);
 			}
 		} catch (Exception e) {
-			System.err.println("redirector: connection lost");
+			System.err.println("proxy: connection lost");
 		}
 		try {
 			in.close();
@@ -82,7 +82,7 @@ public abstract class AbstractProxy implements StreamMonitor, Runnable {
 			if (companion != null)
 				companion.decouple();
 		} catch (Exception io) {
-			System.err.println("redirector: error closing streams and sockets");
+			System.err.println("proxy: error closing streams and sockets");
 			io.printStackTrace();
 		}
 	}
