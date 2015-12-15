@@ -20,6 +20,7 @@ public abstract class AbstractProxy implements StreamMonitor, Runnable {
 	protected Socket localSocket, remoteSocket;
 	protected InputStream from;
 	protected OutputStream to;
+	private byte[] buffer = new byte[4096];
 	protected BufferedReader in;
 	protected final static byte[] NEWLINE = "\n".getBytes();
 	protected List<StreamListener> streamListeners = Collections.synchronizedList(new ArrayList<StreamListener>());
@@ -62,15 +63,23 @@ public abstract class AbstractProxy implements StreamMonitor, Runnable {
 	 * error occurs or our companion is decoupled from us
 	 */
 	public void run() {
-		String line;
 		try {
+			from = localSocket.getInputStream();
+		} catch (Exception e) {
+			System.err.println("ListeningProxy: cannot get streams");
+		}
+
+		int count;
+		try {
+			// using a BufferedReader breaks things in Avalon (missing
+			// newlines?), need straight throughput on the listener
 			while (companion != null) {
-				if ((line = in.readLine()) == null)
+				if ((count = from.read(buffer)) < 0)
 					break;
-				filter(line);
+				filter(buffer, count);
 			}
 		} catch (Exception e) {
-			System.err.println("proxy: connection lost");
+			System.err.println("redirector: connection lost");
 		}
 		try {
 			in.close();
@@ -82,7 +91,7 @@ public abstract class AbstractProxy implements StreamMonitor, Runnable {
 			if (companion != null)
 				companion.decouple();
 		} catch (Exception io) {
-			System.err.println("proxy: error closing streams and sockets");
+			System.err.println("redirector: error closing streams and sockets");
 			io.printStackTrace();
 		}
 	}
@@ -105,7 +114,7 @@ public abstract class AbstractProxy implements StreamMonitor, Runnable {
 	 * @param line
 	 * @throws IOException
 	 */
-	protected abstract void filter(String line) throws IOException;
+	protected abstract void filter(byte[] buffer, int count) throws IOException;
 
 	public void send(String line) throws IOException {
 		synchronized (to) {

@@ -28,7 +28,8 @@ public class InterceptingProxy extends AbstractProxy {
 	}
 
 	@Override
-	protected void filter(String line) throws IOException {
+	protected void filter(byte[] buffer, int count) throws IOException {
+		String line = new String(buffer, 0, count, "iso-8859-1");
 		System.out.println(">" + line);
 
 		if (line.trim().startsWith(";")) {
@@ -36,7 +37,7 @@ public class InterceptingProxy extends AbstractProxy {
 			handleCommand(line.substring(1));
 		} else {
 			// all other input should be passed along to server
-			send(line);
+			to.write(buffer, 0, count);
 
 			// and to any listeners
 			notifyAllListeners(line);
