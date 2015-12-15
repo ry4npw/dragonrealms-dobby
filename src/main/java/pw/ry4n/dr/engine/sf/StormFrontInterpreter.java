@@ -85,7 +85,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 						}
 					}
 
-					while (state == State.MATCHING) {
+					while (State.MATCHING.equals(state)) {
 						try {
 							if (matchTimeout > 0) {
 								monitorObject.wait(matchTimeout);
@@ -101,7 +101,9 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 					}
 				}
 
-				executeLine(program.getLines().get(currentLineNumber));
+				if (!State.STOPPED.equals(state)) {
+					executeLine(program.getLines().get(currentLineNumber));
+				}
 			}
 
 			exit();
