@@ -71,11 +71,10 @@ public abstract class AbstractProxy implements StreamMonitor, Runnable {
 
 		int count;
 		try {
-			// using a BufferedReader breaks things in Avalon (missing
-			// newlines?), need straight throughput on the listener
 			while (companion != null) {
 				if ((count = from.read(buffer)) < 0)
 					break;
+				// filter on the content of each buffer
 				filter(buffer, count);
 			}
 		} catch (Exception e) {

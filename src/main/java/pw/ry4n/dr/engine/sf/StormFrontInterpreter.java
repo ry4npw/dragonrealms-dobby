@@ -44,7 +44,6 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 	MatchToken waitForMatchToken = null;
 
 	State state = State.INITIALIZING;
-	private long roundTimeOver = 0;
 	private State lastState = null;
 
 	StormFrontInterpreter(Program program) {
@@ -92,7 +91,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 							} else {
 								monitorObject.wait();
 							}
-							stopWaiting();
+							resumeScript();
 							matchList.clear();
 							waitForRoundtime();
 						} catch (InterruptedException e) {
@@ -266,7 +265,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 				duration = new Float(1000 * Float.parseFloat(currentLine.getArguments()[0])).intValue();
 			}
 
-			long roundTimeLeft = roundTimeOver - System.currentTimeMillis();
+			long roundTimeLeft = commandSender.getRoundTimeOver() - System.currentTimeMillis();
 
 			if (duration > roundTimeLeft) {
 				Thread.sleep(duration);
@@ -480,17 +479,8 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 		}
 	}
 
-	void stopWaiting() {
-		if (State.PAUSED.equals(state) || State.STOPPED.equals(state)) {
-			// do not change state when PAUSED or STOPPED
-			return;
-		}
-
-		resumeScript();
-	}
-
 	void waitForRoundtime() throws InterruptedException {
-		long roundTimeLeft = roundTimeOver - System.currentTimeMillis();
+		long roundTimeLeft = commandSender.getRoundTimeOver() - System.currentTimeMillis();
 		if (roundTimeLeft > 0) {
 			Thread.sleep(roundTimeLeft);
 		}
@@ -498,11 +488,6 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 
 	@Override
 	public void notify(String line) {
-		if (line.startsWith("Roundtime: ") || line.startsWith("[Roundtime ")) {
-			// TODO roundtime could/should be tracked globally for character
-			updateRoundtime(line);
-		}
-
 		synchronized (monitorObject) {
 			switch (state) {
 			case MATCHING:
@@ -516,10 +501,10 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 				if (waitForMatchToken != null) {
 					if (waitForMatchToken.match(line)) {
 						waitForMatchToken = null;
-						stopWaiting();
+						resumeScript();
 					}
 				} else {
-					stopWaiting();
+					resumeScript();
 				}
 				break;
 			default:
@@ -529,10 +514,6 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 	}
 
 	synchronized MatchToken match(String line) {
-		if (State.PAUSED.equals(state) || State.STOPPED.equals(state)) {
-			return null;
-		}
-
 		for (MatchToken token : matchList) {
 			if (token.match(line)) {
 				state = State.RUNNING;
@@ -541,26 +522,5 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 		}
 
 		return null;
-	}
-
-	void updateRoundtime(String line) {
-		roundTimeOver = System.currentTimeMillis() + parseRoundtime(line) * 1000;
-	}
-
-	int parseRoundtime(String line) {
-		Scanner s = new Scanner(line);
-		try {
-			while (s.hasNext() && !s.hasNextInt()) {
-				s.next();
-			}
-
-			if (s.hasNextInt()) {
-				return s.nextInt();
-			}
-
-			return 0;
-		} finally {
-			s.close();
-		}
 	}
 }

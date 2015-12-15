@@ -10,7 +10,6 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 public class CommandQueue implements Runnable, StreamListener {
 	private Deque<String> sendQueue = new ConcurrentLinkedDeque<String>();
 	private boolean waitingForResponse = false;
-	private boolean waitForRT = false;
 	private String lastCommand = null;
 	private long roundTimeOver = -1;
 
@@ -53,7 +52,6 @@ public class CommandQueue implements Runnable, StreamListener {
 				System.out.println("OOPS! In RT, resending: " + lastCommand);
 				sendQueue.offerFirst(lastCommand);
 				updateRoundtime(line);
-				waitForRT = true;
 			} else if (line.contains("type ahead")) {
 				System.out.println("OOPS! Exceeded type ahead limit, resending:" + lastCommand);
 				sendQueue.offerFirst("lastCommand");
@@ -89,15 +87,10 @@ public class CommandQueue implements Runnable, StreamListener {
 			return;
 		}
 
-		// RT handling/blocking
-		if (waitForRT) {
-			// TODO do not block commands that work while in RT: EXPERIENCE, etc
-			if (inRoundtime()) {
-				return;
-			} else {
-				// no longer in roundTime, so do not wait
-				waitForRT = false;
-			}
+		// do not send commands while in RT
+		if (inRoundtime()) {
+			// TODO do not block commands that work while in (i.e. EXPERIENCE, LOOK, etc)
+			return;
 		}
 
 		synchronized (sendQueue) {
@@ -120,18 +113,22 @@ public class CommandQueue implements Runnable, StreamListener {
 
 		Timer t = new Timer();
 
-		// attempt to send the next command every 10ms
+		// attempt to send the next command at a scheduled interval
 		t.scheduleAtFixedRate(new TimerTask() {
 			@Override
 			public void run() {
 				processSendQueue();
 			}
 
-		}, 0, 20);
+		}, 0, 50);
 	}
 
-	private boolean inRoundtime() {
+	public boolean inRoundtime() {
 		return System.currentTimeMillis() < roundTimeOver;
+	}
+
+	public long getRoundTimeOver() {
+		return roundTimeOver;
 	}
 
 	private boolean justSentCommand() {
