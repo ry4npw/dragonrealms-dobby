@@ -108,8 +108,14 @@ public class InterceptingProxy extends AbstractProxy {
 		StringBuilder list = new StringBuilder();
 		list.append("Active scripts:");
 
+		int padding = (int) Math.log10(scripts.size());
 		for (int i = 0; i < scripts.size(); i++) {
-			list.append("\n      ");
+			list.append("\n       ");
+			int numSpaces = padding - (int) Math.log10(i);
+			while (numSpaces > 0) {
+				list.append(' ');
+				numSpaces--;
+			}
 			list.append(i).append(": ").append(scripts.get(i).getName()).append(" ")
 					.append(scripts.get(i).getState().name());
 		}
