@@ -1,16 +1,25 @@
 package pw.ry4n.dr.proxy;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import pw.ry4n.dr.engine.sf.model.Program;
 import pw.ry4n.dr.engine.sf.model.State;
+import pw.ry4n.dr.util.FixedSizeArrayDeque;
 
 public class InterceptingProxy extends AbstractProxy {
-	CommandQueue commandSender;
+	CommandQueue commandsToSend;
 	private List<Program> scripts = new ArrayList<Program>();
+	FixedSizeArrayDeque<String> sentCommands = new FixedSizeArrayDeque<>(10);
+
+	InterceptingProxy(OutputStream to) {
+		this.to = to;
+		commandsToSend = new CommandQueue(null, null);
+	}
 
 	public InterceptingProxy(Socket local, Socket remote) {
 		super(local, remote);
@@ -19,8 +28,8 @@ public class InterceptingProxy extends AbstractProxy {
 	@Override
 	public void run() {
 		if (companion != null) {
-			commandSender = new CommandQueue(this, companion);
-			Thread messageQueue = new Thread(commandSender);
+			commandsToSend = new CommandQueue(this, companion);
+			Thread messageQueue = new Thread(commandsToSend);
 			messageQueue.start();
 		}
 
@@ -39,8 +48,13 @@ public class InterceptingProxy extends AbstractProxy {
 			// all other input should be passed along to server
 			to.write(buffer, 0, count);
 
-			// and to any listeners
-			notifyAllListeners(line);
+			// remember this in our command queue
+			if (!"".equals(line.trim())) {
+				sentCommands.push(line);
+
+				// and to any listeners
+				notifyAllListeners(line);
+			}
 		}
 	}
 
@@ -49,14 +63,19 @@ public class InterceptingProxy extends AbstractProxy {
 			list();
 		} else if (input != null && input.toLowerCase().startsWith("pause")) {
 			int spaceAt = input.indexOf(' ');
-			if (spaceAt >= 4) {
+			if (spaceAt >= 5) {
 				pauseScript(input.substring(spaceAt + 1));
 			} else {
 				pauseAllScripts();
 			}
+		} else if (input != null && input.toLowerCase().startsWith("repeat")) {
+			int spaceAt = input.indexOf(' ');
+			if (spaceAt >= 6) {
+				repeat(input.substring(spaceAt + 1));
+			}
 		} else if (input != null && input.toLowerCase().startsWith("resume")) {
 			int spaceAt = input.indexOf(' ');
-			if (spaceAt >= 4) {
+			if (spaceAt >= 6) {
 				resumeScript(input.substring(spaceAt + 1));
 			} else {
 				resumeAllScripts();
@@ -134,6 +153,43 @@ public class InterceptingProxy extends AbstractProxy {
 		script.pause();
 	}
 
+	void repeat(String argument) throws IOException {
+		repeat(Integer.parseInt(argument));
+	}
+
+	private void repeat(int i) throws IOException {
+		if (i > 10) {
+			companion.send("You cannot repeat more than the last 10 commands.");
+			return;
+		}
+
+		if (i < 1) {
+			companion.send("You must repeat at least 1 command.");
+			return;
+		}
+
+		if (sentCommands.size() < i) {
+			companion.send("You have not yet sent " + i + " commands.");
+			return;
+		}
+
+		// get to the last X commands
+		Iterator<String> commands = sentCommands.descendingIterator();
+		int commandsToSkip = sentCommands.size() - i;
+		while (commandsToSkip > 0) {
+			commands.next();
+			commandsToSkip--;
+		}
+
+		// repeat last X commands sent to server
+		while (commands.hasNext()) {
+			String command = commands.next();
+			System.out.println("adding to commandQueue: " + command);
+			// TODO have dobby echo command when it is sent to server.
+			commandsToSend.enqueue(command);
+		}
+	}
+
 	private void resumeAllScripts() {
 		for (Program script : scripts) {
 			resumeScript(script);
@@ -183,10 +239,10 @@ public class InterceptingProxy extends AbstractProxy {
 	}
 
 	public CommandQueue getCommandSender() {
-		return commandSender;
+		return commandsToSend;
 	}
 
 	public void setCommandSender(CommandQueue commandSender) {
-		this.commandSender = commandSender;
+		this.commandsToSend = commandSender;
 	}
 }

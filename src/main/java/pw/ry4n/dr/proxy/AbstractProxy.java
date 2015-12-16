@@ -25,6 +25,10 @@ public abstract class AbstractProxy implements StreamMonitor, Runnable {
 	protected final static byte[] NEWLINE = "\n".getBytes();
 	protected List<StreamListener> streamListeners = Collections.synchronizedList(new ArrayList<StreamListener>());
 
+	AbstractProxy() {
+		// empty constructor
+	}
+
 	/**
 	 * redirector gets the streams from sockets
 	 */

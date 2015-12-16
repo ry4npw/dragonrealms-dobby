@@ -18,19 +18,15 @@ public class ListeningProxy extends AbstractProxy {
 		// write output direct to client
 		to.write(buffer, 0, count);
 
-		// an notify listeners of activity.
 		String bufferString = new String(buffer, 0, count, "iso-8859-1");
 		System.out.println(bufferString);
 		String[] lines = bufferString.split("\n");
 
 		for (String line : lines) {
-			if (line.startsWith("GS")) {
-				// TODO parse the simutronics protocol data to character object
-				// https://github.com/sproctor/warlock-gtk/blob/master/docs/SIMU-PROTOCOL
+			if (!"".equals(line)) {
+				// notify any listeners
+				notifyAllListeners(line.trim());
 			}
-
-			// notify any listeners
-			notifyAllListeners(line);
 		}
 	}
 

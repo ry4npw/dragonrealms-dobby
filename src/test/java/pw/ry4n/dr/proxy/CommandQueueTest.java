@@ -4,7 +4,7 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-public class CommandSenderTest {
+public class CommandQueueTest {
 	@Test
 	public void testParseRoundtime() {
 		CommandQueue commandSender = new CommandQueue();

@@ -9,8 +9,8 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 
 public class CommandQueue implements Runnable, StreamListener {
 	private Deque<String> sendQueue = new ConcurrentLinkedDeque<String>();
-	private boolean waitingForResponse = false;
 	private String lastCommand = null;
+	private int commandsWaitingForResponse = 0;
 	private long roundTimeOver = -1;
 
 	private AbstractProxy sendProxy;
@@ -45,9 +45,16 @@ public class CommandQueue implements Runnable, StreamListener {
 	public void notify(String line) {
 		if (line.startsWith("Roundtime: ") || line.startsWith("[Roundtime ")) {
 			updateRoundtime(line);
+			return;
 		}
 
-		if (justSentCommand()) {
+		if (commandsWaitingForResponse > 0) {
+			if (line.startsWith("GSq")) {
+				// stop waiting on timestamp
+				commandsWaitingForResponse--;
+				return;
+			}
+
 			if (line.startsWith("...wait")) {
 				System.out.println("OOPS! In RT, resending: " + lastCommand);
 				sendQueue.offerFirst(lastCommand);
@@ -56,8 +63,6 @@ public class CommandQueue implements Runnable, StreamListener {
 				System.out.println("OOPS! Exceeded type ahead limit, resending:" + lastCommand);
 				sendQueue.offerFirst("lastCommand");
 			}
-
-			waitingForResponse = false;
 		}
 	}
 
@@ -99,7 +104,7 @@ public class CommandQueue implements Runnable, StreamListener {
 				try {
 					getSendProxy().send(lastCommand);
 					System.out.println("[CommandSender] " + lastCommand);
-					waitingForResponse = true;
+					commandsWaitingForResponse++;
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -131,11 +136,11 @@ public class CommandQueue implements Runnable, StreamListener {
 		return roundTimeOver;
 	}
 
-	private boolean justSentCommand() {
-		return waitingForResponse;
-	}
-
 	public AbstractProxy getSendProxy() {
 		return sendProxy;
+	}
+
+	public int size() {
+		return sendQueue.size();
 	}
 }
