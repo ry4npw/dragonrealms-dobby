@@ -65,7 +65,7 @@ public class TimedThread implements Program {
 
 	@Override
 	public String getName() {
-		return "Every " + duration + " " + timeUnit.name().toLowerCase() + ": " + command;
+		return "every " + duration + " " + timeUnit.name().toLowerCase() + ": " + command;
 	}
 
 	@Override
