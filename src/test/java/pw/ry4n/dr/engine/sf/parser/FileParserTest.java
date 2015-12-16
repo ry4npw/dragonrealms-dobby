@@ -11,7 +11,7 @@ import org.junit.Test;
 
 import pw.ry4n.dr.engine.core.DataCharBuffer;
 import pw.ry4n.dr.engine.sf.model.Commands;
-import pw.ry4n.dr.engine.sf.model.Program;
+import pw.ry4n.dr.engine.sf.model.ProgramImpl;
 
 public class FileParserTest {
 	@Test
@@ -23,7 +23,7 @@ public class FileParserTest {
 
 		assertNotNull(fileParser.dataCharBuffer);
 
-		Program program = new Program();
+		ProgramImpl program = new ProgramImpl();
 		fileParser.parse(program);
 		assertTrue(program.getLabels().containsKey("look"));
 		assertEquals(8, program.getLines().size());
@@ -34,7 +34,7 @@ public class FileParserTest {
 	public void testParse() {
 		DataCharBuffer dataCharBuffer = new DataCharBuffer("# a program!\nexit".toCharArray());
 		FileParser fileParser = new FileParser();
-		Program program = new Program();
+		ProgramImpl program = new ProgramImpl();
 		fileParser.parseFile(program, dataCharBuffer);
 
 		// assert there were parsed lines
@@ -52,7 +52,7 @@ public class FileParserTest {
 		DataCharBuffer dataCharBuffer = new DataCharBuffer(
 				("# a better program!\n" + "LOOP:\n" + "MOVE N\n" + "GOTO LOOP\n").toCharArray());
 		FileParser fileParser = new FileParser();
-		Program program = new Program();
+		ProgramImpl program = new ProgramImpl();
 		fileParser.parseFile(program, dataCharBuffer);
 
 		// assert that our LOOP label exists

@@ -72,6 +72,14 @@ Once running, you interact with dobby by sending commands to the server. Dobby w
 
 ### Dobby commands
 
+####Every
+* `;every` will perform a "scheduled" task. Can call a single command or a script with a semicolon.
+
+	```
+	>;every 91 seconds PREDICT WEATHER
+	>;every 1 hour ;research.sf utility
+	```
+
 ####List
 * `;list` lists all currently active scripts and their state, this includes running and paused scripts.
 
@@ -155,11 +163,7 @@ Dobby uses a command queue to send all dobby-generated commands (user input is s
 
 I have plans to make Dobby a lot more powerful, working across sessions on the same machine. Here are some of my ideas in no particular order:
 
-* timed/scheduled commands (every {time} {unit} {command})
-
-	```
-	>;every 91 seconds PREDICT WEATHER
-	```
+* support invoking a script from `;every`.
 
 * support sending commands for other characters on the same computer (ask {toon} to {command})
 

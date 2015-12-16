@@ -12,7 +12,7 @@ import pw.ry4n.dr.engine.core.DataCharBuffer;
 import pw.ry4n.dr.engine.core.ParserException;
 import pw.ry4n.dr.engine.sf.model.Commands;
 import pw.ry4n.dr.engine.sf.model.Line;
-import pw.ry4n.dr.engine.sf.model.Program;
+import pw.ry4n.dr.engine.sf.model.ProgramImpl;
 
 /**
  * The purpose of this class is to take a File and parse it into a Program.
@@ -74,11 +74,11 @@ public class FileParser {
 		}
 	}
 
-	public Program parse(Program program) {
+	public ProgramImpl parse(ProgramImpl program) {
 		return parseFile(program, dataCharBuffer);
 	}
 
-	Program parseFile(Program program, DataCharBuffer dataCharBuffer) throws ParserException {
+	ProgramImpl parseFile(ProgramImpl program, DataCharBuffer dataCharBuffer) throws ParserException {
 		LineParser lineParser = new LineParser(dataCharBuffer);
 
 		while (lineParser.hasMoreChars()) {

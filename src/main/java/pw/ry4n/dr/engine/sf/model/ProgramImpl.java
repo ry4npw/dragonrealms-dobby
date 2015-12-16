@@ -6,13 +6,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import pw.ry4n.dr.engine.core.Program;
+import pw.ry4n.dr.engine.core.State;
 import pw.ry4n.dr.engine.sf.StormFrontInterpreter;
 import pw.ry4n.dr.engine.sf.parser.FileParser;
 import pw.ry4n.dr.engine.sf.parser.LineParser;
 import pw.ry4n.dr.proxy.AbstractProxy;
 import pw.ry4n.dr.proxy.InterceptingProxy;
 
-public class Program implements Runnable {
+public class ProgramImpl implements Program {
 	private String name;
 	private String type;
 	private List<Line> lines = new ArrayList<Line>();
@@ -27,16 +29,16 @@ public class Program implements Runnable {
 
 	private StormFrontInterpreter interpreter = null;
 
-	public Program() {
+	public ProgramImpl() {
 		// empty constructor
 	}
 
-	public Program(InterceptingProxy sendToServer, AbstractProxy sendToClient) {
+	public ProgramImpl(InterceptingProxy sendToServer, AbstractProxy sendToClient) {
 		this.sendToServer = sendToServer;
 		this.sendToClient = sendToClient;
 	}
 
-	public Program(String fileName, InterceptingProxy clientToServer, AbstractProxy serverToClient) {
+	public ProgramImpl(String fileName, InterceptingProxy clientToServer, AbstractProxy serverToClient) {
 		try {
 			int firstSpace = fileName.indexOf(' ');
 			String scriptName = fileName.substring(0, firstSpace == -1 ? fileName.length() : firstSpace);

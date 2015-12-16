@@ -6,9 +6,12 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
 
-import pw.ry4n.dr.engine.sf.model.Program;
-import pw.ry4n.dr.engine.sf.model.State;
+import pw.ry4n.dr.engine.core.Program;
+import pw.ry4n.dr.engine.core.State;
+import pw.ry4n.dr.engine.sf.model.ProgramImpl;
 import pw.ry4n.dr.util.FixedSizeArrayDeque;
 
 public class InterceptingProxy extends AbstractProxy {
@@ -16,9 +19,15 @@ public class InterceptingProxy extends AbstractProxy {
 	private List<Program> scripts = new ArrayList<Program>();
 	FixedSizeArrayDeque<String> sentCommands = new FixedSizeArrayDeque<>(10);
 
-	InterceptingProxy(OutputStream to) {
+	/**
+	 * Package private constructor for unit testing.
+	 * 
+	 * @param sendProxy
+	 * @param to
+	 */
+	InterceptingProxy(AbstractProxy sendProxy, OutputStream to) {
 		this.to = to;
-		commandsToSend = new CommandQueue(null, null);
+		commandsToSend = new CommandQueue(sendProxy, null);
 	}
 
 	public InterceptingProxy(Socket local, Socket remote) {
@@ -59,7 +68,12 @@ public class InterceptingProxy extends AbstractProxy {
 	}
 
 	private void handleCommand(String input) throws IOException {
-		if (input != null && input.toLowerCase().startsWith("list")) {
+		if (input != null && input.toLowerCase().startsWith("every")) {
+			int spaceAt = input.indexOf(' ');
+			if (spaceAt >= 5) {
+				every(input.substring(spaceAt + 1));
+			}
+		} else if (input != null && input.toLowerCase().startsWith("list")) {
 			list();
 		} else if (input != null && input.toLowerCase().startsWith("pause")) {
 			int spaceAt = input.indexOf(' ');
@@ -88,20 +102,101 @@ public class InterceptingProxy extends AbstractProxy {
 				stopAllScripts();
 			}
 		} else {
-			// else script
-			Program script = new Program(input, this, companion);
-			scripts.add(script);
-			Thread t = new Thread(script);
-			t.start();
-			script.setThread(t);
+			runScript(input);
 		}
+	}
+
+	private void every(String substring) {
+		try {
+			TimedThread tt = parseEvery(substring);
+			Thread t = new Thread(tt);
+			t.start();
+			tt.setThread(t);
+		} catch (Exception e) {
+			try {
+				commandsToSend.getSendProxy().send(e.getMessage());
+				commandsToSend.getSendProxy().send("Please try something like:  ;every 91 seconds PREDICT WEATHER");
+			} catch (IOException ioe) {
+				// ignore send errors
+			}
+		}
+	}
+
+	TimedThread parseEvery(String substring) {
+		Scanner scanner = new Scanner(substring.toLowerCase());
+		String time = scanner.next();
+
+		// parse duration and timeUnit
+		long duration = -1L;
+		TimeUnit timeUnit = null;
+
+		if (time.endsWith("s")) {
+			timeUnit = TimeUnit.SECONDS;
+			time = time.substring(0, time.length()-1);
+		} else if (time.endsWith("m")) {
+			timeUnit = TimeUnit.MINUTES;
+			time = time.substring(0, time.length()-1);
+		} else if (time.endsWith("h")) {
+			timeUnit = TimeUnit.HOURS;
+			time = time.substring(0, time.length()-1);
+		}
+
+		try {
+			duration = Long.parseLong(time);
+		} catch (NumberFormatException e) {
+			scanner.close();
+			throw new NumberFormatException(time + " is not an integer duration.");
+		}
+
+		if (timeUnit == null) {
+			String timeUnitString = scanner.next().toLowerCase();
+			switch (timeUnitString) {
+			case "s":
+			case "sec":
+			case "second":
+			case "seconds":
+				timeUnit = TimeUnit.SECONDS;
+				break;
+			case "m":
+			case "min":
+			case "minute":
+			case "minutes":
+				timeUnit = TimeUnit.MINUTES;
+				break;
+			case "h":
+			case "hour":
+			case "hours":
+				timeUnit = TimeUnit.HOURS;
+				break;
+			default:
+				scanner.close();
+				throw new IllegalArgumentException(timeUnitString + " is not one of (seconds|minutes|hours).");
+			}
+		}
+
+		// use rest of string as command
+		scanner.useDelimiter("\\z");
+
+		if (!scanner.hasNext()) {
+			scanner.close();
+			throw new IllegalArgumentException("You must specify a command to send.");
+		}
+
+		String command = scanner.next().trim();
+		scanner.close();
+
+		if ("".equals(command)) {
+			throw new IllegalArgumentException("You must specify a command to send.");
+		}
+
+		return new TimedThread(this, commandsToSend, duration, timeUnit, command);
 	}
 
 	private void list() throws IOException {
 		cleanStoppedScriptsList();
 
 		if (scripts.isEmpty()) {
-			companion.send("No running scripts.");
+			commandsToSend.getSendProxy().send("No running scripts.");
 			return;
 		}
 
@@ -120,9 +215,7 @@ public class InterceptingProxy extends AbstractProxy {
 					.append(scripts.get(i).getState().name());
 		}
 
-		if (companion != null) {
-			companion.send(list.toString());
-		}
+		commandsToSend.getSendProxy().send(list.toString());
 	}
 
 	private void cleanStoppedScriptsList() {
@@ -165,17 +258,17 @@ public class InterceptingProxy extends AbstractProxy {
 
 	private void repeat(int i) throws IOException {
 		if (i > 10) {
-			companion.send("You cannot repeat more than the last 10 commands.");
+			commandsToSend.getSendProxy().send("You cannot repeat more than the last 10 commands.");
 			return;
 		}
 
 		if (i < 1) {
-			companion.send("You must repeat at least 1 command.");
+			commandsToSend.getSendProxy().send("You must repeat at least 1 command.");
 			return;
 		}
 
 		if (sentCommands.size() < i) {
-			companion.send("You have not yet sent " + i + " commands.");
+			commandsToSend.getSendProxy().send("You have not yet sent " + i + " commands.");
 			return;
 		}
 
@@ -190,8 +283,8 @@ public class InterceptingProxy extends AbstractProxy {
 		// repeat last X commands sent to server
 		while (commands.hasNext()) {
 			String command = commands.next();
-			System.out.println("adding to commandQueue: " + command);
-			// TODO have dobby echo command when it is sent to server.
+			System.out.println("repeat> " + command);
+			commandsToSend.getSendProxy().send("repeat: " + command);
 			commandsToSend.enqueue(command);
 		}
 	}
@@ -217,6 +310,14 @@ public class InterceptingProxy extends AbstractProxy {
 			// only resume paused scripts
 			script.resume();
 		}
+	}
+
+	void runScript(String input) {
+		Program script = new ProgramImpl(input, this, companion);
+		scripts.add(script);
+		Thread t = new Thread(script);
+		t.start();
+		script.setThread(t);
 	}
 
 	private void stopAllScripts() {

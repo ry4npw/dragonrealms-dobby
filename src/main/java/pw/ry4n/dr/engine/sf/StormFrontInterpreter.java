@@ -7,11 +7,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 
+import pw.ry4n.dr.engine.core.State;
 import pw.ry4n.dr.engine.sf.model.Commands;
 import pw.ry4n.dr.engine.sf.model.Line;
 import pw.ry4n.dr.engine.sf.model.MatchToken;
-import pw.ry4n.dr.engine.sf.model.Program;
-import pw.ry4n.dr.engine.sf.model.State;
+import pw.ry4n.dr.engine.sf.model.ProgramImpl;
 import pw.ry4n.dr.proxy.AbstractProxy;
 import pw.ry4n.dr.proxy.CommandQueue;
 import pw.ry4n.dr.proxy.InterceptingProxy;
@@ -35,7 +35,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 
 	private Object monitorObject = new Object(); // thread synchronization
 
-	private Program program;
+	private ProgramImpl program;
 	private int counter = 0;
 	private int currentLineNumber = 0;
 
@@ -46,11 +46,11 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 	State state = State.INITIALIZING;
 	private State lastState = null;
 
-	StormFrontInterpreter(Program program) {
+	StormFrontInterpreter(ProgramImpl program) {
 		this.program = program;
 	}
 
-	public StormFrontInterpreter(InterceptingProxy sendToServer, AbstractProxy sendToClient, Program program) {
+	public StormFrontInterpreter(InterceptingProxy sendToServer, AbstractProxy sendToClient, ProgramImpl program) {
 		if (program == null) {
 			throw new IllegalArgumentException("Program must not be null!");
 		}

@@ -14,11 +14,11 @@ import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import pw.ry4n.dr.engine.core.State;
 import pw.ry4n.dr.engine.sf.model.Commands;
 import pw.ry4n.dr.engine.sf.model.Line;
 import pw.ry4n.dr.engine.sf.model.MatchToken;
-import pw.ry4n.dr.engine.sf.model.Program;
-import pw.ry4n.dr.engine.sf.model.State;
+import pw.ry4n.dr.engine.sf.model.ProgramImpl;
 import pw.ry4n.dr.proxy.AbstractProxy;
 import pw.ry4n.dr.proxy.CommandQueue;
 import pw.ry4n.dr.proxy.InterceptingProxy;
@@ -26,7 +26,7 @@ import pw.ry4n.dr.proxy.InterceptingProxy;
 public class StormFrontInterpreterTest {
 	@Test
 	public void testReplaceVariables() {
-		Program program = new Program();
+		ProgramImpl program = new ProgramImpl();
 		program.getVariables().put("1", "one");
 		program.getVariables().put("2", "two");
 
@@ -50,7 +50,7 @@ public class StormFrontInterpreterTest {
 		doAnswer(log("sendToClient")).when(sendToClient).send(anyString());
 
 		// set up program
-		Program program = new Program();
+		ProgramImpl program = new ProgramImpl();
 		program.setName("if_test");
 		program.setType("sf");
 		program.setSendToClient(sendToClient);
@@ -90,7 +90,7 @@ public class StormFrontInterpreterTest {
 		doAnswer(log("sendToClient")).when(sendToClient).send(anyString());
 
 		// set up program
-		Program program = new Program();
+		ProgramImpl program = new ProgramImpl();
 		program.setName("counterTest");
 		program.setType("sf");
 		program.setSendToClient(sendToClient);
@@ -120,7 +120,7 @@ public class StormFrontInterpreterTest {
 
 	@Test
 	public void testNextroom() throws IOException {
-		Program program = new Program();
+		ProgramImpl program = new ProgramImpl();
 		StormFrontInterpreter interpreter = new StormFrontInterpreter(program);
 
 		interpreter.nextroom();
@@ -130,7 +130,7 @@ public class StormFrontInterpreterTest {
 	}
 
 	public void testFormatArgument() {
-		Program program = new Program();
+		ProgramImpl program = new ProgramImpl();
 		StormFrontInterpreter interpreter = new StormFrontInterpreter(program);
 
 		assertEquals("dust bunn", interpreter.formatArgument("dust_bunn"));
