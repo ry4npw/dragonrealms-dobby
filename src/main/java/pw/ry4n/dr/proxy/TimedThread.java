@@ -57,7 +57,7 @@ public class TimedThread implements Program {
 
 	private void echoStateChange() {
 		try {
-			proxy.sendUserMessage(getName() + " " + state.name());
+			proxy.sendUserMessage(getName() + ": " + state.name());
 		} catch (IOException e) {
 			// ignore send error
 		}
@@ -65,7 +65,7 @@ public class TimedThread implements Program {
 
 	@Override
 	public String getName() {
-		return "every " + duration + " " + timeUnit.name().toLowerCase() + ": " + command;
+		return "every " + duration + " " + timeUnit.name().toLowerCase() + " " + command;
 	}
 
 	@Override
