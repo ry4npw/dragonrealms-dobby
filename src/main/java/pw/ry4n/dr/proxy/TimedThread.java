@@ -55,6 +55,14 @@ public class TimedThread implements Program {
 		}, 0, periodInMilliseconds);
 	}
 
+	private void echoStateChange() {
+		try {
+			proxy.sendUserMessage(getName() + " " + state.name());
+		} catch (IOException e) {
+			// ignore send error
+		}
+	}
+
 	@Override
 	public String getName() {
 		return "Every " + duration + " " + timeUnit.name().toLowerCase() + ": " + command;
@@ -67,6 +75,7 @@ public class TimedThread implements Program {
 		}
 
 		state = State.PAUSED;
+		echoStateChange();
 	}
 
 	@Override
@@ -81,6 +90,7 @@ public class TimedThread implements Program {
 		}
 
 		state = State.RUNNING;
+		echoStateChange();
 	}
 
 	@Override
@@ -91,11 +101,7 @@ public class TimedThread implements Program {
 			t.cancel();
 		}
 
-		try {
-			proxy.sendUserMessage(getName() + " " + state.name());
-		} catch (IOException e) {
-			// ignore send error
-		}
+		echoStateChange();
 	}
 
 	@Override
