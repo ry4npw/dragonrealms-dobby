@@ -23,9 +23,12 @@ public class ListeningProxy extends AbstractProxy {
 		String[] lines = bufferString.split("\n");
 
 		for (String line : lines) {
-			if (!"".equals(line)) {
-				// notify any listeners
-				notifyAllListeners(line.trim());
+			if (line != null) {
+				line = line.trim();
+				if (!"".equals(line)) {
+					// notify any listeners of non-blank lines.
+					notifyAllListeners(line.trim());
+				}
 			}
 		}
 	}

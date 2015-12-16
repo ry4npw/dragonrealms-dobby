@@ -488,6 +488,11 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 
 	@Override
 	public void notify(String line) {
+		if (line.startsWith("GS")) {
+			// ignore SIMU-PROTOCOL
+			return;
+		}
+
 		synchronized (monitorObject) {
 			switch (state) {
 			case MATCHING:
