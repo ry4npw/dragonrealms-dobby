@@ -51,7 +51,7 @@ Dobby works great with Avalon version 4.3.1 on Mac, and it supports multiple ins
 
 ##### Advanced Startup
 
-You can specify the IP and port numbers to bind to. For example, if you wanted to also capture traffice to eaccess.play.net you would run a second instance of from a second command line:
+You can specify the IP and port numbers to bind to. For example, if you wanted to also capture traffic to eaccess.play.net you would run a second instance of from a second command line:
 ```bash
 $ java -jar dobby-{version}.jar {localPort} {remoteIP} {remotePort}
 $ java -jar dobby-{version}.jar 7900 199.188.208.135 7900
