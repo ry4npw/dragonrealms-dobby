@@ -163,20 +163,24 @@ Dobby uses a command queue to send all dobby-generated commands (user input is s
 
 I have plans to make Dobby a lot more powerful, working across sessions on the same machine. Here are some of my ideas in no particular order:
 
-* support sending commands for other characters on the same computer (`;ask {toon} to {command}`)
+* Automatically update /etc/hosts if run with admin rights (sudo).
+
+* Support sending commands for other characters on the same computer (`;ask {toon} to {command}`).
 
 	```
 	>;ask weensie to TEACH PADHG FORGING
 	```
 
-* support other scripting languages such as running Genie scripts, or maybe other interpreted languages such as JavaScript and Python.
+* Add support for Genie scripts. Global variables would be read from ~/Documents/dobby/variables.txt.
 
-* add percentages to HEALTH/MANA. also add numerals to appraisals and combat messages.
+* Explore possible support for other interpreted languages such as JavaScript and Python.
 
-* Create a StreamListener to parse GS* variables from the [SIMU-PROTOCOL](https://github.com/sproctor/warlock-gtk/blob/master/docs/SIMU-PROTOCOL)
+* Add percentages to HEALTH/MANA. also add numerals to appraisals and combat messages.
 
-* XML parsing, including exposing those elements as variables to scripts
+* Create a StreamListener to parse GS* variables from the [SIMU-PROTOCOL](https://github.com/sproctor/warlock-gtk/blob/master/docs/SIMU-PROTOCOL).
 
-* (post parsing) a RESTful interface to return real-time character information, this could make it easy to create a single-page HTML application to add things like health/spirit/stamina/fatigue bars to clients such as Avalon. Or by combining dobby services you could create a display of all your friends, their health/spirit/stamina/fatigue, location, and etc. User interfaces could also be done in the browser for things like script writing/management, or even for mapping programs.
+* XML parsing, including exposing those elements as variables to scripts.
 
-* auto-mapping, support for Genie map repository, and an HTML map interface for movement.
+* (post parsing) A RESTful interface to return real-time character information, this could make it easy to create a single-page HTML application to add things like health/spirit/stamina/fatigue bars to clients such as Avalon. Or by combining dobby services you could create a display of all your friends, their health/spirit/stamina/fatigue, location, and etc. User interfaces could also be done in the browser for things like script writing/management, or even for mapping programs.
+
+* Auto-mapping, support for Genie map repository, and an HTML map interface (using [konva.ja](https://konvajs.github.io/)). The map should allow drag/explore, click to follow links, and double-click to move.

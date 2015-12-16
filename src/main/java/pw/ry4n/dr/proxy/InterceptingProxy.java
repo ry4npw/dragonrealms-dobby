@@ -28,6 +28,7 @@ public class InterceptingProxy extends AbstractProxy {
 	InterceptingProxy(AbstractProxy sendProxy, OutputStream to) {
 		this.to = to;
 		commandsToSend = new CommandQueue(sendProxy, null);
+		companion = sendProxy;
 	}
 
 	public InterceptingProxy(Socket local, Socket remote) {
@@ -109,13 +110,14 @@ public class InterceptingProxy extends AbstractProxy {
 	private void every(String substring) {
 		try {
 			TimedThread tt = parseEvery(substring);
+			scripts.add(tt);
 			Thread t = new Thread(tt);
 			t.start();
 			tt.setThread(t);
 		} catch (Exception e) {
 			try {
-				commandsToSend.getSendProxy().send(e.getMessage());
-				commandsToSend.getSendProxy().send("Please try something like:  ;every 91 seconds PREDICT WEATHER");
+				sendUserMessage(e.getMessage());
+				sendUserMessage("Please try something like:  ;every 91 seconds PREDICT WEATHER");
 			} catch (IOException ioe) {
 				// ignore send errors
 			}
@@ -196,7 +198,7 @@ public class InterceptingProxy extends AbstractProxy {
 		cleanStoppedScriptsList();
 
 		if (scripts.isEmpty()) {
-			commandsToSend.getSendProxy().send("No running scripts.");
+			sendUserMessage("No running scripts.");
 			return;
 		}
 
@@ -215,7 +217,7 @@ public class InterceptingProxy extends AbstractProxy {
 					.append(scripts.get(i).getState().name());
 		}
 
-		commandsToSend.getSendProxy().send(list.toString());
+		sendUserMessage(list.toString());
 	}
 
 	private void cleanStoppedScriptsList() {
@@ -258,17 +260,17 @@ public class InterceptingProxy extends AbstractProxy {
 
 	private void repeat(int i) throws IOException {
 		if (i > 10) {
-			commandsToSend.getSendProxy().send("You cannot repeat more than the last 10 commands.");
+			sendUserMessage("You cannot repeat more than the last 10 commands.");
 			return;
 		}
 
 		if (i < 1) {
-			commandsToSend.getSendProxy().send("You must repeat at least 1 command.");
+			sendUserMessage("You must repeat at least 1 command.");
 			return;
 		}
 
 		if (sentCommands.size() < i) {
-			commandsToSend.getSendProxy().send("You have not yet sent " + i + " commands.");
+			sendUserMessage("You have not yet sent " + i + " commands.");
 			return;
 		}
 
@@ -284,7 +286,7 @@ public class InterceptingProxy extends AbstractProxy {
 		while (commands.hasNext()) {
 			String command = commands.next();
 			System.out.println("repeat> " + command);
-			commandsToSend.getSendProxy().send("repeat: " + command);
+			sendUserMessage("repeat: " + command);
 			commandsToSend.enqueue(command);
 		}
 	}
@@ -318,6 +320,10 @@ public class InterceptingProxy extends AbstractProxy {
 		Thread t = new Thread(script);
 		t.start();
 		script.setThread(t);
+	}
+
+	void sendUserMessage(String message) throws IOException {
+		companion.send(message);
 	}
 
 	private void stopAllScripts() {

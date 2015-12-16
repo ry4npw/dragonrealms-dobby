@@ -1,5 +1,6 @@
 package pw.ry4n.dr.proxy;
 
+import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
@@ -43,8 +44,7 @@ public class TimedThread implements Program {
 					if (command.startsWith(";")) {
 						proxy.runScript(command.substring(1));
 					} else {
-						proxy.companion
-								.send("Every " + duration + " " + timeUnit.name().toLowerCase() + ": " + command);
+						proxy.sendUserMessage(getName());
 						sendQueue.enqueue(command);
 					}
 				} catch (Exception e) {
@@ -57,7 +57,7 @@ public class TimedThread implements Program {
 
 	@Override
 	public String getName() {
-		return command;
+		return "Every " + duration + " " + timeUnit.name().toLowerCase() + ": " + command;
 	}
 
 	@Override
@@ -89,6 +89,12 @@ public class TimedThread implements Program {
 
 		if (t != null) {
 			t.cancel();
+		}
+
+		try {
+			proxy.sendUserMessage(getName() + " " + state.name());
+		} catch (IOException e) {
+			// ignore send error
 		}
 	}
 
