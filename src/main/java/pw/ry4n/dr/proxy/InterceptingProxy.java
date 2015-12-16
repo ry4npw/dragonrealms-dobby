@@ -38,7 +38,7 @@ public class InterceptingProxy extends AbstractProxy {
 
 	@Override
 	protected void filter(byte[] buffer, int count) throws IOException {
-		String line = new String(buffer, 0, count, "iso-8859-1");
+		String line = new String(buffer, 0, count, "iso-8859-1").replace("\n", "");
 		System.out.println(">" + line);
 
 		if (line.trim().startsWith(";")) {
