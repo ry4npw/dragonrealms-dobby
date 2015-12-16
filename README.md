@@ -163,9 +163,7 @@ Dobby uses a command queue to send all dobby-generated commands (user input is s
 
 I have plans to make Dobby a lot more powerful, working across sessions on the same machine. Here are some of my ideas in no particular order:
 
-* support invoking a script from `;every`.
-
-* support sending commands for other characters on the same computer (ask {toon} to {command})
+* support sending commands for other characters on the same computer (`;ask {toon} to {command}`)
 
 	```
 	>;ask weensie to TEACH PADHG FORGING
