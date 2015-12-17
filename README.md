@@ -73,7 +73,7 @@ Once running, you interact with dobby by sending commands to the server. Dobby w
 ### Dobby commands
 
 ####Every
-* `;every` will perform a "scheduled" task. Can call a single command or a script with a semicolon.
+* `;every {duration} {time unit} {command}` will perform a "scheduled" task. Can call a single command or a script with a semicolon.
 
 	```
 	>;every 91 seconds PREDICT WEATHER
@@ -183,4 +183,4 @@ I have plans to make Dobby a lot more powerful, working across sessions on the s
 
 * (post parsing) A RESTful interface to return real-time character information, this could make it easy to create a single-page HTML application to add things like health/spirit/stamina/fatigue bars to clients such as Avalon. Or by combining dobby services you could create a display of all your friends, their health/spirit/stamina/fatigue, location, and etc. User interfaces could also be done in the browser for things like script writing/management, or even for mapping programs.
 
-* Auto-mapping, support for Genie map repository, and an HTML map interface (using [konva.ja](https://konvajs.github.io/)). The map should allow drag/explore, click to follow links, and double-click to move.
+* Auto-mapping, support for Genie map repository, and an HTML map interface (using [konva.js](https://konvajs.github.io/)). The map should allow drag/explore, click to follow links, and double-click to move.

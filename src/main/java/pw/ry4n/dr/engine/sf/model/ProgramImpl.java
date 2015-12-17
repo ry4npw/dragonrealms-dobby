@@ -58,7 +58,7 @@ public class ProgramImpl implements Program {
 		} catch (Exception e) {
 			if (serverToClient != null) {
 				try {
-					serverToClient.send("dobby [ERROR! " + e.getMessage() + "]");
+					serverToClient.send("ERROR! " + e.getMessage());
 				} catch (IOException e1) {
 					System.out.println("ERROR! Unable to write to client stream");
 				}
