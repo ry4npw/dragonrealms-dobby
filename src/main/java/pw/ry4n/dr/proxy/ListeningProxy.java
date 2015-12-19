@@ -35,9 +35,8 @@ public class ListeningProxy extends AbstractProxy {
 
 	@Override
 	public void send(String line) throws IOException {
-		to.write("dobby [".getBytes());
-		to.write(line.getBytes());
-		to.write("]".getBytes());
-		to.write(NEWLINE);
+		String dobby = "dobby [" + line + "]\n";
+		// write once to prevent conflicts with other threads
+		to.write(dobby.getBytes());
 	}
 }
