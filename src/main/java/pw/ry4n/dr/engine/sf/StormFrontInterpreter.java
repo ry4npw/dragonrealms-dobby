@@ -96,7 +96,6 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 							if (!State.PAUSED.equals(state)) {
 								resumeScript();
 								matchList.clear();
-								waitForRoundtime();
 							}
 						} catch (InterruptedException e) {
 							// do nothing
