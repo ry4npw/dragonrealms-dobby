@@ -112,8 +112,8 @@ public class InterceptingProxy extends AbstractProxy {
 			TimedThread tt = parseEvery(substring);
 			scripts.add(tt);
 			Thread t = new Thread(tt);
-			t.start();
 			tt.setThread(t);
+			t.start();
 		} catch (Exception e) {
 			try {
 				sendUserMessage(e.getMessage());
