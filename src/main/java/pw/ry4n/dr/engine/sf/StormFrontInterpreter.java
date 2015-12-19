@@ -93,11 +93,9 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 							}
 							// it is possible that the script was manually
 							// paused while waiting, so do not just resume.
-							if (State.MATCHING.equals(state)) {
+							if (!State.PAUSED.equals(state)) {
 								resumeScript();
-								synchronized (matchList) {
-									matchList.clear();
-								}
+								matchList.clear();
 								waitForRoundtime();
 							}
 						} catch (InterruptedException e) {
@@ -506,28 +504,28 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 			return;
 		}
 
-		switch (state) {
-		case MATCHING:
-			MatchToken token = match(line);
-			if (token != null) {
-				goTo(replaceVariables(token.getLabel()));
-				synchronized (monitorObject) {
+		synchronized (state) {
+			switch (state) {
+			case MATCHING:
+				MatchToken token = match(line);
+				if (token != null) {
+					goTo(replaceVariables(token.getLabel()));
 					monitorObject.notify();
 				}
-			}
-			break;
-		case WAITING:
-			if (waitForMatchToken != null) {
-				if (waitForMatchToken.match(line)) {
-					waitForMatchToken = null;
+				break;
+			case WAITING:
+				if (waitForMatchToken != null) {
+					if (waitForMatchToken.match(line)) {
+						waitForMatchToken = null;
+						resumeScript();
+					}
+				} else {
 					resumeScript();
 				}
-			} else {
-				resumeScript();
+				break;
+			default:
+				break;
 			}
-			break;
-		default:
-			break;
 		}
 	}
 
