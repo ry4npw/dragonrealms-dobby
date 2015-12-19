@@ -51,15 +51,15 @@ public class InterceptingProxy extends AbstractProxy {
 		String line = new String(buffer, 0, count, "iso-8859-1").replace("\n", "");
 		System.out.println(">" + line);
 
-		if (line.trim().startsWith(";")) {
-			// handle dobby commands (any line starting with a semicolon)
-			handleCommand(line.substring(1));
-		} else {
-			// all other input should be passed along to server
-			to.write(buffer, 0, count);
+		// remember this in our command queue
+		if (!"".equals(line.trim())) {
+			if (line.trim().startsWith(";")) {
+				// handle dobby commands (any line starting with a semicolon)
+				handleCommand(line.substring(1));
+			} else {
+				// all other input should be passed along to server
+				to.write(buffer, 0, count);
 
-			// remember this in our command queue
-			if (!"".equals(line.trim())) {
 				sentCommands.push(line);
 
 				// and to any listeners
@@ -134,13 +134,13 @@ public class InterceptingProxy extends AbstractProxy {
 
 		if (time.endsWith("s")) {
 			timeUnit = TimeUnit.SECONDS;
-			time = time.substring(0, time.length()-1);
+			time = time.substring(0, time.length() - 1);
 		} else if (time.endsWith("m")) {
 			timeUnit = TimeUnit.MINUTES;
-			time = time.substring(0, time.length()-1);
+			time = time.substring(0, time.length() - 1);
 		} else if (time.endsWith("h")) {
 			timeUnit = TimeUnit.HOURS;
-			time = time.substring(0, time.length()-1);
+			time = time.substring(0, time.length() - 1);
 		}
 
 		try {
