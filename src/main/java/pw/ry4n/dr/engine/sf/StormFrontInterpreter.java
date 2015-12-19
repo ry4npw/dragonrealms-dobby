@@ -506,26 +506,28 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 			return;
 		}
 
-		switch (state) {
-		case MATCHING:
-			MatchToken token = match(line);
-			if (token != null) {
-				goTo(replaceVariables(token.getLabel()));
-				monitorObject.notify();
-			}
-			break;
-		case WAITING:
-			if (waitForMatchToken != null) {
-				if (waitForMatchToken.match(line)) {
-					waitForMatchToken = null;
+		synchronized (monitorObject) {
+			switch (state) {
+			case MATCHING:
+				MatchToken token = match(line);
+				if (token != null) {
+					goTo(replaceVariables(token.getLabel()));
+					monitorObject.notify();
+				}
+				break;
+			case WAITING:
+				if (waitForMatchToken != null) {
+					if (waitForMatchToken.match(line)) {
+						waitForMatchToken = null;
+						resumeScript();
+					}
+				} else {
 					resumeScript();
 				}
-			} else {
-				resumeScript();
+				break;
+			default:
+				break;
 			}
-			break;
-		default:
-			break;
 		}
 	}
 
