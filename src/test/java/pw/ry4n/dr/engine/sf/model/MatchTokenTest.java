@@ -14,7 +14,9 @@ public class MatchTokenTest {
 	@Test
 	public void testMatchre() {
 		MatchToken token = new MatchToken(MatchToken.REGEX, "(nugget|tear)");
-		assertTrue(
-				token.match("When the dust clears, both a soapstone pebble and a huge platinum nugget are visible on the ground."));
+		assertTrue(token.match(
+				"When the dust clears, both a soapstone pebble and a huge platinum nugget are visible on the ground."));
+		assertFalse(
+				token.match("You take a moment to look for all the items in the area and see a small soapstone rock."));
 	}
 }

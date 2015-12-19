@@ -449,6 +449,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 	public void stopScript() {
 		synchronized (monitorObject) {
 			state = State.STOPPED;
+			monitorObject.notify();
 		}
 	}
 
@@ -458,6 +459,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 				// remember lastState for pausing
 				lastState = state;
 				state = State.PAUSED;
+				monitorObject.notify();
 
 				try {
 					sendMessageToClient("PAUSED");
@@ -504,28 +506,26 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 			return;
 		}
 
-		synchronized (state) {
-			switch (state) {
-			case MATCHING:
-				MatchToken token = match(line);
-				if (token != null) {
-					goTo(replaceVariables(token.getLabel()));
-					monitorObject.notify();
-				}
-				break;
-			case WAITING:
-				if (waitForMatchToken != null) {
-					if (waitForMatchToken.match(line)) {
-						waitForMatchToken = null;
-						resumeScript();
-					}
-				} else {
+		switch (state) {
+		case MATCHING:
+			MatchToken token = match(line);
+			if (token != null) {
+				goTo(replaceVariables(token.getLabel()));
+				monitorObject.notify();
+			}
+			break;
+		case WAITING:
+			if (waitForMatchToken != null) {
+				if (waitForMatchToken.match(line)) {
+					waitForMatchToken = null;
 					resumeScript();
 				}
-				break;
-			default:
-				break;
+			} else {
+				resumeScript();
 			}
+			break;
+		default:
+			break;
 		}
 	}
 
