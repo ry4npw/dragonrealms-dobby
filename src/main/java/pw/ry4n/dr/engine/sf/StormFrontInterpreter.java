@@ -91,9 +91,13 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 							} else {
 								monitorObject.wait();
 							}
-							resumeScript();
-							matchList.clear();
-							waitForRoundtime();
+							// it is possible that the script was manually
+							// paused while waiting, so do not just resume.
+							if (State.MATCHING.equals(state)) {
+								resumeScript();
+								matchList.clear();
+								waitForRoundtime();
+							}
 						} catch (InterruptedException e) {
 							// do nothing
 						}
