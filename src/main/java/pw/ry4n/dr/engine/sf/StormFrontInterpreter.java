@@ -456,18 +456,19 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 
 	public void pauseScript() {
 		synchronized (monitorObject) {
-			if (!State.STOPPED.equals(state)) {
+			if (!State.STOPPED.equals(state) && !State.PAUSED.equals(state)) {
 				// remember lastState for pausing
 				lastState = state;
 				state = State.PAUSED;
+
+				try {
+					sendMessageToClient("PAUSED");
+				} catch (IOException e) {
+					// ignore problems sending message to client
+				}
 			}
 		}
 
-		try {
-			sendMessageToClient("PAUSED");
-		} catch (IOException e) {
-			// ignore problems sending message to client
-		}
 	}
 
 	public void resumeScript() {
@@ -480,7 +481,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 				if (State.PAUSED.equals(state)) {
 					// when paused, revert state to lastState
 					state = lastState;
-					sendMessageToClient("RUNNING");
+					sendMessageToClient("RESUMING");
 				} else {
 					state = State.RUNNING;
 				}
