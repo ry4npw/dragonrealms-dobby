@@ -219,7 +219,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 		} else {
 			try {
 				state = State.STOPPED;
-				sendMessageToClient("ERROR! Label" + label + " does not exist.");
+				sendMessageToClient("ERROR! Label " + label + " does not exist.");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -353,6 +353,12 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 		}
 
 		return result.toString();
+	}
+
+	String replaceVariables(String argument) {
+		StringBuilder sb = new StringBuilder();
+		replaceVariables(sb, argument);
+		return sb.toString();
 	}
 
 	void replaceVariables(StringBuilder result, String argument) {
@@ -498,7 +504,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 			case MATCHING:
 				MatchToken token = match(line);
 				if (token != null) {
-					goTo(token.getLabel());
+					goTo(replaceVariables(token.getLabel()));
 					monitorObject.notify();
 				}
 				break;

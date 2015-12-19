@@ -229,9 +229,7 @@ public class InterceptingProxy extends AbstractProxy {
 			}
 		}
 
-		for (Program script : stoppedScripts) {
-			scripts.remove(script);
-		}
+		scripts.removeAll(stoppedScripts);
 	}
 
 	private void pauseAllScripts() {
@@ -251,7 +249,10 @@ public class InterceptingProxy extends AbstractProxy {
 	}
 
 	private void pauseScript(Program script) {
-		script.pause();
+		// only pause running scripts.
+		if (!State.STOPPED.equals(script.getState())) {
+			script.pause();
+		}
 	}
 
 	void repeat(String argument) throws IOException {
@@ -308,8 +309,8 @@ public class InterceptingProxy extends AbstractProxy {
 	}
 
 	private void resumeScript(Program script) {
+		// only resume paused scripts
 		if (State.PAUSED.equals(script.getState())) {
-			// only resume paused scripts
 			script.resume();
 		}
 	}

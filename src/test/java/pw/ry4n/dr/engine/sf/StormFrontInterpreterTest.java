@@ -39,6 +39,21 @@ public class StormFrontInterpreterTest {
 	}
 
 	@Test
+	public void testReplaceVariablesWithString() {
+		ProgramImpl program = new ProgramImpl();
+		program.getVariables().put("variable1", "one");
+		program.getVariables().put("variable2", "two");
+
+		StormFrontInterpreter interpreter = new StormFrontInterpreter(program);
+
+		String result = interpreter.replaceVariables("label-%variable2");
+		assertEquals("label-two", result);
+
+		result = interpreter.replaceVariables("label%variable1%%variable2");
+		assertEquals("labelonetwo", result);
+	}
+
+	@Test
 	public void testRunWithIf() throws IOException, InterruptedException {
 		// mocks
 		AbstractProxy sendToClient = mock(AbstractProxy.class);

@@ -103,7 +103,7 @@ public class CommandQueue implements Runnable, StreamListener {
 			if (lastCommand != null) {
 				try {
 					getSendProxy().send(lastCommand);
-					System.out.println("[CommandSender] retry>" + lastCommand);
+					System.out.println("> [CommandQueue] " + lastCommand);
 					commandsWaitingForResponse++;
 				} catch (IOException e) {
 					e.printStackTrace();
