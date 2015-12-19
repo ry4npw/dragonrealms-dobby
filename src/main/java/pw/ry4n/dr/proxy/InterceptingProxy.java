@@ -319,8 +319,8 @@ public class InterceptingProxy extends AbstractProxy {
 		Program script = new ProgramImpl(input, this, companion);
 		scripts.add(script);
 		Thread t = new Thread(script);
-		t.start();
 		script.setThread(t);
+		t.start();
 	}
 
 	void sendUserMessage(String message) throws IOException {
