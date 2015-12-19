@@ -1,5 +1,7 @@
 package pw.ry4n.dr.engine.sf.model;
 
+import java.util.regex.Pattern;
+
 public class MatchToken {
 	public static final byte STRING = 1;
 	public static final byte REGEX = 2;
@@ -49,7 +51,7 @@ public class MatchToken {
 
 	public boolean match(String line) {
 		if (REGEX == type) {
-			return line.matches(matchString);
+			return Pattern.compile(matchString).matcher(line).find();
 		} else {
 			return line.contains(matchString);
 		}
