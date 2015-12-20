@@ -234,7 +234,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 	}
 
 	void if_(Line currentLine) throws IOException {
-		if (currentLine.getN() >= program.getVariables().size()) {
+		if (program.getVariables().containsKey(String.valueOf(currentLine.getN()))) {
 			Line subLine = new Line(currentLine.getSubCommand(), currentLine.getArguments());
 			executeLine(subLine);
 		}
@@ -313,9 +313,11 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 
 	void shiftVariables() {
 		for (int i = 1; i < 10; i++) {
-			String value = program.getVariables().get(i);
-			if (value != null) {
-				program.getVariables().remove(i);
+			String value = program.getVariables().remove(String.valueOf(i));
+
+			if (value == null) {
+				break;
+			} else if (i > 1) {
 				program.getVariables().put(String.valueOf(i - 1), value);
 			}
 		}
@@ -467,7 +469,6 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 				}
 			}
 		}
-
 	}
 
 	public void resumeScript() {

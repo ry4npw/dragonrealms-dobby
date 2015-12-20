@@ -25,6 +25,41 @@ import pw.ry4n.dr.proxy.InterceptingProxy;
 
 public class StormFrontInterpreterTest {
 	@Test
+	public void testFormatArgument() {
+		ProgramImpl program = new ProgramImpl();
+		StormFrontInterpreter interpreter = new StormFrontInterpreter(program);
+
+		assertEquals("dust bunn", interpreter.formatArgument("dust_bunn"));
+		assertEquals("dust bunn", interpreter.formatArgument("\"dust_bunn\""));
+	}
+
+	@Test
+	public void testGetVariable0() {
+		ProgramImpl program = new ProgramImpl();
+		program.getVariables().put("1", "one");
+		program.getVariables().put("2", "two");
+
+		StormFrontInterpreter interpreter = new StormFrontInterpreter(program);
+
+		String output = interpreter.getVariable0();
+
+		assertEquals("one two", output);
+
+		
+	}
+
+	@Test
+	public void testNextroom() throws IOException {
+		ProgramImpl program = new ProgramImpl();
+		StormFrontInterpreter interpreter = new StormFrontInterpreter(program);
+
+		interpreter.nextroom();
+
+		assertTrue(interpreter.state == State.WAITING);
+		assertEquals(MatchToken.REGEX, interpreter.waitForMatchToken.getType());
+	}
+
+	@Test
 	public void testReplaceVariables() {
 		ProgramImpl program = new ProgramImpl();
 		program.getVariables().put("1", "one");
@@ -134,22 +169,24 @@ public class StormFrontInterpreterTest {
 	}
 
 	@Test
-	public void testNextroom() throws IOException {
+	public void testShift() {
 		ProgramImpl program = new ProgramImpl();
+		program.getVariables().put("1", "one");
+		program.getVariables().put("2", "two");
+
 		StormFrontInterpreter interpreter = new StormFrontInterpreter(program);
 
-		interpreter.nextroom();
+		assertEquals(2, program.getVariables().size());
+		assertEquals("one", program.getVariables().get("1"));
 
-		assertTrue(interpreter.state == State.WAITING);
-		assertEquals(MatchToken.REGEX, interpreter.waitForMatchToken.getType());
-	}
+		interpreter.shiftVariables();
 
-	public void testFormatArgument() {
-		ProgramImpl program = new ProgramImpl();
-		StormFrontInterpreter interpreter = new StormFrontInterpreter(program);
+		assertEquals(1, program.getVariables().size());
+		assertEquals("two", program.getVariables().get("1"));
 
-		assertEquals("dust bunn", interpreter.formatArgument("dust_bunn"));
-		assertEquals("dust bunn", interpreter.formatArgument("\"dust_bunn\""));
+		interpreter.shiftVariables();
+
+		assertTrue(program.getVariables().isEmpty());
 	}
 
 	private Answer<Object> log(final String proxyName) {
