@@ -27,4 +27,5 @@ public class Commands {
 	public static final byte DIVIDE = 23; // follows COUNTER
 	public static final byte COMMENT = 24; // #
 	public static final byte LABEL = 25;
+	public static final byte DELETEVARIABLE = 26;
 }
