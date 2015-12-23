@@ -43,7 +43,8 @@ public class LineParser {
 					&& (this.dataBuffer.data[this.dataPosition + 3] == 'n' || this.dataBuffer.data[this.dataPosition + 3] == 'N')
 					&& (this.dataBuffer.data[this.dataPosition + 4] == 't' || this.dataBuffer.data[this.dataPosition + 4] == 'T')
 					&& (this.dataBuffer.data[this.dataPosition + 5] == 'e' || this.dataBuffer.data[this.dataPosition + 5] == 'E')
-					&& (this.dataBuffer.data[this.dataPosition + 6] == 'r' || this.dataBuffer.data[this.dataPosition + 6] == 'R')) {
+					&& (this.dataBuffer.data[this.dataPosition + 6] == 'r' || this.dataBuffer.data[this.dataPosition + 6] == 'R')
+					&& this.dataBuffer.data[this.dataPosition + 7] == ' ') {
 				parseCounter(line);
 			}
 			break;
@@ -51,7 +52,8 @@ public class LineParser {
 		case 'E':
 			if ((this.dataBuffer.data[this.dataPosition + 1] == 'c' || this.dataBuffer.data[this.dataPosition + 1] == 'C')
 					&& (this.dataBuffer.data[this.dataPosition + 2] == 'h' || this.dataBuffer.data[this.dataPosition + 2] == 'H')
-					&& (this.dataBuffer.data[this.dataPosition + 3] == 'o' || this.dataBuffer.data[this.dataPosition + 3] == 'O')) {
+					&& (this.dataBuffer.data[this.dataPosition + 3] == 'o' || this.dataBuffer.data[this.dataPosition + 3] == 'O')
+					&& this.dataBuffer.data[this.dataPosition + 4] == ' ') {
 				// ECHO
 				line.setCommand(Commands.ECHO);
 				this.dataPosition += 4;
@@ -67,7 +69,8 @@ public class LineParser {
 		case 'G':
 			if ((this.dataBuffer.data[this.dataPosition + 1] == 'o' || this.dataBuffer.data[this.dataPosition + 1] == 'O')
 					&& (this.dataBuffer.data[this.dataPosition + 2] == 't' || this.dataBuffer.data[this.dataPosition + 2] == 'T')
-					&& (this.dataBuffer.data[this.dataPosition + 3] == 'o' || this.dataBuffer.data[this.dataPosition + 3] == 'O')) {
+					&& (this.dataBuffer.data[this.dataPosition + 3] == 'o' || this.dataBuffer.data[this.dataPosition + 3] == 'O')
+					&& this.dataBuffer.data[this.dataPosition + 4] == ' ') {
 				// GOTO
 				line.setCommand(Commands.GOTO);
 				this.dataPosition += 4;
@@ -85,7 +88,8 @@ public class LineParser {
 		case 'M':
 			if ((this.dataBuffer.data[this.dataPosition + 1] == 'o' || this.dataBuffer.data[this.dataPosition + 1] == 'O')
 					&& (this.dataBuffer.data[this.dataPosition + 2] == 'v' || this.dataBuffer.data[this.dataPosition + 2] == 'V')
-					&& (this.dataBuffer.data[this.dataPosition + 3] == 'e' || this.dataBuffer.data[this.dataPosition + 3] == 'E')) {
+					&& (this.dataBuffer.data[this.dataPosition + 3] == 'e' || this.dataBuffer.data[this.dataPosition + 3] == 'E')
+					&& this.dataBuffer.data[this.dataPosition + 4] == ' ') {
 				// MOVE
 				this.dataPosition += 4;
 				line.setCommand(Commands.MOVE);
@@ -95,7 +99,8 @@ public class LineParser {
 					&& (this.dataBuffer.data[this.dataPosition + 3] == 'c' || this.dataBuffer.data[this.dataPosition + 3] == 'C')
 					&& (this.dataBuffer.data[this.dataPosition + 4] == 'h' || this.dataBuffer.data[this.dataPosition + 4] == 'H')) {
 				if ((this.dataBuffer.data[this.dataPosition + 5] == 'r' || this.dataBuffer.data[this.dataPosition + 5] == 'R')
-						&& (this.dataBuffer.data[this.dataPosition + 6] == 'e' || this.dataBuffer.data[this.dataPosition + 6] == 'E')) {
+						&& (this.dataBuffer.data[this.dataPosition + 6] == 'e' || this.dataBuffer.data[this.dataPosition + 6] == 'E')
+						&& this.dataBuffer.data[this.dataPosition + 7] == ' ') {
 					// MATCHRE
 					this.dataPosition += 7;
 					line.setCommand(Commands.MATCHRE);
@@ -139,7 +144,8 @@ public class LineParser {
 				line.setCommand(Commands.PAUSE);
 				this.dataPosition += 5;
 			} else if ((this.dataBuffer.data[this.dataPosition + 1] == 'u' || this.dataBuffer.data[this.dataPosition + 1] == 'U')
-					&& (this.dataBuffer.data[this.dataPosition + 2] == 't' || this.dataBuffer.data[this.dataPosition + 2] == 'T')) {
+					&& (this.dataBuffer.data[this.dataPosition + 2] == 't' || this.dataBuffer.data[this.dataPosition + 2] == 'T')
+					&& this.dataBuffer.data[this.dataPosition + 3] == ' ') {
 				// PUT
 				line.setCommand(Commands.PUT);
 				this.dataPosition += 3;
@@ -149,7 +155,8 @@ public class LineParser {
 		case 'S':
 			if ((this.dataBuffer.data[this.dataPosition + 1] == 'a' || this.dataBuffer.data[this.dataPosition + 1] == 'A')
 					&& (this.dataBuffer.data[this.dataPosition + 2] == 'v' || this.dataBuffer.data[this.dataPosition + 2] == 'V')
-					&& (this.dataBuffer.data[this.dataPosition + 3] == 'e' || this.dataBuffer.data[this.dataPosition + 3] == 'E')) {
+					&& (this.dataBuffer.data[this.dataPosition + 3] == 'e' || this.dataBuffer.data[this.dataPosition + 3] == 'E')
+					&& this.dataBuffer.data[this.dataPosition + 4] == ' ') {
 				// SAVE
 				line.setCommand(Commands.SAVE);
 				this.dataPosition += 4;
@@ -162,7 +169,8 @@ public class LineParser {
 					&& (this.dataBuffer.data[this.dataPosition + 7] == 'a' || this.dataBuffer.data[this.dataPosition + 7] == 'A')
 					&& (this.dataBuffer.data[this.dataPosition + 8] == 'b' || this.dataBuffer.data[this.dataPosition + 8] == 'B')
 					&& (this.dataBuffer.data[this.dataPosition + 9] == 'l' || this.dataBuffer.data[this.dataPosition + 9] == 'L')
-					&& (this.dataBuffer.data[this.dataPosition + 10] == 'e' || this.dataBuffer.data[this.dataPosition + 10] == 'E')) {
+					&& (this.dataBuffer.data[this.dataPosition + 10] == 'e' || this.dataBuffer.data[this.dataPosition + 10] == 'E')
+					&& this.dataBuffer.data[this.dataPosition + 11] == ' ') {
 				// SETVARIABLE
 				line.setCommand(Commands.SETVARIABLE);
 				this.dataPosition += 11;
@@ -184,7 +192,8 @@ public class LineParser {
 					&& (this.dataBuffer.data[this.dataPosition + 5] == 'o' || this.dataBuffer.data[this.dataPosition + 5] == 'O')
 					&& (this.dataBuffer.data[this.dataPosition + 6] == 'r' || this.dataBuffer.data[this.dataPosition + 6] == 'R')
 					&& (this.dataBuffer.data[this.dataPosition + 7] == 'r' || this.dataBuffer.data[this.dataPosition + 7] == 'R')
-					&& (this.dataBuffer.data[this.dataPosition + 8] == 'e' || this.dataBuffer.data[this.dataPosition + 8] == 'E')) {
+					&& (this.dataBuffer.data[this.dataPosition + 8] == 'e' || this.dataBuffer.data[this.dataPosition + 8] == 'E')
+					&& this.dataBuffer.data[this.dataPosition + 9] == ' ') {
 				// WAITFORRE
 				line.setCommand(Commands.WAITFORRE);
 				this.dataPosition += 9;
@@ -194,7 +203,8 @@ public class LineParser {
 					&& (this.dataBuffer.data[this.dataPosition + 3] == 't' || this.dataBuffer.data[this.dataPosition + 3] == 'T')
 					&& (this.dataBuffer.data[this.dataPosition + 4] == 'f' || this.dataBuffer.data[this.dataPosition + 4] == 'F')
 					&& (this.dataBuffer.data[this.dataPosition + 5] == 'o' || this.dataBuffer.data[this.dataPosition + 5] == 'O')
-					&& (this.dataBuffer.data[this.dataPosition + 6] == 'r' || this.dataBuffer.data[this.dataPosition + 6] == 'R')) {
+					&& (this.dataBuffer.data[this.dataPosition + 6] == 'r' || this.dataBuffer.data[this.dataPosition + 6] == 'R')
+					&& this.dataBuffer.data[this.dataPosition + 7] == ' ') {
 				// WAITFOR
 				line.setCommand(Commands.WAITFOR);
 				this.dataPosition += 7;
@@ -225,7 +235,7 @@ public class LineParser {
 
 		if (line.getCommand() == Commands.NONE) {
 			// ParserException
-			throw new ParserException(this.lineCounter + ": Unrecognized command");
+			throw new ParserException("line " + this.lineCounter + ": Unrecognized command");
 		}
 
 		return line;

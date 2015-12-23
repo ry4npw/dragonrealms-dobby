@@ -69,33 +69,33 @@ public class InterceptingProxy extends AbstractProxy {
 	}
 
 	private void handleCommand(String input) throws IOException {
-		if (input != null && input.toLowerCase().startsWith("every")) {
+		if (input != null && input.toLowerCase().startsWith("every ")) {
 			int spaceAt = input.indexOf(' ');
 			if (spaceAt >= 5) {
 				every(input.substring(spaceAt + 1));
 			}
-		} else if (input != null && input.toLowerCase().startsWith("list")) {
+		} else if (input != null && input.toLowerCase().equals("list")) {
 			list();
-		} else if (input != null && input.toLowerCase().startsWith("pause")) {
+		} else if (input != null && (input.toLowerCase().equals("pause") || input.toLowerCase().startsWith("pause "))) {
 			int spaceAt = input.indexOf(' ');
 			if (spaceAt >= 5) {
 				pauseScript(input.substring(spaceAt + 1));
 			} else {
 				pauseAllScripts();
 			}
-		} else if (input != null && input.toLowerCase().startsWith("repeat")) {
+		} else if (input != null && input.toLowerCase().startsWith("repeat ")) {
 			int spaceAt = input.indexOf(' ');
 			if (spaceAt >= 6) {
 				repeat(input.substring(spaceAt + 1));
 			}
-		} else if (input != null && input.toLowerCase().startsWith("resume")) {
+		} else if (input != null && (input.toLowerCase().equals("resume") || input.toLowerCase().startsWith("resume "))) {
 			int spaceAt = input.indexOf(' ');
 			if (spaceAt >= 6) {
 				resumeScript(input.substring(spaceAt + 1));
 			} else {
 				resumeAllScripts();
 			}
-		} else if (input != null && input.toLowerCase().startsWith("stop")) {
+		} else if (input != null && (input.toLowerCase().equals("stop") || input.toLowerCase().startsWith("stop"))) {
 			int spaceAt = input.indexOf(' ');
 			if (spaceAt >= 4) {
 				stopScript(input.substring(spaceAt + 1));
