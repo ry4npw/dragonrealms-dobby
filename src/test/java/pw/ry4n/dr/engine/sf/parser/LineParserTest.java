@@ -28,6 +28,7 @@ public class LineParserTest {
 		assertEquals("... wait", line.getArguments()[1]);
 	}
 
+	@Test
 	public void testParseAgumentsWithQuotes() {
 		Line line = parseStringToLine("save \"a string with spaces\"");
 		assertNotNull(line.getArguments());
