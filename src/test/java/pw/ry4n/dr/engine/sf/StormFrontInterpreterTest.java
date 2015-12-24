@@ -60,6 +60,34 @@ public class StormFrontInterpreterTest {
 	}
 
 	@Test
+	public void testSetVariable() {
+		ProgramImpl program = new ProgramImpl();
+
+		StormFrontInterpreter interpreter = new StormFrontInterpreter(program);
+
+		Line line = new Line();
+		line.setArguments(new String[] {"name", "value"});
+
+		interpreter.setVariable(line);
+		assertEquals(1, program.getVariables().size());
+		assertEquals("value", program.getVariables().get("name"));
+	}
+
+	@Test
+	public void testDeleteVariable() {
+		ProgramImpl program = new ProgramImpl();
+		program.getVariables().put("name", "value");
+
+		StormFrontInterpreter interpreter = new StormFrontInterpreter(program);
+
+		Line line = new Line();
+		line.setArguments(new String[] {"name"});
+
+		interpreter.deleteVariable(line);
+		assertTrue(program.getVariables().isEmpty());
+	}
+
+	@Test
 	public void testReplaceVariables() {
 		ProgramImpl program = new ProgramImpl();
 		program.getVariables().put("1", "one");

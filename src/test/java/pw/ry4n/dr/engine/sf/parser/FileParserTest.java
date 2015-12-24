@@ -32,7 +32,7 @@ public class FileParserTest {
 
 	@Test
 	public void testParse() {
-		DataCharBuffer dataCharBuffer = new DataCharBuffer("# a program!\nexit".toCharArray());
+		DataCharBuffer dataCharBuffer = new DataCharBuffer("move n # a program!\nexit".toCharArray());
 		FileParser fileParser = new FileParser();
 		ProgramImpl program = new ProgramImpl();
 		fileParser.parseFile(program, dataCharBuffer);
@@ -41,10 +41,12 @@ public class FileParserTest {
 		assertNotNull(program.getLines());
 
 		// assert comments were not added to the program
-		assertEquals(1, program.getLines().size());
+		assertEquals(2, program.getLines().size());
 
 		// assert that our command was correctly parsed
-		assertEquals(Commands.EXIT, program.getLines().get(0).getCommand());
+		assertEquals(Commands.MOVE, program.getLines().get(0).getCommand());
+		assertEquals("n", program.getLines().get(0).getArguments()[0]);
+		assertEquals(Commands.EXIT, program.getLines().get(1).getCommand());
 	}
 
 	@Test

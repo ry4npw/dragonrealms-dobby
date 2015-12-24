@@ -127,6 +127,9 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 		case Commands.COUNTER:
 			counter(currentLine);
 			break;
+		case Commands.DELETEVARIABLE:
+			deleteVariable(currentLine);
+			break;
 		case Commands.ECHO:
 			echo(currentLine);
 			break;
@@ -205,6 +208,11 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 		default:
 			break;
 		}
+	}
+
+	void deleteVariable(Line currentLine) {
+		String key = currentLine.getArguments()[0];
+		program.getVariables().remove(key);
 	}
 
 	void echo(Line currentLine) throws IOException {

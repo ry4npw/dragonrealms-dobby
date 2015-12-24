@@ -107,7 +107,7 @@ public class InterceptingProxy extends AbstractProxy {
 		}
 	}
 
-	private void every(String substring) {
+	private void every(String substring) throws IOException {
 		try {
 			TimedThread tt = parseEvery(substring);
 			scripts.add(tt);
@@ -115,12 +115,8 @@ public class InterceptingProxy extends AbstractProxy {
 			tt.setThread(t);
 			t.start();
 		} catch (Exception e) {
-			try {
-				sendUserMessage(e.getMessage());
-				sendUserMessage("Please try something like:  ;every 91 seconds PREDICT WEATHER");
-			} catch (IOException ioe) {
-				// ignore send errors
-			}
+			sendUserMessage(e.getMessage());
+			sendUserMessage("Please try something like:  ;every 91 seconds PREDICT WEATHER");
 		}
 	}
 
@@ -238,8 +234,12 @@ public class InterceptingProxy extends AbstractProxy {
 		}
 	}
 
-	private void pauseScript(String argument) {
-		pauseScript(Integer.parseInt(argument));
+	private void pauseScript(String argument) throws IOException {
+		try {
+			pauseScript(Integer.parseInt(argument));
+		} catch (NumberFormatException e) {
+			sendUserMessage("'" + argument + "'" +" is not a numeric script identifier from ;list");
+		}
 	}
 
 	private void pauseScript(int i) {
@@ -298,8 +298,12 @@ public class InterceptingProxy extends AbstractProxy {
 		}
 	}
 
-	private void resumeScript(String argument) {
-		resumeScript(Integer.parseInt(argument));
+	private void resumeScript(String argument) throws IOException {
+		try {
+			resumeScript(Integer.parseInt(argument));
+		} catch (NumberFormatException e) {
+			sendUserMessage("'" + argument + "'" +" is not a numeric script identifier from ;list");
+		}
 	}
 
 	private void resumeScript(int i) {
@@ -333,8 +337,12 @@ public class InterceptingProxy extends AbstractProxy {
 		}
 	}
 
-	private void stopScript(String argument) {
-		stopScript(Integer.parseInt(argument));
+	private void stopScript(String argument) throws IOException {
+		try {
+			stopScript(Integer.parseInt(argument));
+		} catch (NumberFormatException e) {
+			sendUserMessage("'" + argument + "'" +" is not a numeric script identifier from ;list");
+		}
 	}
 
 	private void stopScript(int i) {

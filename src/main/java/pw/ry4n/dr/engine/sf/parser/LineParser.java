@@ -34,7 +34,7 @@ public class LineParser {
 		case '#':
 			// COMMENT
 			line.setCommand(Commands.COMMENT);
-			skipLine(); // skip comments
+			skipComment(); // skip comments
 			break;
 		case 'c':
 		case 'C':
@@ -46,6 +46,27 @@ public class LineParser {
 					&& (this.dataBuffer.data[this.dataPosition + 6] == 'r' || this.dataBuffer.data[this.dataPosition + 6] == 'R')
 					&& this.dataBuffer.data[this.dataPosition + 7] == ' ') {
 				parseCounter(line);
+			}
+			break;
+		case 'd':
+		case 'D':
+			if ((this.dataBuffer.data[this.dataPosition + 1] == 'e' || this.dataBuffer.data[this.dataPosition + 1] == 'E')
+					&& (this.dataBuffer.data[this.dataPosition + 2] == 'l' || this.dataBuffer.data[this.dataPosition + 2] == 'L')
+					&& (this.dataBuffer.data[this.dataPosition + 3] == 'e' || this.dataBuffer.data[this.dataPosition + 3] == 'E')
+					&& (this.dataBuffer.data[this.dataPosition + 4] == 't' || this.dataBuffer.data[this.dataPosition + 4] == 'T')
+					&& (this.dataBuffer.data[this.dataPosition + 5] == 'e' || this.dataBuffer.data[this.dataPosition + 5] == 'E')
+					&& (this.dataBuffer.data[this.dataPosition + 6] == 'v' || this.dataBuffer.data[this.dataPosition + 6] == 'V')
+					&& (this.dataBuffer.data[this.dataPosition + 7] == 'a' || this.dataBuffer.data[this.dataPosition + 7] == 'A')
+					&& (this.dataBuffer.data[this.dataPosition + 8] == 'r' || this.dataBuffer.data[this.dataPosition + 8] == 'R')
+					&& (this.dataBuffer.data[this.dataPosition + 9] == 'i' || this.dataBuffer.data[this.dataPosition + 9] == 'I')
+					&& (this.dataBuffer.data[this.dataPosition + 10] == 'a' || this.dataBuffer.data[this.dataPosition + 10] == 'A')
+					&& (this.dataBuffer.data[this.dataPosition + 11] == 'b' || this.dataBuffer.data[this.dataPosition + 11] == 'B')
+					&& (this.dataBuffer.data[this.dataPosition + 12] == 'l' || this.dataBuffer.data[this.dataPosition + 12] == 'L')
+					&& (this.dataBuffer.data[this.dataPosition + 13] == 'e' || this.dataBuffer.data[this.dataPosition + 13] == 'E')
+					&& this.dataBuffer.data[this.dataPosition + 14] == ' ') {
+				// DELETEVARIABLE
+				line.setCommand(Commands.DELETEVARIABLE);
+				this.dataPosition += 14;
 			}
 			break;
 		case 'e':
@@ -93,7 +114,6 @@ public class LineParser {
 				// MOVE
 				this.dataPosition += 4;
 				line.setCommand(Commands.MOVE);
-				parseLabelAndMatchString(line);
 			} else if ((this.dataBuffer.data[this.dataPosition + 1] == 'a' || this.dataBuffer.data[this.dataPosition + 1] == 'A')
 					&& (this.dataBuffer.data[this.dataPosition + 2] == 't' || this.dataBuffer.data[this.dataPosition + 2] == 'T')
 					&& (this.dataBuffer.data[this.dataPosition + 3] == 'c' || this.dataBuffer.data[this.dataPosition + 3] == 'C')
@@ -457,14 +477,20 @@ public class LineParser {
 		}
 	}
 
-	void skipLine() {
+	void skipComment() {
 		while (!isEndOfLine()) {
 			this.dataPosition++;
 		}
 	}
 
+	void skipLine() {
+		while (!isEndOfLine() && !(this.dataBuffer.data[this.dataPosition] == '#')) {
+			this.dataPosition++;
+		}
+	}
+
 	boolean isEndOfLine() {
-		// EOF or CR or LF
+		// EOF or # or CR or LF
 		return !hasMoreChars() || this.dataBuffer.data[this.dataPosition] == '\r' || this.dataBuffer.data[this.dataPosition] == '\n';
 	}
 }

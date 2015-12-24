@@ -63,11 +63,18 @@ public class LineParserTest {
 	}
 
 	@Test
-	public void testParseLineWithComment() {
+	public void testParseCommentLine() {
 		Line line = parseStringToLine("# this is a comment\n");
 		assertNotNull(line);
 		assertEquals(Commands.COMMENT, line.getCommand());
 		assertNull(line.getArguments());
+	}
+
+	@Test
+	public void testSkipInLineComment() {
+		Line line = parseStringToLine("put n #go north");
+		assertEquals(Commands.PUT, line.getCommand());
+		assertEquals("n", line.getArguments()[0]);
 	}
 
 	@Test
