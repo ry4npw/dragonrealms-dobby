@@ -62,7 +62,6 @@ public class FileParserTest {
 
 		// and that it points to the right line
 		assertEquals(Commands.LABEL, program.getLines().get(program.getLabels().get("loop")).getCommand());
-		assertEquals("loop", program.getLines().get(program.getLabels().get("loop")).getArguments()[0]);
 	}
 
 	@Test

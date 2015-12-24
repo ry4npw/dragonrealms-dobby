@@ -60,7 +60,7 @@ public class LineParser {
 			} else if (this.dataBuffer.data[dataPosition] == ':') {
 				line.setCommand(Commands.LABEL);
 				String label = new String(this.dataBuffer.data, startPosition, this.dataPosition - startPosition);
-				line.setArguments(new String[] { label.toLowerCase() });
+				line.setArguments(new String[] { label });
 			}
 
 			dataPosition++;

@@ -88,7 +88,7 @@ public class LineParserTest {
 		assertEquals(Commands.LABEL, line.getCommand());
 
 		// labels should be converted to lowercase
-		assertEquals("loop", line.getArguments()[0]);
+		assertEquals("LOOP", line.getArguments()[0]);
 	}
 
 	@Test
