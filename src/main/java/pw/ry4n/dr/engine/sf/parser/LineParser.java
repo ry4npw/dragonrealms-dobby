@@ -23,13 +23,55 @@ public class LineParser {
 	}
 
 	public Line parseLine() {
-		skipWhiteSpace();
+		skipWhitespace();
 		if (!hasMoreChars()) {
 			return null;
 		}
 
 		Line line = new Line();
 
+		// first, check to see if this is a label
+		parseLabel(line);
+
+		// not a label, so parse command
+		if (Commands.LABEL != line.getCommand()) {
+			parseCommand(line);
+		}
+
+		// parse any remaining arguments
+		if (hasMoreChars()) {
+			parseArguments(line);
+		}
+
+		if (line.getCommand() == Commands.NONE) {
+			// ParserException
+			throw new ParserException("line " + this.lineCounter + ": Unrecognized command");
+		}
+
+		return line;
+	}
+
+	private void parseLabel(Line line) {
+		int startPosition = this.dataPosition;
+		while (!isEndOfLine()) {
+			if (Character.isWhitespace(this.dataBuffer.data[dataPosition])) {
+				// labels cannot contain whitespace
+				break;
+			} else if (this.dataBuffer.data[dataPosition] == ':') {
+				line.setCommand(Commands.LABEL);
+				String label = new String(this.dataBuffer.data, startPosition, this.dataPosition - startPosition);
+				line.setArguments(new String[] { label.toLowerCase() });
+			}
+
+			dataPosition++;
+		}
+		if (Commands.NONE == line.getCommand()) {
+			// we didn't find a label on this line, back to our starting position
+			this.dataPosition = startPosition;
+		}
+	}
+
+	private void parseCommand(Line line) {
 		switch (this.dataBuffer.data[this.dataPosition]) {
 		case '#':
 			// COMMENT
@@ -238,31 +280,10 @@ public class LineParser {
 			}
 			break;
 		}
-
-		if (hasMoreChars()) {
-			parseArguments(line);
-		}
-
-		if (line.getCommand() == Commands.NONE
-				&& line.getArguments() != null
-				&& line.getArguments().length > 0
-				&& line.getArguments()[0].endsWith(":")) {
-			// LABEL:
-			line.setCommand(Commands.LABEL);
-			String label = line.getArguments()[0];
-			line.getArguments()[0] = label.substring(0, label.length() - 1).toLowerCase();
-		}
-
-		if (line.getCommand() == Commands.NONE) {
-			// ParserException
-			throw new ParserException("line " + this.lineCounter + ": Unrecognized command");
-		}
-
-		return line;
 	}
 
 	private void parseLabelAndMatchString(Line line) {
-		skipWhiteSpace();
+		skipWhitespace();
 		if (!hasMoreChars()) {
 			throw new ParserException(this.lineCounter + ": MATCH statment must have a <label> and <match string>.");
 		}
@@ -280,7 +301,7 @@ public class LineParser {
 	}
 
 	private String getRestOfLine() {
-		skipWhiteSpace();
+		skipWhitespace();
 		int startPosition = this.dataPosition;
 		skipLine();
 		String matchString = new String(this.dataBuffer.data, startPosition, this.dataPosition - startPosition);
@@ -450,7 +471,7 @@ public class LineParser {
 		return this.dataBuffer.data.length > this.dataPosition && this.dataBuffer.data[this.dataPosition] != '\0';
 	}
 
-	void skipWhiteSpace() {
+	void skipWhitespace() {
 		boolean isWhiteSpace = true;
 		try {
 			while (isWhiteSpace) {

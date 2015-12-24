@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 
 import pw.ry4n.dr.engine.core.DataCharBuffer;
+import pw.ry4n.dr.engine.core.ParserException;
 import pw.ry4n.dr.engine.sf.model.Commands;
 import pw.ry4n.dr.engine.sf.model.Line;
 import pw.ry4n.dr.engine.sf.parser.LineParser;
@@ -103,6 +104,11 @@ public class LineParserTest {
 		assertEquals(Commands.COUNTER, line.getCommand());
 		assertEquals(Commands.SET, line.getSubCommand());
 		assertEquals("10", line.getArguments()[0]);
+	}
+
+	@Test(expected = ParserException.class)
+	public void testThrowsParserException() {
+		parseStringToLine("say Hello!");
 	}
 
 	private LineParser createLineParserWithString(String string) {

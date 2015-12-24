@@ -64,4 +64,15 @@ public class FileParserTest {
 		assertEquals(Commands.LABEL, program.getLines().get(program.getLabels().get("loop")).getCommand());
 		assertEquals("loop", program.getLines().get(program.getLabels().get("loop")).getArguments()[0]);
 	}
+
+	@Test
+	public void testParseLabelStartingWithKeyword() {
+		DataCharBuffer dataCharBuffer = new DataCharBuffer(("putpliers:\n" + "put stow pliers\n").toCharArray());
+		FileParser fileParser = new FileParser();
+		ProgramImpl program = new ProgramImpl();
+		fileParser.parseFile(program, dataCharBuffer);
+
+		// assert that our LOOP label exists
+		assertTrue(program.getLabels().containsKey("putpliers"));
+	}
 }
