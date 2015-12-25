@@ -1,9 +1,9 @@
-package pw.ry4n.dr.engine.sf.parser;
+package pw.ry4n.dr.engine.parser;
 
 import pw.ry4n.dr.engine.core.DataCharBuffer;
 import pw.ry4n.dr.engine.core.ParserException;
-import pw.ry4n.dr.engine.sf.model.Commands;
-import pw.ry4n.dr.engine.sf.model.Line;
+import pw.ry4n.dr.engine.model.StormFrontCommands;
+import pw.ry4n.dr.engine.model.StormFrontLine;
 
 /**
  * <p>
@@ -12,30 +12,29 @@ import pw.ry4n.dr.engine.sf.model.Line;
  *
  * @author Ryan Powell
  */
-public class LineParser {
-	private DataCharBuffer dataBuffer = null;
+public class StormFrontLineParser {
+	protected DataCharBuffer dataBuffer = null;
 
-	private int dataPosition = 0;
+	protected int dataPosition = 0;
 	int lineCounter = 1;
 
-	public LineParser(DataCharBuffer dataBuffer) {
+	public StormFrontLineParser(DataCharBuffer dataBuffer) {
 		this.dataBuffer = dataBuffer;
 	}
 
-	public Line parseLine() {
+	public StormFrontLine parseLine() {
 		skipWhitespace();
 		if (!hasMoreChars()) {
 			return null;
 		}
 
-		Line line = new Line();
+		StormFrontLine line = new StormFrontLine();
 
-		// first, check to see if this is a label
-		parseLabel(line);
+		parseCommand(line);
 
-		// not a label, so parse command
-		if (Commands.LABEL != line.getCommand()) {
-			parseCommand(line);
+		if (line.getCommand() == StormFrontCommands.NONE) {
+			// not a command, so check to see if this is a label
+			parseLabel(line);
 		}
 
 		// parse any remaining arguments
@@ -43,7 +42,7 @@ public class LineParser {
 			parseArguments(line);
 		}
 
-		if (line.getCommand() == Commands.NONE) {
+		if (line.getCommand() == StormFrontCommands.NONE) {
 			// ParserException
 			throw new ParserException("line " + this.lineCounter + ": Unrecognized command");
 		}
@@ -51,31 +50,31 @@ public class LineParser {
 		return line;
 	}
 
-	private void parseLabel(Line line) {
+	protected void parseLabel(StormFrontLine line) {
 		int startPosition = this.dataPosition;
 		while (!isEndOfLine()) {
 			if (Character.isWhitespace(this.dataBuffer.data[dataPosition])) {
 				// labels cannot contain whitespace
 				break;
 			} else if (this.dataBuffer.data[dataPosition] == ':') {
-				line.setCommand(Commands.LABEL);
+				line.setCommand(StormFrontCommands.LABEL);
 				String label = new String(this.dataBuffer.data, startPosition, this.dataPosition - startPosition);
 				line.setArguments(new String[] { label });
 			}
 
 			dataPosition++;
 		}
-		if (Commands.NONE == line.getCommand()) {
+		if (StormFrontCommands.NONE == line.getCommand()) {
 			// we didn't find a label on this line, back to our starting position
 			this.dataPosition = startPosition;
 		}
 	}
 
-	private void parseCommand(Line line) {
+	protected void parseCommand(StormFrontLine line) {
 		switch (this.dataBuffer.data[this.dataPosition]) {
 		case '#':
 			// COMMENT
-			line.setCommand(Commands.COMMENT);
+			line.setCommand(StormFrontCommands.COMMENT);
 			skipComment(); // skip comments
 			break;
 		case 'c':
@@ -107,7 +106,7 @@ public class LineParser {
 					&& (this.dataBuffer.data[this.dataPosition + 13] == 'e' || this.dataBuffer.data[this.dataPosition + 13] == 'E')
 					&& this.dataBuffer.data[this.dataPosition + 14] == ' ') {
 				// DELETEVARIABLE
-				line.setCommand(Commands.DELETEVARIABLE);
+				line.setCommand(StormFrontCommands.DELETEVARIABLE);
 				this.dataPosition += 14;
 			}
 			break;
@@ -118,13 +117,13 @@ public class LineParser {
 					&& (this.dataBuffer.data[this.dataPosition + 3] == 'o' || this.dataBuffer.data[this.dataPosition + 3] == 'O')
 					&& this.dataBuffer.data[this.dataPosition + 4] == ' ') {
 				// ECHO
-				line.setCommand(Commands.ECHO);
+				line.setCommand(StormFrontCommands.ECHO);
 				this.dataPosition += 4;
 			} else if ((this.dataBuffer.data[this.dataPosition + 1] == 'x' || this.dataBuffer.data[this.dataPosition + 1] == 'X')
 					&& (this.dataBuffer.data[this.dataPosition + 2] == 'i' || this.dataBuffer.data[this.dataPosition + 2] == 'I')
 					&& (this.dataBuffer.data[this.dataPosition + 3] == 't' || this.dataBuffer.data[this.dataPosition + 3] == 'T')) {
 				// EXIT
-				line.setCommand(Commands.EXIT);
+				line.setCommand(StormFrontCommands.EXIT);
 				this.dataPosition += 4;
 			}
 			break;
@@ -135,7 +134,7 @@ public class LineParser {
 					&& (this.dataBuffer.data[this.dataPosition + 3] == 'o' || this.dataBuffer.data[this.dataPosition + 3] == 'O')
 					&& this.dataBuffer.data[this.dataPosition + 4] == ' ') {
 				// GOTO
-				line.setCommand(Commands.GOTO);
+				line.setCommand(StormFrontCommands.GOTO);
 				this.dataPosition += 4;
 			}
 			break;
@@ -155,7 +154,7 @@ public class LineParser {
 					&& this.dataBuffer.data[this.dataPosition + 4] == ' ') {
 				// MOVE
 				this.dataPosition += 4;
-				line.setCommand(Commands.MOVE);
+				line.setCommand(StormFrontCommands.MOVE);
 			} else if ((this.dataBuffer.data[this.dataPosition + 1] == 'a' || this.dataBuffer.data[this.dataPosition + 1] == 'A')
 					&& (this.dataBuffer.data[this.dataPosition + 2] == 't' || this.dataBuffer.data[this.dataPosition + 2] == 'T')
 					&& (this.dataBuffer.data[this.dataPosition + 3] == 'c' || this.dataBuffer.data[this.dataPosition + 3] == 'C')
@@ -165,7 +164,7 @@ public class LineParser {
 						&& this.dataBuffer.data[this.dataPosition + 7] == ' ') {
 					// MATCHRE
 					this.dataPosition += 7;
-					line.setCommand(Commands.MATCHRE);
+					line.setCommand(StormFrontCommands.MATCHRE);
 					parseLabelAndMatchString(line);
 				} else if ((this.dataBuffer.data[this.dataPosition + 5] == 'w' || this.dataBuffer.data[this.dataPosition + 5] == 'W')
 						&& (this.dataBuffer.data[this.dataPosition + 6] == 'a' || this.dataBuffer.data[this.dataPosition + 6] == 'A')
@@ -173,11 +172,11 @@ public class LineParser {
 						&& (this.dataBuffer.data[this.dataPosition + 8] == 't' || this.dataBuffer.data[this.dataPosition + 8] == 'T')) {
 					// MATCHWAIT
 					this.dataPosition += 9;
-					line.setCommand(Commands.MATCHWAIT);
+					line.setCommand(StormFrontCommands.MATCHWAIT);
 				} else if (this.dataBuffer.data[this.dataPosition + 5] == ' ') {
 					// MATCH
 					this.dataPosition += 5;
-					line.setCommand(Commands.MATCH);
+					line.setCommand(StormFrontCommands.MATCH);
 					parseLabelAndMatchString(line);
 				}
 			}
@@ -192,7 +191,7 @@ public class LineParser {
 					&& (this.dataBuffer.data[this.dataPosition + 6] == 'o' || this.dataBuffer.data[this.dataPosition + 6] == 'O')
 					&& (this.dataBuffer.data[this.dataPosition + 7] == 'm' || this.dataBuffer.data[this.dataPosition + 7] == 'M')) {
 				// NEXTROOM
-				line.setCommand(Commands.NEXTROOM);
+				line.setCommand(StormFrontCommands.NEXTROOM);
 				this.dataPosition += 8;
 			}
 			break;
@@ -203,13 +202,13 @@ public class LineParser {
 					&& (this.dataBuffer.data[this.dataPosition + 3] == 's' || this.dataBuffer.data[this.dataPosition + 3] == 'S')
 					&& (this.dataBuffer.data[this.dataPosition + 4] == 'e' || this.dataBuffer.data[this.dataPosition + 4] == 'E')) {
 				// PAUSE
-				line.setCommand(Commands.PAUSE);
+				line.setCommand(StormFrontCommands.PAUSE);
 				this.dataPosition += 5;
 			} else if ((this.dataBuffer.data[this.dataPosition + 1] == 'u' || this.dataBuffer.data[this.dataPosition + 1] == 'U')
 					&& (this.dataBuffer.data[this.dataPosition + 2] == 't' || this.dataBuffer.data[this.dataPosition + 2] == 'T')
 					&& this.dataBuffer.data[this.dataPosition + 3] == ' ') {
 				// PUT
-				line.setCommand(Commands.PUT);
+				line.setCommand(StormFrontCommands.PUT);
 				this.dataPosition += 3;
 			}
 			break;
@@ -220,7 +219,7 @@ public class LineParser {
 					&& (this.dataBuffer.data[this.dataPosition + 3] == 'e' || this.dataBuffer.data[this.dataPosition + 3] == 'E')
 					&& this.dataBuffer.data[this.dataPosition + 4] == ' ') {
 				// SAVE
-				line.setCommand(Commands.SAVE);
+				line.setCommand(StormFrontCommands.SAVE);
 				this.dataPosition += 4;
 			} else if ((this.dataBuffer.data[this.dataPosition + 1] == 'e' || this.dataBuffer.data[this.dataPosition + 1] == 'E')
 					&& (this.dataBuffer.data[this.dataPosition + 2] == 't' || this.dataBuffer.data[this.dataPosition + 2] == 'T')
@@ -234,14 +233,14 @@ public class LineParser {
 					&& (this.dataBuffer.data[this.dataPosition + 10] == 'e' || this.dataBuffer.data[this.dataPosition + 10] == 'E')
 					&& this.dataBuffer.data[this.dataPosition + 11] == ' ') {
 				// SETVARIABLE
-				line.setCommand(Commands.SETVARIABLE);
+				line.setCommand(StormFrontCommands.SETVARIABLE);
 				this.dataPosition += 11;
 			} else if ((this.dataBuffer.data[this.dataPosition + 1] == 'h' || this.dataBuffer.data[this.dataPosition + 1] == 'H')
 					&& (this.dataBuffer.data[this.dataPosition + 2] == 'i' || this.dataBuffer.data[this.dataPosition + 2] == 'I')
 					&& (this.dataBuffer.data[this.dataPosition + 3] == 'f' || this.dataBuffer.data[this.dataPosition + 3] == 'F')
 					&& (this.dataBuffer.data[this.dataPosition + 4] == 't' || this.dataBuffer.data[this.dataPosition + 4] == 'T')) {
 				// SHIFT
-				line.setCommand(Commands.SHIFT);
+				line.setCommand(StormFrontCommands.SHIFT);
 				this.dataPosition += 5;
 			}
 			break;
@@ -257,7 +256,7 @@ public class LineParser {
 					&& (this.dataBuffer.data[this.dataPosition + 8] == 'e' || this.dataBuffer.data[this.dataPosition + 8] == 'E')
 					&& this.dataBuffer.data[this.dataPosition + 9] == ' ') {
 				// WAITFORRE
-				line.setCommand(Commands.WAITFORRE);
+				line.setCommand(StormFrontCommands.WAITFORRE);
 				this.dataPosition += 9;
 				line.setArguments(new String[] { getRestOfLine() });
 			} else if ((this.dataBuffer.data[this.dataPosition + 1] == 'a' || this.dataBuffer.data[this.dataPosition + 1] == 'A')
@@ -268,21 +267,21 @@ public class LineParser {
 					&& (this.dataBuffer.data[this.dataPosition + 6] == 'r' || this.dataBuffer.data[this.dataPosition + 6] == 'R')
 					&& this.dataBuffer.data[this.dataPosition + 7] == ' ') {
 				// WAITFOR
-				line.setCommand(Commands.WAITFOR);
+				line.setCommand(StormFrontCommands.WAITFOR);
 				this.dataPosition += 7;
 				line.setArguments(new String[] { getRestOfLine() });
 			} else if ((this.dataBuffer.data[this.dataPosition + 1] == 'a' || this.dataBuffer.data[this.dataPosition + 1] == 'A')
 					&& (this.dataBuffer.data[this.dataPosition + 2] == 'i' || this.dataBuffer.data[this.dataPosition + 2] == 'I')
 					&& (this.dataBuffer.data[this.dataPosition + 3] == 't' || this.dataBuffer.data[this.dataPosition + 3] == 'T')) {
 				// WAIT
-				line.setCommand(Commands.WAIT);
+				line.setCommand(StormFrontCommands.WAIT);
 				this.dataPosition += 4;
 			}
 			break;
 		}
 	}
 
-	private void parseLabelAndMatchString(Line line) {
+	protected void parseLabelAndMatchString(StormFrontLine line) {
 		skipWhitespace();
 		if (!hasMoreChars()) {
 			throw new ParserException(this.lineCounter + ": MATCH statment must have a <label> and <match string>.");
@@ -300,7 +299,7 @@ public class LineParser {
 		line.setArguments(new String[]{ label.toLowerCase(), matchString });
 	}
 
-	private String getRestOfLine() {
+	protected String getRestOfLine() {
 		skipWhitespace();
 		int startPosition = this.dataPosition;
 		skipLine();
@@ -308,7 +307,7 @@ public class LineParser {
 		return matchString;
 	}
 
-	private void skipToNextWhiteSpace() {
+	protected void skipToNextWhiteSpace() {
 		boolean isWhiteSpace = false;
 		while (!isWhiteSpace) {
 			switch(this.dataBuffer.data[this.dataPosition]) {
@@ -325,8 +324,8 @@ public class LineParser {
 		}
 	}
 
-	private void parseCounter(Line line) {
-		line.setCommand(Commands.COUNTER);
+	protected void parseCounter(StormFrontLine line) {
+		line.setCommand(StormFrontCommands.COUNTER);
 		this.dataPosition += 8;
 
 		// handle COUNTER {SET|ADD|SUBTRACT|MULTIPLY|DIVIDE}
@@ -336,7 +335,7 @@ public class LineParser {
 			if ((this.dataBuffer.data[this.dataPosition + 1] == 'd' || this.dataBuffer.data[this.dataPosition + 1] == 'D')
 					&& (this.dataBuffer.data[this.dataPosition + 2] == 'd' || this.dataBuffer.data[this.dataPosition + 2] == 'D')) {
 				// ADD
-				line.setSubCommand(Commands.ADD);
+				line.setSubCommand(StormFrontCommands.ADD);
 				this.dataPosition += 3;
 			}
 			break;
@@ -348,7 +347,7 @@ public class LineParser {
 					&& (this.dataBuffer.data[this.dataPosition + 4] == 'd' || this.dataBuffer.data[this.dataPosition + 4] == 'D')
 					&& (this.dataBuffer.data[this.dataPosition + 5] == 'e' || this.dataBuffer.data[this.dataPosition + 5] == 'E')) {
 				// DIVIDE
-				line.setSubCommand(Commands.DIVIDE);
+				line.setSubCommand(StormFrontCommands.DIVIDE);
 				this.dataPosition += 6;
 			}
 			break;
@@ -362,7 +361,7 @@ public class LineParser {
 					&& (this.dataBuffer.data[this.dataPosition + 6] == 'l' || this.dataBuffer.data[this.dataPosition + 6] == 'L')
 					&& (this.dataBuffer.data[this.dataPosition + 7] == 'y' || this.dataBuffer.data[this.dataPosition + 7] == 'Y')) {
 				// MULTIPLY
-				line.setSubCommand(Commands.MULTIPLY);
+				line.setSubCommand(StormFrontCommands.MULTIPLY);
 				this.dataPosition += 8;
 			}
 			break;
@@ -371,7 +370,7 @@ public class LineParser {
 			if ((this.dataBuffer.data[this.dataPosition + 1] == 'e' || this.dataBuffer.data[this.dataPosition + 1] == 'E')
 					&& (this.dataBuffer.data[this.dataPosition + 2] == 't' || this.dataBuffer.data[this.dataPosition + 2] == 'T')) {
 				// SET
-				line.setSubCommand(Commands.SET);
+				line.setSubCommand(StormFrontCommands.SET);
 				this.dataPosition += 3;
 			} else if ((this.dataBuffer.data[this.dataPosition + 1] == 'u' || this.dataBuffer.data[this.dataPosition + 1] == 'U')
 					&& (this.dataBuffer.data[this.dataPosition + 2] == 'b' || this.dataBuffer.data[this.dataPosition + 2] == 'B')
@@ -381,19 +380,19 @@ public class LineParser {
 					&& (this.dataBuffer.data[this.dataPosition + 6] == 'c' || this.dataBuffer.data[this.dataPosition + 6] == 'C')
 					&& (this.dataBuffer.data[this.dataPosition + 7] == 't' || this.dataBuffer.data[this.dataPosition + 7] == 'T')) {
 				// SUBTRACT
-				line.setSubCommand(Commands.SUBTRACT);
+				line.setSubCommand(StormFrontCommands.SUBTRACT);
 				this.dataPosition += 8;
 			}
 			break;
 		}
 
-		if (line.getSubCommand() == Commands.NONE) {
+		if (line.getSubCommand() == StormFrontCommands.NONE) {
 			throw new ParserException(this.lineCounter + ": COUNTER must be used with one of (SET|ADD|SUBTRACT|MULTIPLY|DIVIDE).");
 		}
 	}
 
-	private void parseIf(Line line) {
-		line.setCommand(Commands.IF_);
+	protected void parseIf(StormFrontLine line) {
+		line.setCommand(StormFrontCommands.IF_);
 		this.dataPosition += 3;
 
 		switch (this.dataBuffer.data[this.dataPosition]) {
@@ -433,7 +432,7 @@ public class LineParser {
 
 		this.dataPosition++;
 
-		Line subline = parseLine();
+		StormFrontLine subline = parseLine();
 		line.setSubCommand(subline.getCommand());
 		line.setArguments(subline.getArguments());
 	}
@@ -441,7 +440,7 @@ public class LineParser {
 	/**
 	 * Split the remainder of the line into arguments based on whitespace.
 	 */
-	void parseArguments(Line line) {
+	protected void parseArguments(StormFrontLine line) {
 		if (this.dataBuffer.data[this.dataPosition] == ' ') {
 			// ignore first space
 			this.dataPosition++;
@@ -471,7 +470,7 @@ public class LineParser {
 		return this.dataBuffer.data.length > this.dataPosition && this.dataBuffer.data[this.dataPosition] != '\0';
 	}
 
-	void skipWhitespace() {
+	protected void skipWhitespace() {
 		boolean isWhiteSpace = true;
 		try {
 			while (isWhiteSpace) {
@@ -498,19 +497,19 @@ public class LineParser {
 		}
 	}
 
-	void skipComment() {
+	protected void skipComment() {
 		while (!isEndOfLine()) {
 			this.dataPosition++;
 		}
 	}
 
-	void skipLine() {
+	protected void skipLine() {
 		while (!isEndOfLine() && !(this.dataBuffer.data[this.dataPosition] == '#')) {
 			this.dataPosition++;
 		}
 	}
 
-	boolean isEndOfLine() {
+	protected boolean isEndOfLine() {
 		// EOF or # or CR or LF
 		return !hasMoreChars() || this.dataBuffer.data[this.dataPosition] == '\r' || this.dataBuffer.data[this.dataPosition] == '\n';
 	}

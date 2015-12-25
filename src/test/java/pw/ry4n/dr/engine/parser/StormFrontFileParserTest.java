@@ -1,4 +1,4 @@
-package pw.ry4n.dr.engine.sf.parser;
+package pw.ry4n.dr.engine.parser;
 
 import static org.junit.Assert.*;
 
@@ -10,15 +10,16 @@ import java.nio.file.Paths;
 import org.junit.Test;
 
 import pw.ry4n.dr.engine.core.DataCharBuffer;
-import pw.ry4n.dr.engine.sf.model.Commands;
-import pw.ry4n.dr.engine.sf.model.ProgramImpl;
+import pw.ry4n.dr.engine.model.ProgramImpl;
+import pw.ry4n.dr.engine.model.StormFrontCommands;
+import pw.ry4n.dr.engine.parser.StormFrontFileParser;
 
-public class FileParserTest {
+public class StormFrontFileParserTest {
 	@Test
 	public void testReadFileData() throws IOException, URISyntaxException {
 		Path scriptPath = Paths.get(getClass().getResource("/look.sf").toURI());
 
-		FileParser fileParser = new FileParser();
+		StormFrontFileParser fileParser = new StormFrontFileParser();
 		fileParser.readFileData(scriptPath);
 
 		assertNotNull(fileParser.dataCharBuffer);
@@ -27,13 +28,13 @@ public class FileParserTest {
 		fileParser.parse(program);
 		assertTrue(program.getLabels().containsKey("look"));
 		assertEquals(8, program.getLines().size());
-		assertEquals(Commands.EXIT, program.getLines().get(7).getCommand());
+		assertEquals(StormFrontCommands.EXIT, program.getLines().get(7).getCommand());
 	}
 
 	@Test
 	public void testParse() {
 		DataCharBuffer dataCharBuffer = new DataCharBuffer("move n # a program!\nexit".toCharArray());
-		FileParser fileParser = new FileParser();
+		StormFrontFileParser fileParser = new StormFrontFileParser();
 		ProgramImpl program = new ProgramImpl();
 		fileParser.parseFile(program, dataCharBuffer);
 
@@ -44,16 +45,16 @@ public class FileParserTest {
 		assertEquals(2, program.getLines().size());
 
 		// assert that our command was correctly parsed
-		assertEquals(Commands.MOVE, program.getLines().get(0).getCommand());
+		assertEquals(StormFrontCommands.MOVE, program.getLines().get(0).getCommand());
 		assertEquals("n", program.getLines().get(0).getArguments()[0]);
-		assertEquals(Commands.EXIT, program.getLines().get(1).getCommand());
+		assertEquals(StormFrontCommands.EXIT, program.getLines().get(1).getCommand());
 	}
 
 	@Test
 	public void testParseWithLabel() {
 		DataCharBuffer dataCharBuffer = new DataCharBuffer(
 				("# a better program!\n" + "LOOP:\n" + "MOVE N\n" + "GOTO LOOP\n").toCharArray());
-		FileParser fileParser = new FileParser();
+		StormFrontFileParser fileParser = new StormFrontFileParser();
 		ProgramImpl program = new ProgramImpl();
 		fileParser.parseFile(program, dataCharBuffer);
 
@@ -61,13 +62,13 @@ public class FileParserTest {
 		assertTrue(program.getLabels().containsKey("loop"));
 
 		// and that it points to the right line
-		assertEquals(Commands.LABEL, program.getLines().get(program.getLabels().get("loop")).getCommand());
+		assertEquals(StormFrontCommands.LABEL, program.getLines().get(program.getLabels().get("loop")).getCommand());
 	}
 
 	@Test
 	public void testParseLabelStartingWithKeyword() {
 		DataCharBuffer dataCharBuffer = new DataCharBuffer(("putpliers:\n" + "put stow pliers\n").toCharArray());
-		FileParser fileParser = new FileParser();
+		StormFrontFileParser fileParser = new StormFrontFileParser();
 		ProgramImpl program = new ProgramImpl();
 		fileParser.parseFile(program, dataCharBuffer);
 

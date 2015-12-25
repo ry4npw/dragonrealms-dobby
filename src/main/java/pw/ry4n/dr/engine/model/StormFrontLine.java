@@ -1,23 +1,23 @@
-package pw.ry4n.dr.engine.sf.model;
+package pw.ry4n.dr.engine.model;
 
 import java.util.Arrays;
 
-public class Line {
+public class StormFrontLine {
 	private byte command = -1;
 	private int n = -1;
 	private byte subCommand = -1;
 	private String[] arguments = null;
 
-	public Line() {
+	public StormFrontLine() {
 		// empty constructor
 	}
 
-	public Line(byte command, String[] arguments) {
+	public StormFrontLine(byte command, String[] arguments) {
 		this.command = command;
 		this.arguments = arguments;
 	}
 
-	public Line(byte command, int n, byte subCommand, String[] arguments) {
+	public StormFrontLine(byte command, int n, byte subCommand, String[] arguments) {
 		this.command = command;
 		this.n = n;
 		this.subCommand = subCommand;

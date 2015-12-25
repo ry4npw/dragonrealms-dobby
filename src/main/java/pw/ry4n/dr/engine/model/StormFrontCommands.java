@@ -1,6 +1,6 @@
-package pw.ry4n.dr.engine.sf.model;
+package pw.ry4n.dr.engine.model;
 
-public class Commands {
+public class StormFrontCommands {
 	public static final byte NONE = -1;
 	public static final byte ECHO = 1;
 	public static final byte PUT = 2;

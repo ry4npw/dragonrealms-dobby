@@ -1,4 +1,4 @@
-package pw.ry4n.dr.engine.sf;
+package pw.ry4n.dr.engine.interpreter;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -15,10 +15,11 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import pw.ry4n.dr.engine.core.State;
-import pw.ry4n.dr.engine.sf.model.Commands;
-import pw.ry4n.dr.engine.sf.model.Line;
-import pw.ry4n.dr.engine.sf.model.MatchToken;
-import pw.ry4n.dr.engine.sf.model.ProgramImpl;
+import pw.ry4n.dr.engine.interpreter.StormFrontInterpreter;
+import pw.ry4n.dr.engine.model.MatchToken;
+import pw.ry4n.dr.engine.model.ProgramImpl;
+import pw.ry4n.dr.engine.model.StormFrontCommands;
+import pw.ry4n.dr.engine.model.StormFrontLine;
 import pw.ry4n.dr.proxy.AbstractProxy;
 import pw.ry4n.dr.proxy.CommandQueue;
 import pw.ry4n.dr.proxy.InterceptingProxy;
@@ -65,7 +66,7 @@ public class StormFrontInterpreterTest {
 
 		StormFrontInterpreter interpreter = new StormFrontInterpreter(program);
 
-		Line line = new Line();
+		StormFrontLine line = new StormFrontLine();
 		line.setArguments(new String[] {"name", "value"});
 
 		interpreter.setVariable(line);
@@ -80,7 +81,7 @@ public class StormFrontInterpreterTest {
 
 		StormFrontInterpreter interpreter = new StormFrontInterpreter(program);
 
-		Line line = new Line();
+		StormFrontLine line = new StormFrontLine();
 		line.setArguments(new String[] {"name"});
 
 		interpreter.deleteVariable(line);
@@ -135,16 +136,16 @@ public class StormFrontInterpreterTest {
 		program.setSendToServer(sendToServer);
 
 		program.getVariables().put("1", "table");
-		program.getLines().add(new Line(Commands.IF_, 1, Commands.GOTO, new String[] { "look" }));
-		program.getLines().add(new Line(Commands.EXIT, null));
-		program.getLines().add(new Line(Commands.LABEL, new String[] { "look" }));
+		program.getLines().add(new StormFrontLine(StormFrontCommands.IF_, 1, StormFrontCommands.GOTO, new String[] { "look" }));
+		program.getLines().add(new StormFrontLine(StormFrontCommands.EXIT, null));
+		program.getLines().add(new StormFrontLine(StormFrontCommands.LABEL, new String[] { "look" }));
 		program.getLabels().put("look", 2);
-		program.getLines().add(new Line(Commands.ECHO, new String[] { "looking", "at", "%1" }));
-		program.getLines().add(new Line(Commands.PUT, new String[] { "look", "in", "%1" }));
-		program.getLines().add(new Line(Commands.PUT, new String[] { "look", "on", "%1" }));
-		program.getLines().add(new Line(Commands.PUT, new String[] { "look", "under", "%1" }));
-		program.getLines().add(new Line(Commands.PUT, new String[] { "look", "behind", "%1" }));
-		program.getLines().add(new Line(Commands.EXIT, null));
+		program.getLines().add(new StormFrontLine(StormFrontCommands.ECHO, new String[] { "looking", "at", "%1" }));
+		program.getLines().add(new StormFrontLine(StormFrontCommands.PUT, new String[] { "look", "in", "%1" }));
+		program.getLines().add(new StormFrontLine(StormFrontCommands.PUT, new String[] { "look", "on", "%1" }));
+		program.getLines().add(new StormFrontLine(StormFrontCommands.PUT, new String[] { "look", "under", "%1" }));
+		program.getLines().add(new StormFrontLine(StormFrontCommands.PUT, new String[] { "look", "behind", "%1" }));
+		program.getLines().add(new StormFrontLine(StormFrontCommands.EXIT, null));
 
 		// run the script
 		program.run();
@@ -174,20 +175,20 @@ public class StormFrontInterpreterTest {
 		program.setSendToClient(sendToClient);
 		program.setSendToServer(sendToServer);
 
-		program.getLines().add(new Line(Commands.COUNTER, 2, Commands.SET, new String[] { "2" }));
-		program.getLines().add(new Line(Commands.GOTO, new String[] { "my%c" }));
-		program.getLines().add(new Line(Commands.LABEL, new String[] { "my1" }));
+		program.getLines().add(new StormFrontLine(StormFrontCommands.COUNTER, 2, StormFrontCommands.SET, new String[] { "2" }));
+		program.getLines().add(new StormFrontLine(StormFrontCommands.GOTO, new String[] { "my%c" }));
+		program.getLines().add(new StormFrontLine(StormFrontCommands.LABEL, new String[] { "my1" }));
 		program.getLabels().put("my1", 2);
-		program.getLines().add(new Line(Commands.PUT, new String[] { "It", "was", "1" }));
-		program.getLines().add(new Line(Commands.EXIT, null));
-		program.getLines().add(new Line(Commands.LABEL, new String[] { "my2" }));
+		program.getLines().add(new StormFrontLine(StormFrontCommands.PUT, new String[] { "It", "was", "1" }));
+		program.getLines().add(new StormFrontLine(StormFrontCommands.EXIT, null));
+		program.getLines().add(new StormFrontLine(StormFrontCommands.LABEL, new String[] { "my2" }));
 		program.getLabels().put("my2", 5);
-		program.getLines().add(new Line(Commands.PUT, new String[] { "It", "was", "2" }));
-		program.getLines().add(new Line(Commands.EXIT, null));
-		program.getLines().add(new Line(Commands.LABEL, new String[] { "my3" }));
+		program.getLines().add(new StormFrontLine(StormFrontCommands.PUT, new String[] { "It", "was", "2" }));
+		program.getLines().add(new StormFrontLine(StormFrontCommands.EXIT, null));
+		program.getLines().add(new StormFrontLine(StormFrontCommands.LABEL, new String[] { "my3" }));
 		program.getLabels().put("my3", 8);
-		program.getLines().add(new Line(Commands.PUT, new String[] { "It", "was", "3" }));
-		program.getLines().add(new Line(Commands.EXIT, null));
+		program.getLines().add(new StormFrontLine(StormFrontCommands.PUT, new String[] { "It", "was", "3" }));
+		program.getLines().add(new StormFrontLine(StormFrontCommands.EXIT, null));
 
 		// run the script
 		program.run();

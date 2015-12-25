@@ -1,4 +1,4 @@
-package pw.ry4n.dr.engine.sf.parser;
+package pw.ry4n.dr.engine.parser;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -10,23 +10,23 @@ import java.nio.file.Paths;
 
 import pw.ry4n.dr.engine.core.DataCharBuffer;
 import pw.ry4n.dr.engine.core.ParserException;
-import pw.ry4n.dr.engine.sf.model.Commands;
-import pw.ry4n.dr.engine.sf.model.Line;
-import pw.ry4n.dr.engine.sf.model.ProgramImpl;
+import pw.ry4n.dr.engine.model.ProgramImpl;
+import pw.ry4n.dr.engine.model.StormFrontCommands;
+import pw.ry4n.dr.engine.model.StormFrontLine;
 
 /**
  * The purpose of this class is to take a File and parse it into a Program.
  * 
  * @author Ryan Powell
  */
-public class FileParser {
+public class StormFrontFileParser {
 	DataCharBuffer dataCharBuffer = null;
 
-	FileParser() {
+	StormFrontFileParser() {
 		// empty constructor
 	}
 
-	public FileParser(String fileName) throws FileNotFoundException, IOException {
+	public StormFrontFileParser(String fileName) throws FileNotFoundException, IOException {
 		// expect all scripts to be in ~/Documents/dobby/
 		String directory = System.getProperty("user.home") + System.getProperty("file.separator") + "Documents"
 				+ System.getProperty("file.separator") + "dobby" + System.getProperty("file.separator");
@@ -79,17 +79,17 @@ public class FileParser {
 	}
 
 	ProgramImpl parseFile(ProgramImpl program, DataCharBuffer dataCharBuffer) throws ParserException {
-		LineParser lineParser = new LineParser(dataCharBuffer);
+		StormFrontLineParser lineParser = new StormFrontLineParser(dataCharBuffer);
 
 		while (lineParser.hasMoreChars()) {
-			Line line = lineParser.parseLine();
+			StormFrontLine line = lineParser.parseLine();
 
-			if (line != null && line.getCommand() != Commands.COMMENT) {
+			if (line != null && line.getCommand() != StormFrontCommands.COMMENT) {
 				// add the line to the program
 				program.getLines().add(line);
 
 				switch (line.getCommand()) {
-				case Commands.COUNTER:
+				case StormFrontCommands.COUNTER:
 					try {
 						// test for an integer
 						line.setN(Integer.parseInt(line.getArguments()[0]));
@@ -97,7 +97,7 @@ public class FileParser {
 						throw new ParserException("COUNTER value must be an integer.");
 					}
 					break;
-				case Commands.LABEL:
+				case StormFrontCommands.LABEL:
 					// additional handling for labels
 					String label = line.getArguments()[0].toLowerCase();
 

@@ -1,6 +1,6 @@
-package pw.ry4n.dr.engine.genie.model;
+package pw.ry4n.dr.engine.model;
 
-public class Commands extends pw.ry4n.dr.engine.sf.model.Commands {
+public class GenieCommands extends pw.ry4n.dr.engine.model.StormFrontCommands {
 	// Genie commands
 	public static final byte ACTION = 27; // action <command> when <pattern> (several commands supported with ';')
 	public static final byte DEBUG = 28; // debug <level>
@@ -19,4 +19,5 @@ public class Commands extends pw.ry4n.dr.engine.sf.model.Commands {
 	public static final byte VAR = 41;
 	public static final byte UNVAR = 42;
 	public static final byte SCRIPT_BLOCK = 43; // {}
+	public static final byte MODULUS = 44; // used with MATH
 }

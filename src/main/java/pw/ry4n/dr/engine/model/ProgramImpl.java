@@ -1,4 +1,4 @@
-package pw.ry4n.dr.engine.sf.model;
+package pw.ry4n.dr.engine.model;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -8,16 +8,16 @@ import java.util.Map;
 
 import pw.ry4n.dr.engine.core.Program;
 import pw.ry4n.dr.engine.core.State;
-import pw.ry4n.dr.engine.sf.StormFrontInterpreter;
-import pw.ry4n.dr.engine.sf.parser.FileParser;
-import pw.ry4n.dr.engine.sf.parser.LineParser;
+import pw.ry4n.dr.engine.interpreter.StormFrontInterpreter;
+import pw.ry4n.dr.engine.parser.StormFrontFileParser;
+import pw.ry4n.dr.engine.parser.StormFrontLineParser;
 import pw.ry4n.dr.proxy.AbstractProxy;
 import pw.ry4n.dr.proxy.InterceptingProxy;
 
 public class ProgramImpl implements Program {
 	private String name;
 	private String type;
-	private List<Line> lines = new ArrayList<Line>();
+	private List<StormFrontLine> lines = new ArrayList<StormFrontLine>();
 	private Map<String, Integer> labels = new HashMap<String, Integer>();
 	private Map<String, String> variables = new HashMap<String, String>();
 	private int start = 0;
@@ -45,7 +45,7 @@ public class ProgramImpl implements Program {
 			setName(scriptName);
 			int firstPeriod = scriptName.indexOf('.');
 			setType(scriptName.substring(firstPeriod == -1 || scriptName.length() < firstPeriod ? 0 : firstPeriod + 1));
-			FileParser fileParser = new FileParser(scriptName);
+			StormFrontFileParser fileParser = new StormFrontFileParser(scriptName);
 			fileParser.parse(this);
 
 			if (firstSpace > 0) {
@@ -70,7 +70,7 @@ public class ProgramImpl implements Program {
 	/**
 	 * Split arguments based on spaces.
 	 * 
-	 * TODO combine with {@link LineParser#parseArguments(Line)}
+	 * TODO combine with {@link StormFrontLineParser#parseArguments(StormFrontLine)}
 	 * 
 	 * @param arguments
 	 */
@@ -170,11 +170,11 @@ public class ProgramImpl implements Program {
 		this.type = type;
 	}
 
-	public List<Line> getLines() {
+	public List<StormFrontLine> getLines() {
 		return lines;
 	}
 
-	public void setLines(List<Line> lines) {
+	public void setLines(List<StormFrontLine> lines) {
 		this.lines = lines;
 	}
 

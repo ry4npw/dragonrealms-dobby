@@ -1,8 +1,10 @@
-package pw.ry4n.dr.engine.sf.model;
+package pw.ry4n.dr.engine.model;
 
 import static org.junit.Assert.*;
 
 import org.junit.Test;
+
+import pw.ry4n.dr.engine.model.MatchToken;
 
 public class MatchTokenTest {
 	@Test

@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 
 import pw.ry4n.dr.engine.core.Program;
 import pw.ry4n.dr.engine.core.State;
-import pw.ry4n.dr.engine.sf.model.ProgramImpl;
+import pw.ry4n.dr.engine.model.ProgramImpl;
 import pw.ry4n.dr.util.FixedSizeArrayDeque;
 
 public class InterceptingProxy extends AbstractProxy {

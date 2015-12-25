@@ -1,4 +1,4 @@
-package pw.ry4n.dr.engine.sf;
+package pw.ry4n.dr.engine.interpreter;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -8,10 +8,10 @@ import java.util.List;
 import java.util.Scanner;
 
 import pw.ry4n.dr.engine.core.State;
-import pw.ry4n.dr.engine.sf.model.Commands;
-import pw.ry4n.dr.engine.sf.model.Line;
-import pw.ry4n.dr.engine.sf.model.MatchToken;
-import pw.ry4n.dr.engine.sf.model.ProgramImpl;
+import pw.ry4n.dr.engine.model.MatchToken;
+import pw.ry4n.dr.engine.model.ProgramImpl;
+import pw.ry4n.dr.engine.model.StormFrontCommands;
+import pw.ry4n.dr.engine.model.StormFrontLine;
 import pw.ry4n.dr.proxy.AbstractProxy;
 import pw.ry4n.dr.proxy.CommandQueue;
 import pw.ry4n.dr.proxy.InterceptingProxy;
@@ -120,66 +120,66 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 		sendToClient.unsubscribe(this);
 	}
 
-	void executeLine(Line currentLine) throws IOException {
+	void executeLine(StormFrontLine currentLine) throws IOException {
 		currentLineNumber++;
 
 		switch (currentLine.getCommand()) {
-		case Commands.COUNTER:
+		case StormFrontCommands.COUNTER:
 			counter(currentLine);
 			break;
-		case Commands.DELETEVARIABLE:
+		case StormFrontCommands.DELETEVARIABLE:
 			deleteVariable(currentLine);
 			break;
-		case Commands.ECHO:
+		case StormFrontCommands.ECHO:
 			echo(currentLine);
 			break;
-		case Commands.EXIT:
+		case StormFrontCommands.EXIT:
 			exit();
 			break;
-		case Commands.GOTO:
+		case StormFrontCommands.GOTO:
 			goTo(currentLine);
 			break;
-		case Commands.IF_:
+		case StormFrontCommands.IF_:
 			if_(currentLine);
 			break;
-		case Commands.MATCH:
+		case StormFrontCommands.MATCH:
 			match(currentLine);
 			break;
-		case Commands.MATCHRE:
+		case StormFrontCommands.MATCHRE:
 			matchre(currentLine);
 			break;
-		case Commands.MATCHWAIT:
+		case StormFrontCommands.MATCHWAIT:
 			matchwait(currentLine);
 			break;
-		case Commands.MOVE:
+		case StormFrontCommands.MOVE:
 			put(currentLine);
 			nextroom();
 			break;
-		case Commands.NEXTROOM:
+		case StormFrontCommands.NEXTROOM:
 			nextroom();
 			break;
-		case Commands.PAUSE:
+		case StormFrontCommands.PAUSE:
 			pause(currentLine);
 			break;
-		case Commands.PUT:
+		case StormFrontCommands.PUT:
 			put(currentLine);
 			break;
-		case Commands.SAVE:
+		case StormFrontCommands.SAVE:
 			save(currentLine);
 			break;
-		case Commands.SETVARIABLE:
+		case StormFrontCommands.SETVARIABLE:
 			setVariable(currentLine);
 			break;
-		case Commands.SHIFT:
+		case StormFrontCommands.SHIFT:
 			shiftVariables();
 			break;
-		case Commands.WAIT:
+		case StormFrontCommands.WAIT:
 			doWait();
 			break;
-		case Commands.WAITFOR:
+		case StormFrontCommands.WAITFOR:
 			waitfor(currentLine);
 			break;
-		case Commands.WAITFORRE:
+		case StormFrontCommands.WAITFORRE:
 			waitforre(currentLine);
 			break;
 		default:
@@ -188,21 +188,21 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 		}
 	}
 
-	void counter(Line currentLine) {
+	void counter(StormFrontLine currentLine) {
 		switch (currentLine.getSubCommand()) {
-		case Commands.ADD:
+		case StormFrontCommands.ADD:
 			counter += currentLine.getN();
 			break;
-		case Commands.DIVIDE:
+		case StormFrontCommands.DIVIDE:
 			counter /= currentLine.getN();
 			break;
-		case Commands.MULTIPLY:
+		case StormFrontCommands.MULTIPLY:
 			counter *= currentLine.getN();
 			break;
-		case Commands.SET:
+		case StormFrontCommands.SET:
 			counter = currentLine.getN();
 			break;
-		case Commands.SUBTRACT:
+		case StormFrontCommands.SUBTRACT:
 			counter -= currentLine.getN();
 			break;
 		default:
@@ -210,16 +210,16 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 		}
 	}
 
-	void deleteVariable(Line currentLine) {
+	void deleteVariable(StormFrontLine currentLine) {
 		String key = currentLine.getArguments()[0];
 		program.getVariables().remove(key);
 	}
 
-	void echo(Line currentLine) throws IOException {
+	void echo(StormFrontLine currentLine) throws IOException {
 		sendMessageToClient("ECHO " + combineAndReplaceArguments(currentLine.getArguments()));
 	}
 
-	void goTo(Line currentLine) {
+	void goTo(StormFrontLine currentLine) {
 		String label = combineAndReplaceArguments(currentLine.getArguments());
 		goTo(label);
 	}
@@ -241,34 +241,34 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 		state = State.STOPPED;
 	}
 
-	void if_(Line currentLine) throws IOException {
+	void if_(StormFrontLine currentLine) throws IOException {
 		if (program.getVariables().containsKey(String.valueOf(currentLine.getN()))) {
-			Line subLine = new Line(currentLine.getSubCommand(), currentLine.getArguments());
+			StormFrontLine subLine = new StormFrontLine(currentLine.getSubCommand(), currentLine.getArguments());
 			executeLine(subLine);
 		}
 	}
 
-	void match(Line currentLine) {
+	void match(StormFrontLine currentLine) {
 		synchronized (matchList) {
 			matchList.add(
 					new MatchToken(MatchToken.STRING, currentLine.getArguments()[0], currentLine.getArguments()[1]));
 		}
 	}
 
-	void matchre(Line currentLine) {
+	void matchre(StormFrontLine currentLine) {
 		synchronized (matchList) {
 			matchList.add(
 					new MatchToken(MatchToken.REGEX, currentLine.getArguments()[0], currentLine.getArguments()[1]));
 		}
 	}
 
-	void matchwait(Line currentLine) {
+	void matchwait(StormFrontLine currentLine) {
 		state = State.MATCHING;
 		matchTimeout = currentLine == null || currentLine.getArguments() == null ? 0
 				: new Float(1000 * Float.valueOf(currentLine.getArguments()[0])).longValue();
 	}
 
-	void pause(Line currentLine) {
+	void pause(StormFrontLine currentLine) {
 		try {
 			int duration = 1000;
 
@@ -298,7 +298,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 		state = State.WAITING;
 	}
 
-	void put(Line currentLine) throws IOException {
+	void put(StormFrontLine currentLine) throws IOException {
 		String sendLine = combineAndReplaceArguments(currentLine.getArguments());
 		commandSender.enqueue(sendLine);
 		sendMessageToClient(sendLine);
@@ -308,11 +308,11 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 		sendToClient.send(program.getName() + ": " + message);
 	}
 
-	void save(Line currentLine) {
+	void save(StormFrontLine currentLine) {
 		program.getVariables().put("s", combineAndReplaceArguments(currentLine.getArguments()));
 	}
 
-	void setVariable(Line currentLine) {
+	void setVariable(StormFrontLine currentLine) {
 		String key = currentLine.getArguments()[0];
 		String value = combineAndReplaceArguments(
 				Arrays.copyOfRange(currentLine.getArguments(), 1, currentLine.getArguments().length));
@@ -336,12 +336,12 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 		state = State.WAITING;
 	}
 
-	void waitfor(Line currentLine) {
+	void waitfor(StormFrontLine currentLine) {
 		waitForMatchToken = new MatchToken(MatchToken.STRING, currentLine.getArguments()[0]);
 		state = State.WAITING;
 	}
 
-	void waitforre(Line currentLine) {
+	void waitforre(StormFrontLine currentLine) {
 		waitForMatchToken = new MatchToken(MatchToken.REGEX, currentLine.getArguments()[0]);
 		state = State.WAITING;
 	}

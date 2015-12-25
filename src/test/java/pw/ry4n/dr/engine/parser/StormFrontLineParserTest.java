@@ -1,4 +1,4 @@
-package pw.ry4n.dr.engine.sf.parser;
+package pw.ry4n.dr.engine.parser;
 
 import static org.junit.Assert.*;
 
@@ -6,17 +6,17 @@ import org.junit.Test;
 
 import pw.ry4n.dr.engine.core.DataCharBuffer;
 import pw.ry4n.dr.engine.core.ParserException;
-import pw.ry4n.dr.engine.sf.model.Commands;
-import pw.ry4n.dr.engine.sf.model.Line;
-import pw.ry4n.dr.engine.sf.parser.LineParser;
+import pw.ry4n.dr.engine.model.StormFrontCommands;
+import pw.ry4n.dr.engine.model.StormFrontLine;
+import pw.ry4n.dr.engine.parser.StormFrontLineParser;
 
-public class LineParserTest {
+public class StormFrontLineParserTest {
 	@Test
 	public void testParseMatchLineWithArguments() {
-		Line line = parseStringToLine("match RT ... wait\n");
+		StormFrontLine line = parseStringToLine("match RT ... wait\n");
 
 		// assert command
-		assertEquals(Commands.MATCH, line.getCommand());
+		assertEquals(StormFrontCommands.MATCH, line.getCommand());
 
 		// assert label and match string were both parsed
 		assertEquals(2, line.getArguments().length);
@@ -30,7 +30,7 @@ public class LineParserTest {
 
 	@Test
 	public void testParseAgumentsWithQuotes() {
-		Line line = parseStringToLine("save \"a string with spaces\"");
+		StormFrontLine line = parseStringToLine("save \"a string with spaces\"");
 		assertNotNull(line.getArguments());
 		assertEquals(1, line.getArguments().length);
 		assertEquals("\"a_string_with_spaces\"", line.getArguments()[0]);
@@ -38,15 +38,15 @@ public class LineParserTest {
 
 	@Test
 	public void testParseNoArguments() {
-		LineParser lineParser = createLineParserWithString("\n");
-		Line line = new Line();
+		StormFrontLineParser lineParser = createLineParserWithString("\n");
+		StormFrontLine line = new StormFrontLine();
 		lineParser.parseArguments(line);
 		assertNull(line.getArguments());
 	}
 
 	@Test
 	public void testLineCounterIncrementsOnEmptyLine() {
-		LineParser lineParser = createLineParserWithString("\n\n\n");
+		StormFrontLineParser lineParser = createLineParserWithString("\n\n\n");
 		assertEquals(1, lineParser.lineCounter);
 		lineParser.parseLine();
 		assertEquals(4, lineParser.lineCounter);
@@ -54,38 +54,38 @@ public class LineParserTest {
 
 	@Test
 	public void testHasMoreCharsReturnsFalse() {
-		LineParser lineParser = createLineParserWithString("");
+		StormFrontLineParser lineParser = createLineParserWithString("");
 		assertFalse(lineParser.hasMoreChars());
 	}
 
 	@Test
 	public void testHasMoreCharsReturnsTrue() {
-		LineParser lineParser = createLineParserWithString("\n");
+		StormFrontLineParser lineParser = createLineParserWithString("\n");
 		assertTrue(lineParser.hasMoreChars());
 	}
 
 	@Test
 	public void testParseCommentLine() {
-		Line line = parseStringToLine("# this is a comment\n");
+		StormFrontLine line = parseStringToLine("# this is a comment\n");
 		assertNotNull(line);
-		assertEquals(Commands.COMMENT, line.getCommand());
+		assertEquals(StormFrontCommands.COMMENT, line.getCommand());
 		assertNull(line.getArguments());
 	}
 
 	@Test
 	public void testSkipInLineComment() {
-		Line line = parseStringToLine("put n #go north");
-		assertEquals(Commands.PUT, line.getCommand());
+		StormFrontLine line = parseStringToLine("put n #go north");
+		assertEquals(StormFrontCommands.PUT, line.getCommand());
 		assertEquals("n", line.getArguments()[0]);
 	}
 
 	@Test
 	public void testParseLabel() {
-		Line line = parseStringToLine("LOOP:\n");
+		StormFrontLine line = parseStringToLine("LOOP:\n");
 
 		// verify label was parsed
 		assertNotNull(line);
-		assertEquals(Commands.LABEL, line.getCommand());
+		assertEquals(StormFrontCommands.LABEL, line.getCommand());
 
 		// labels should be converted to lowercase
 		assertEquals("LOOP", line.getArguments()[0]);
@@ -93,17 +93,17 @@ public class LineParserTest {
 
 	@Test
 	public void testParseLineWithIf() {
-		Line line = parseStringToLine("IF_1 GOTO doit\nEXIT\ndoit:\nPUT attack %1");
-		assertEquals(Commands.IF_, line.getCommand());
-		assertEquals(Commands.GOTO, line.getSubCommand());
+		StormFrontLine line = parseStringToLine("IF_1 GOTO doit\nEXIT\ndoit:\nPUT attack %1");
+		assertEquals(StormFrontCommands.IF_, line.getCommand());
+		assertEquals(StormFrontCommands.GOTO, line.getSubCommand());
 		assertEquals("doit", line.getArguments()[0]);
 	}
 
 	@Test
 	public void testParseLineWithCounter() {
-		Line line = parseStringToLine("counter set 10");
-		assertEquals(Commands.COUNTER, line.getCommand());
-		assertEquals(Commands.SET, line.getSubCommand());
+		StormFrontLine line = parseStringToLine("counter set 10");
+		assertEquals(StormFrontCommands.COUNTER, line.getCommand());
+		assertEquals(StormFrontCommands.SET, line.getSubCommand());
 		assertEquals("10", line.getArguments()[0]);
 	}
 
@@ -112,14 +112,14 @@ public class LineParserTest {
 		parseStringToLine("say Hello!");
 	}
 
-	private LineParser createLineParserWithString(String string) {
+	private StormFrontLineParser createLineParserWithString(String string) {
 		DataCharBuffer dataCharBuffer = new DataCharBuffer(string.toCharArray());
-		return new LineParser(dataCharBuffer);
+		return new StormFrontLineParser(dataCharBuffer);
 	}
 
-	private Line parseStringToLine(String string) {
-		LineParser lineParser = createLineParserWithString(string);
-		Line line = lineParser.parseLine();
+	private StormFrontLine parseStringToLine(String string) {
+		StormFrontLineParser lineParser = createLineParserWithString(string);
+		StormFrontLine line = lineParser.parseLine();
 		return line;
 	}
 }

@@ -1,4 +1,4 @@
-package pw.ry4n.dr.engine.sf.model;
+package pw.ry4n.dr.engine.model;
 
 import java.util.regex.Pattern;
 
