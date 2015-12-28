@@ -114,8 +114,7 @@ public class StormFrontLineParser {
 		case 'E':
 			if ((this.dataBuffer.data[this.dataPosition + 1] == 'c' || this.dataBuffer.data[this.dataPosition + 1] == 'C')
 					&& (this.dataBuffer.data[this.dataPosition + 2] == 'h' || this.dataBuffer.data[this.dataPosition + 2] == 'H')
-					&& (this.dataBuffer.data[this.dataPosition + 3] == 'o' || this.dataBuffer.data[this.dataPosition + 3] == 'O')
-					&& this.dataBuffer.data[this.dataPosition + 4] == ' ') {
+					&& (this.dataBuffer.data[this.dataPosition + 3] == 'o' || this.dataBuffer.data[this.dataPosition + 3] == 'O')) {
 				// ECHO
 				line.setCommand(StormFrontCommands.ECHO);
 				this.dataPosition += 4;

@@ -16,13 +16,13 @@ public class MatchToken {
 
 	public MatchToken(byte type, String matchString) {
 		this.type = type;
-		this.matchString = matchString;
+		setMatchString(matchString);
 	}
 
 	public MatchToken(byte type, String label, String matchString) {
 		this.type = type;
 		this.label = label;
-		this.matchString = matchString;
+		setMatchString(matchString);
 	}
 
 	public byte getType() {
@@ -46,7 +46,11 @@ public class MatchToken {
 	}
 
 	public void setMatchString(String matchString) {
-		this.matchString = matchString;
+		if (matchString.startsWith("/")) {
+			// In StormFront, regex groups are implied. This is a workaround.
+			matchString = matchString.replaceAll("^/","(").replaceAll("/$", ")").replaceAll("/i$", ")?i");
+		}
+		this.matchString = matchString.replace("\\" + "?", "?");
 	}
 
 	public boolean match(String line) {

@@ -191,19 +191,19 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 	void counter(StormFrontLine currentLine) {
 		switch (currentLine.getSubCommand()) {
 		case StormFrontCommands.ADD:
-			counter += currentLine.getN();
+			counter += Integer.parseInt(replaceVariables(currentLine.getArguments()[0]));
 			break;
 		case StormFrontCommands.DIVIDE:
-			counter /= currentLine.getN();
+			counter /= Integer.parseInt(replaceVariables(currentLine.getArguments()[0]));
 			break;
 		case StormFrontCommands.MULTIPLY:
-			counter *= currentLine.getN();
+			counter *= Integer.parseInt(replaceVariables(currentLine.getArguments()[0]));
 			break;
 		case StormFrontCommands.SET:
-			counter = currentLine.getN();
+			counter = Integer.parseInt(replaceVariables(currentLine.getArguments()[0]));
 			break;
 		case StormFrontCommands.SUBTRACT:
-			counter -= currentLine.getN();
+			counter -= Integer.parseInt(replaceVariables(currentLine.getArguments()[0]));
 			break;
 		default:
 			break;
@@ -225,6 +225,10 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 	}
 
 	void goTo(String label) {
+		if (label != null) {
+			label = label.toLowerCase();
+		}
+
 		if (program.getLabels().containsKey(label)) {
 			currentLineNumber = program.getLabels().get(label);
 		} else {
@@ -249,17 +253,11 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 	}
 
 	void match(StormFrontLine currentLine) {
-		synchronized (matchList) {
-			matchList.add(
-					new MatchToken(MatchToken.STRING, currentLine.getArguments()[0], currentLine.getArguments()[1]));
-		}
+		matchList.add(new MatchToken(MatchToken.STRING, currentLine.getArguments()[0], currentLine.getArguments()[1]));
 	}
 
 	void matchre(StormFrontLine currentLine) {
-		synchronized (matchList) {
-			matchList.add(
-					new MatchToken(MatchToken.REGEX, currentLine.getArguments()[0], currentLine.getArguments()[1]));
-		}
+		matchList.add(new MatchToken(MatchToken.REGEX, currentLine.getArguments()[0], currentLine.getArguments()[1]));
 	}
 
 	void matchwait(StormFrontLine currentLine) {
@@ -347,6 +345,10 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 	}
 
 	String combineAndReplaceArguments(String[] arguments) {
+		if (arguments == null) {
+			return "";
+		}
+
 		StringBuilder result = new StringBuilder();
 
 		// loop through arguments

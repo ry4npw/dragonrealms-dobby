@@ -90,11 +90,8 @@ public class StormFrontFileParser {
 
 				switch (line.getCommand()) {
 				case StormFrontCommands.COUNTER:
-					try {
-						// test for an integer
-						line.setN(Integer.parseInt(line.getArguments()[0]));
-					} catch (NumberFormatException e) {
-						throw new ParserException("COUNTER value must be an integer.");
+					if (line.getArguments() == null || line.getArguments()[0] == null) {
+						throw new ParserException(lineParser.lineCounter + ": invalid COUNTER format. Usage: COUNTER <variable> <value>");
 					}
 					break;
 				case StormFrontCommands.LABEL:

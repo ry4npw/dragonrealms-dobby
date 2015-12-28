@@ -112,6 +112,13 @@ public class StormFrontLineParserTest {
 		parseStringToLine("say Hello!");
 	}
 
+	@Test
+	public void testEmptyEcho() {
+		StormFrontLine line = parseStringToLine("echo");
+		assertEquals(StormFrontCommands.ECHO, line.getCommand());
+		assertNull(line.getArguments());
+	}
+
 	private StormFrontLineParser createLineParserWithString(String string) {
 		DataCharBuffer dataCharBuffer = new DataCharBuffer(string.toCharArray());
 		return new StormFrontLineParser(dataCharBuffer);

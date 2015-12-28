@@ -21,4 +21,10 @@ public class MatchTokenTest {
 		assertFalse(
 				token.match("You take a moment to look for all the items in the area and see a small soapstone rock."));
 	}
+
+	@Test
+	public void testMatchreIgnoreCase() {
+		MatchToken token = new MatchToken(MatchToken.REGEX, "/out of reach|remove|What were you|can't seem|Wield what\\?/i");
+		assertTrue(token.match("Wield what?"));
+	}
 }
