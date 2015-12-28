@@ -24,6 +24,9 @@ public class GenieLineParser extends pw.ry4n.dr.engine.parser.StormFrontLinePars
 		case '{':
 			// SCRIPT_BLOCK
 			break;
+		case '}':
+			// end SCRIPT_BLOCKC
+			break;
 		case 'a':
 		case 'A':
 			if ((this.dataBuffer.data[this.dataPosition + 1] == 'c' || this.dataBuffer.data[this.dataPosition + 1] == 'C')
