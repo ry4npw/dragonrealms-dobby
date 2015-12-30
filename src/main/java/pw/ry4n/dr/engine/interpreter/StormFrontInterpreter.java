@@ -220,7 +220,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 	}
 
 	void goTo(StormFrontLine currentLine) {
-		String label = combineAndReplaceArguments(currentLine.getArguments());
+		String label = replaceVariables(currentLine.getArguments()[0], false);
 		goTo(label);
 	}
 
@@ -371,12 +371,20 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 	}
 
 	String replaceVariables(String argument) {
+		return replaceVariables(argument, true);
+	}
+
+	String replaceVariables(String argument, boolean convertUnderscoresToSpaces) {
 		StringBuilder sb = new StringBuilder();
 		replaceVariables(sb, argument);
 		return sb.toString();
 	}
 
 	void replaceVariables(StringBuilder result, String argument) {
+		replaceVariables(result, argument, true);
+	}
+
+	void replaceVariables(StringBuilder result, String argument, boolean convertUnderscoresToSpaces) {
 		Scanner s = new Scanner(argument);
 		try {
 			s.useDelimiter("%");
@@ -399,7 +407,11 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 						// look up in the program variable list
 						String value = program.getVariables().get(variable);
 						if (value != null) {
-							result.append(formatArgument(value));
+							if (convertUnderscoresToSpaces) {
+								result.append(formatArgument(value));
+							} else {
+								result.append(value);
+							}
 						}
 					}
 				} else {
