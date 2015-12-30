@@ -292,7 +292,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 
 	void nextroom() {
 		// wait for room change
-		waitForMatchToken = new MatchToken(MatchToken.REGEX, "^GSo");
+		waitForMatchToken = new MatchToken(MatchToken.STRING, "GSo");
 		state = State.WAITING;
 	}
 
@@ -523,8 +523,8 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 
 	@Override
 	public void notify(String line) {
-		if (line.startsWith("GS")) {
-			// ignore SIMU-PROTOCOL
+		if (line.startsWith("GS") && !line.startsWith("GSo")) {
+			// ignore SIMU-PROTOCOL, except for GSo which we use for nextroom()
 			return;
 		}
 

@@ -50,6 +50,17 @@ public class StormFrontInterpreterTest {
 	}
 
 	@Test
+	public void testMove() {
+		ProgramImpl program = new ProgramImpl();
+		StormFrontInterpreter interpreter = new StormFrontInterpreter(program);
+
+		interpreter.nextroom();
+		interpreter.notify("GSo");
+
+		assertEquals(State.RUNNING, interpreter.state);
+	}
+
+	@Test
 	public void testNextroom() throws IOException {
 		ProgramImpl program = new ProgramImpl();
 		StormFrontInterpreter interpreter = new StormFrontInterpreter(program);
@@ -57,7 +68,7 @@ public class StormFrontInterpreterTest {
 		interpreter.nextroom();
 
 		assertTrue(interpreter.state == State.WAITING);
-		assertEquals(MatchToken.REGEX, interpreter.waitForMatchToken.getType());
+		assertEquals(MatchToken.STRING, interpreter.waitForMatchToken.getType());
 	}
 
 	@Test
