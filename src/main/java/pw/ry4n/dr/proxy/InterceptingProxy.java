@@ -332,6 +332,7 @@ public class InterceptingProxy extends AbstractProxy {
 	}
 
 	private void stopAllScripts() {
+		cleanStoppedScriptsList();
 		for (Program script : scripts) {
 			stopScript(script);
 		}
