@@ -53,9 +53,7 @@ public class CommandQueue implements Runnable, StreamListener {
 				// stop waiting on timestamp
 				commandsWaitingForResponse--;
 				return;
-			}
-
-			if (line.startsWith("...wait")) {
+			} else if (line.startsWith("...wait")) {
 				System.out.println("OOPS! In RT, resending: " + lastCommand);
 				sendQueue.offerFirst(lastCommand);
 				updateRoundtime(line);

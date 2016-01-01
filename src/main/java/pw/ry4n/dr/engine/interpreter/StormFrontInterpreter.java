@@ -253,11 +253,11 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 	}
 
 	void match(StormFrontLine currentLine) {
-		matchList.add(new MatchToken(MatchToken.STRING, currentLine.getArguments()[0], currentLine.getArguments()[1]));
+		matchList.add(new MatchToken(MatchToken.STRING, currentLine.getArguments()[0], replaceVariables(currentLine.getArguments()[1])));
 	}
 
 	void matchre(StormFrontLine currentLine) {
-		matchList.add(new MatchToken(MatchToken.REGEX, currentLine.getArguments()[0], currentLine.getArguments()[1]));
+		matchList.add(new MatchToken(MatchToken.REGEX, currentLine.getArguments()[0], replaceVariables(currentLine.getArguments()[1])));
 	}
 
 	void matchwait(StormFrontLine currentLine) {
