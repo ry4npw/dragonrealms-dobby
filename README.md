@@ -31,11 +31,11 @@ Dobby is currently untested on Windows. I do not have a running windows configur
 
 ### Linux / Mac OS X
 
-Dobby works great with Avalon version 4.3.1 on Mac, and it supports multiple instances of Avalon running at the same time.
+Dobby works great with Avalon version 4.3.x on Mac, and it supports multiple instances of Avalon running at the same time.
 
 #### Startup
 
-1. Download dobby-{version}.jar and place it in your ~/Documents/dobby directory.
+1. Download the latest [dobby-{version}.jar](https://github.com/ry4npw/dragonrealms-dobby/blob/master/dobby-0.1.jar?raw=true) and place it in your ~/Documents/dobby directory.
 2. Redirect your DR traffic through dobby via `sudo vi /etc/hosts` and add the entry:
 
 	```bash
@@ -45,8 +45,7 @@ Dobby works great with Avalon version 4.3.1 on Mac, and it supports multiple ins
 3. Open Terminal.app, and run the following commands.
 
 	```bash
-	$ cd ~/Documents/dobby
-	$ java -jar dobby-{version}.jar
+	$ java -jar ~/Documents/dobby/dobby-{version}.jar
 	```
 
 ##### Advanced Startup
