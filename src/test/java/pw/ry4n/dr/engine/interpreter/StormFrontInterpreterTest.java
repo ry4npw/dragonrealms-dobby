@@ -35,6 +35,23 @@ public class StormFrontInterpreterTest {
 	}
 
 	@Test
+	public void testMatchre() {
+		ProgramImpl program = new ProgramImpl();
+		StormFrontInterpreter interpreter = new StormFrontInterpreter(program);
+
+		String metals = "(animite|coal|copper|covellite|damite|darkstone|electrum|glaes|gold|haralun|iron|kertig|lead|lumium|muracite|nickel|niniam|oravir|platinum|silver|tin|zinc)";
+		interpreter.matchre(new StormFrontLine(StormFrontCommands.MATCHRE, new String[]{"tear", metals + "\\stear"}));
+		interpreter.matchre(new StormFrontLine(StormFrontCommands.MATCHRE, new String[]{"fragment", metals + "\\sfragment"}));
+		interpreter.matchre(new StormFrontLine(StormFrontCommands.MATCHRE, new String[]{"lump", metals + "\\slump"}));
+		interpreter.matchre(new StormFrontLine(StormFrontCommands.MATCHRE, new String[]{"shard", metals + "\\sshard"}));
+		interpreter.matchre(new StormFrontLine(StormFrontCommands.MATCHRE, new String[]{"nugget", metals + "\\snugget"}));
+		interpreter.matchre(new StormFrontLine(StormFrontCommands.MATCHRE, new String[]{"no_nugget", "(You see|You look)"}));
+
+		MatchToken token = interpreter.match("You take a moment to look for all the items in the area and see  that wolf spiders that are caught in a cage of swirling darkness, a quartzite pebble and a small silver nugget.");
+		assertEquals("nugget", token.getLabel());
+	}
+
+	@Test
 	public void testGetVariable0() {
 		ProgramImpl program = new ProgramImpl();
 		program.getVariables().put("1", "one");
