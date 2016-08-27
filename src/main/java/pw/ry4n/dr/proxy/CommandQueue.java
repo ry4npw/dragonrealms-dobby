@@ -59,7 +59,7 @@ public class CommandQueue implements Runnable, StreamListener {
 				updateRoundtime(line);
 			} else if (line.contains("type ahead")) {
 				System.out.println("OOPS! Exceeded type ahead limit, resending:" + lastCommand);
-				sendQueue.offerFirst("lastCommand");
+				sendQueue.offerFirst(lastCommand);
 			}
 		}
 	}
