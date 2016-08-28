@@ -50,7 +50,7 @@ Dobby works great with Avalon version 4.3.x on Mac, and it supports multiple ins
 
 ##### Advanced Startup
 
-You can specify the IP and port numbers to bind to. For example, if you wanted to also capture traffic to eaccess.play.net you would run a second instance of from a second command line:
+You can specify the IP and port numbers to bind to. For example, if you wanted to also proxy traffic to eaccess.play.net you would run a second instance of dobby:
 ```bash
 $ java -jar dobby-{version}.jar {localPort} {remoteIP} {remotePort}
 $ java -jar dobby-{version}.jar 7900 199.188.208.135 7900
@@ -60,9 +60,10 @@ You can also have dobby connect through a SOCKS 5 proxy. This is useful for gett
 ```bash
 $ ssh -D 1080 user@server
 $ java -DsocksProxyHost=socks.example.com -DsocksProxyPort=1080 -jar dobby-{version}.jar
-$ java -DsocksProxyHost=localhost -DsocksProxyPort=1080 -jar ~/src/dragonrealms-dobby/target/dobby-0.1.jar 7900 <ip for eaccess.play.net> 7900
+# below in a second terminal window
+$ java -DsocksProxyHost=localhost -DsocksProxyPort=1080 -jar dobby-{version}.jar 7900 {IP for eaccess.play.net} 7900
 ```
-*Note:* To fully skirt firewalls, you will need to add an /etc/hosts entry `127.0.0.1 eaccess.play.net`.
+*Note:* You will need to add an /etc/hosts entry `127.0.0.1 eaccess.play.net`.
 
 #### Shutdown
 
