@@ -271,6 +271,14 @@ public class StormFrontLineParser {
 				line.setArguments(new String[] { getRestOfLine() });
 			} else if ((this.dataBuffer.data[this.dataPosition + 1] == 'a' || this.dataBuffer.data[this.dataPosition + 1] == 'A')
 					&& (this.dataBuffer.data[this.dataPosition + 2] == 'i' || this.dataBuffer.data[this.dataPosition + 2] == 'I')
+					&& (this.dataBuffer.data[this.dataPosition + 3] == 't' || this.dataBuffer.data[this.dataPosition + 3] == 'T')
+					&& (this.dataBuffer.data[this.dataPosition + 4] == 'r' || this.dataBuffer.data[this.dataPosition + 4] == 'R')
+					&& (this.dataBuffer.data[this.dataPosition + 5] == 't' || this.dataBuffer.data[this.dataPosition + 5] == 'T')) {
+				// WAITRT
+				line.setCommand(StormFrontCommands.WAITRT);
+				this.dataPosition += 6;
+			} else if ((this.dataBuffer.data[this.dataPosition + 1] == 'a' || this.dataBuffer.data[this.dataPosition + 1] == 'A')
+					&& (this.dataBuffer.data[this.dataPosition + 2] == 'i' || this.dataBuffer.data[this.dataPosition + 2] == 'I')
 					&& (this.dataBuffer.data[this.dataPosition + 3] == 't' || this.dataBuffer.data[this.dataPosition + 3] == 'T')) {
 				// WAIT
 				line.setCommand(StormFrontCommands.WAIT);

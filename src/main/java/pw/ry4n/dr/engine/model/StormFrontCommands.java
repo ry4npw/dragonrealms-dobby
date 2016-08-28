@@ -9,6 +9,7 @@ public class StormFrontCommands {
 	public static final byte NEXTROOM = 5;
 	public static final byte WAITFOR = 6;
 	public static final byte WAITFORRE = 7;
+	public static final byte WAITRT = 27; // new command that waits for next timestamp
 	public static final byte PAUSE = 8;
 	public static final byte GOTO = 9;
 	public static final byte EXIT = 10;

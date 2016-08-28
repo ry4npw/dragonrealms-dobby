@@ -176,6 +176,9 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 		case StormFrontCommands.WAIT:
 			doWait();
 			break;
+		case StormFrontCommands.WAITRT:
+			doWaitRt();
+			break;
 		case StormFrontCommands.WAITFOR:
 			waitfor(currentLine);
 			break;
@@ -332,6 +335,11 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 	void doWait() {
 		waitForMatchToken = null;
 		state = State.WAITING;
+	}
+
+	void doWaitRt() {
+		waitForMatchToken = null;
+		state = State.WAITRT;
 	}
 
 	void waitfor(StormFrontLine currentLine) {
@@ -523,12 +531,15 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 
 	@Override
 	public void notify(String line) {
-		if (line.startsWith("GS") && !line.startsWith("GSo")) {
-			// ignore SIMU-PROTOCOL, except for GSo which we use for nextroom()
-			return;
-		}
-
 		synchronized (monitorObject) {
+			if (line.startsWith("GSq") && State.WAITRT.equals(state)) {
+				resumeScript();
+				return;
+			} else if (line.startsWith("GS") && !line.startsWith("GSo")) {
+				// ignore SIMU-PROTOCOL, except for GSo which we use for nextroom()
+				return;
+			}
+
 			switch (state) {
 			case MATCHING:
 				MatchToken token = match(line);

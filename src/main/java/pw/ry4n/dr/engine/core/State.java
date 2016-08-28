@@ -6,5 +6,6 @@ public enum State {
 	MATCHING,
 	PAUSED,
 	STOPPED,
-	WAITING;
+	WAITING,
+	WAITRT;
 }

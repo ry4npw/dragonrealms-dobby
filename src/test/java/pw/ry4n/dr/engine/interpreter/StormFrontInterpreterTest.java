@@ -246,6 +246,20 @@ public class StormFrontInterpreterTest {
 		assertTrue(program.getVariables().isEmpty());
 	}
 
+	@Test
+	public void testWaitRt() {
+		ProgramImpl program = new ProgramImpl();
+		StormFrontInterpreter interpreter = new StormFrontInterpreter(program);
+
+		interpreter.doWaitRt();
+
+		assertTrue(State.WAITRT.equals(interpreter.getState()));
+
+		interpreter.notify("GSq" + System.currentTimeMillis());
+
+		assertTrue(State.RUNNING.equals(interpreter.getState()));
+	}
+
 	private Answer<Object> log(final String proxyName) {
 		return new Answer<Object>() {
 			public Object answer(InvocationOnMock invocation) {
