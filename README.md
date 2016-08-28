@@ -35,7 +35,7 @@ Dobby works great with Avalon version 4.3.x on Mac, and it supports multiple ins
 
 #### Startup
 
-1. Download the latest [dobby-{version}.jar](https://github.com/ry4npw/dragonrealms-dobby/blob/master/dobby-0.1.jar?raw=true) and place it in your ~/Documents/dobby directory.
+1. Download the latest [dobby-{version}.jar](https://github.com/ry4npw/dragonrealms-dobby/blob/master/dobby-0.2.jar?raw=true) and place it in your ~/Documents/dobby directory.
 2. Redirect your DR traffic through dobby via `sudo vi /etc/hosts` and add the entry:
 
 	```bash
@@ -58,8 +58,11 @@ $ java -jar dobby-{version}.jar 7900 199.188.208.135 7900
 
 You can also have dobby connect through a SOCKS 5 proxy. This is useful for getting around firewalls:
 ```bash
+$ ssh -D 1080 user@server
 $ java -DsocksProxyHost=socks.example.com -DsocksProxyPort=1080 -jar dobby-{version}.jar
+$ java -DsocksProxyHost=localhost -DsocksProxyPort=1080 -jar ~/src/dragonrealms-dobby/target/dobby-0.1.jar 7900 <ip for eaccess.play.net> 7900
 ```
+*Note:* To fully skirt firewalls, you will need to add an /etc/hosts entry `127.0.0.1 eaccess.play.net`.
 
 #### Shutdown
 
