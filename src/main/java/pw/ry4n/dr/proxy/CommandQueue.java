@@ -43,7 +43,7 @@ public class CommandQueue implements Runnable, StreamListener {
 
 	@Override
 	public void notify(String line) {
-		if (line.startsWith("Roundtime") || line.startsWith("[Roundtime") || line.startsWith("[Praying for ")) {
+		if (line.contains("Roundtime") || line.startsWith("[Praying for ")) {
 			updateRoundtime(line);
 			return;
 		}
