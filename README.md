@@ -56,10 +56,10 @@ $ java -jar dobby-{version}.jar {localPort} {remoteIP} {remotePort}
 $ java -jar dobby-{version}.jar 7900 199.188.208.135 7900
 ```
 
-You can also have dobby connect through a SOCKS 5 proxy. This is useful for getting around firewalls:
+You can also have dobby connect through a SOCKS 5 proxy. This is useful for getting around firewalls with SSH:
 ```bash
 $ ssh -D 1080 user@server
-$ java -DsocksProxyHost=socks.example.com -DsocksProxyPort=1080 -jar dobby-{version}.jar
+$ java -DsocksProxyHost=localhost -DsocksProxyPort=1080 -jar dobby-{version}.jar
 # below in a second terminal window
 $ java -DsocksProxyHost=localhost -DsocksProxyPort=1080 -jar dobby-{version}.jar 7900 {IP for eaccess.play.net} 7900
 ```
