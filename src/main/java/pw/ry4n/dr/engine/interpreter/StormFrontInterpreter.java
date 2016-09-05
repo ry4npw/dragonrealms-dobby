@@ -532,7 +532,8 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 	@Override
 	public void notify(String line) {
 		synchronized (monitorObject) {
-			if (line.startsWith("GSq") && State.WAITRT.equals(state)) {
+			if (line.startsWith("GSQ") && State.WAITRT.equals(state)) {
+				// WAITRT should end
 				resumeScript();
 				return;
 			} else if (line.startsWith("GS") && !line.startsWith("GSo")) {

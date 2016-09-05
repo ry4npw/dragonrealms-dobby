@@ -255,7 +255,7 @@ public class StormFrontInterpreterTest {
 
 		assertTrue(State.WAITRT.equals(interpreter.getState()));
 
-		interpreter.notify("GSq" + System.currentTimeMillis());
+		interpreter.notify("GSQ" + System.currentTimeMillis());
 
 		assertTrue(State.RUNNING.equals(interpreter.getState()));
 	}
