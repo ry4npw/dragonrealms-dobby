@@ -7,17 +7,27 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
+/**
+ * Implementation of a command queue where commands are limited to be sent only
+ * after some server response is received from the last command. Specifically,
+ * commands are not released from the queue until a server timestamp ("GSq"
+ * response) is received.
+ * 
+ * Commands are stored and sent from a FIFO command queue.
+ * 
+ * @author Ryan Powell
+ */
 public class CommandQueue implements Runnable, StreamListener {
-	private Deque<String> sendQueue = new ConcurrentLinkedDeque<String>();
-	private String lastCommand = null;
-	private int commandsWaitingForResponse = 0;
-	private long roundTimeOver = -1;
+	protected QueueState state = QueueState.CLEAR;
+	protected Deque<String> sendQueue = new ConcurrentLinkedDeque<String>();
+	protected String lastCommand = null;
+	protected long roundTimeOver = -1;
 
-	private AbstractProxy sendProxy;
-	private StreamMonitor outputStreamMonitor;
+	protected AbstractProxy sendProxy;
+	protected StreamMonitor outputStreamMonitor;
 
 	CommandQueue() {
-		// package private constructor for unit tests
+		// package private constructor for unit testing only
 	}
 
 	public CommandQueue(AbstractProxy sendProxy, StreamMonitor outputStreamMonitor) {
@@ -25,16 +35,6 @@ public class CommandQueue implements Runnable, StreamListener {
 		this.outputStreamMonitor = outputStreamMonitor;
 	}
 
-	/**
-	 * This method will send a line upstream to the server. This is designed to
-	 * be the injection point and coordinator for all running scripts. Commands
-	 * will be sent in a FIFO queue, and it will retry failed commands based on
-	 * RT. Eventually some commands may be prioritized and skip the queue that
-	 * do not cause RT.
-	 * 
-	 * @param line
-	 * @throws IOException
-	 */
 	public void enqueue(String line) throws IOException {
 		synchronized (sendQueue) {
 			sendQueue.offerLast(line);
@@ -43,24 +43,30 @@ public class CommandQueue implements Runnable, StreamListener {
 
 	@Override
 	public void notify(String line) {
+		if (line == null) {
+			return;
+		}
+
+		// update RT
 		if (line.contains("Roundtime") || line.startsWith("[Praying for ")) {
 			updateRoundtime(line);
 			return;
 		}
 
-		if (commandsWaitingForResponse > 0) {
-			if (line.startsWith("GSq")) {
-				// stop waiting on timestamp
-				commandsWaitingForResponse--;
-				return;
-			} else if (line.startsWith("...wait")) {
-				System.out.println("OOPS! In RT, resending: " + lastCommand);
-				sendQueue.offerFirst(lastCommand);
-				updateRoundtime(line);
-			} else if (line.contains("type ahead")) {
-				System.out.println("OOPS! Exceeded type ahead limit, resending:" + lastCommand);
-				sendQueue.offerFirst(lastCommand);
-			}
+		// stop blocking on server response
+		if (QueueState.BLOCKING.equals(state) && (line.startsWith("GSq") || line.startsWith("GSQ"))) {
+			state = QueueState.CLEAR;
+			return;
+		}
+
+		// resend the last command
+		if (line.startsWith("...wait")) {
+			System.out.println("OOPS! In RT, resending: " + lastCommand);
+			sendQueue.offerFirst(lastCommand);
+			updateRoundtime(line);
+		} else if (line.contains("type ahead")) {
+			System.out.println("OOPS! Exceeded type ahead limit, resending:" + lastCommand);
+			sendQueue.offerFirst(lastCommand);
 		}
 	}
 
@@ -85,27 +91,19 @@ public class CommandQueue implements Runnable, StreamListener {
 		}
 	}
 
-	private void processSendQueue() {
-		if (sendQueue.isEmpty()) {
+	protected void processSendQueue() {
+		if (QueueState.BLOCKING.equals(state) || sendQueue.isEmpty() || inRoundtime()) {
 			return;
 		}
 
-		// do not send commands while in RT
-		if (inRoundtime()) {
-			// TODO do not block commands that work while in (i.e. EXPERIENCE, LOOK, etc)
-			return;
-		}
-
-		synchronized (sendQueue) {
-			lastCommand = sendQueue.pollFirst();
-			if (lastCommand != null) {
-				try {
-					getSendProxy().send(lastCommand);
-					System.out.println(">CommandQueue[" + lastCommand + "]");
-					commandsWaitingForResponse++;
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+		lastCommand = sendQueue.pollFirst();
+		if (lastCommand != null) {
+			try {
+				state = QueueState.BLOCKING;
+				getSendProxy().send(lastCommand);
+				System.out.println(">CommandQueue[" + lastCommand + "]");
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
 		}
 	}
@@ -140,5 +138,9 @@ public class CommandQueue implements Runnable, StreamListener {
 
 	public int size() {
 		return sendQueue.size();
+	}
+
+	public enum QueueState {
+		CLEAR, BLOCKING;
 	}
 }
