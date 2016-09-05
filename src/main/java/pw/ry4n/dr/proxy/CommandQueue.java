@@ -53,20 +53,20 @@ public class CommandQueue implements Runnable, StreamListener {
 			return;
 		}
 
-		// stop blocking on server response
-		if (QueueState.BLOCKING.equals(state) && (line.startsWith("GSq") || line.startsWith("GSQ"))) {
-			state = QueueState.CLEAR;
-			return;
-		}
-
-		// resend the last command
-		if (line.startsWith("...wait")) {
-			System.out.println("OOPS! In RT, resending: " + lastCommand);
-			sendQueue.offerFirst(lastCommand);
-			updateRoundtime(line);
-		} else if (line.contains("type ahead")) {
-			System.out.println("OOPS! Exceeded type ahead limit, resending:" + lastCommand);
-			sendQueue.offerFirst(lastCommand);
+		if (QueueState.BLOCKING.equals(state)) {
+			// stop blocking on server response
+			if (line.startsWith("GSq") || line.startsWith("GSQ")) {
+				state = QueueState.CLEAR;
+			} else if (line.startsWith("...wait")) {
+				// resend the last command on RT
+				System.out.println("OOPS! In RT, resending: " + lastCommand);
+				sendQueue.offerFirst(lastCommand);
+				updateRoundtime(line);
+			} else if (line.contains("type ahead")) {
+				// resend the last command on type ahead
+				System.out.println("OOPS! Exceeded type ahead limit, resending:" + lastCommand);
+				sendQueue.offerFirst(lastCommand);
+			}
 		}
 	}
 
