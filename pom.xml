@@ -4,7 +4,7 @@
 	<groupId>pw.ry4n.dr</groupId>
 	<artifactId>dobby</artifactId>
 	<packaging>jar</packaging>
-	<version>0.3</version>
+	<version>0.4</version>
 	<name>dobby</name>
 	<url>https://github.com/ry4npw/dragonrealms-dobby</url>
 

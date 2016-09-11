@@ -27,17 +27,26 @@ public class StormFrontFileParser {
 	}
 
 	public StormFrontFileParser(String fileName) throws FileNotFoundException, IOException {
-		// expect all scripts to be in ~/Documents/dobby/
-		String directory = System.getProperty("user.home") + System.getProperty("file.separator") + "Documents"
-				+ System.getProperty("file.separator") + "dobby" + System.getProperty("file.separator");
-		String filePath = directory + fileName;
+		// directory for all scripts: ~/Documents/dobby/
+		StringBuilder directory = new StringBuilder();
+		directory.append(System.getProperty("user.home")).append(System.getProperty("file.separator"));
+		directory.append("Documents").append(System.getProperty("file.separator"));
+		directory.append("dobby").append(System.getProperty("file.separator"));
 
-		Path directoryPath = Paths.get(directory);
-		Path path = Paths.get(filePath);
+		StringBuilder filePath = new StringBuilder();
+		filePath.append(directory).append(fileName);
+
+		// default script extension of ".sf"
+		if (fileName.indexOf('.') < 0) {
+			filePath.append(".sf");
+		}
+
+		Path directoryPath = Paths.get(directory.toString());
+		Path path = Paths.get(filePath.toString());
 
 		// if the directory does not exist, create it
 		if (!Files.exists(directoryPath)) {
-			// TODO send the following message downstream
+			// TODO send the following message downstream to client
 			System.out.println("creating script directory: " + directoryPath.toAbsolutePath());
 			Files.createDirectory(directoryPath);
 		}

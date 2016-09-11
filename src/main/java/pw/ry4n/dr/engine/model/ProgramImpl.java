@@ -44,7 +44,14 @@ public class ProgramImpl implements Program {
 			String scriptName = fileName.substring(0, firstSpace == -1 ? fileName.length() : firstSpace);
 			setName(scriptName);
 			int firstPeriod = scriptName.indexOf('.');
-			setType(scriptName.substring(firstPeriod == -1 || scriptName.length() < firstPeriod ? 0 : firstPeriod + 1));
+			setType(scriptName.substring(firstPeriod == -1 || scriptName.length() < firstPeriod ? scriptName.length() : firstPeriod + 1));
+
+			if ("".equals(getType())) {
+				// default scripts to .sf extension
+				setType("sf");
+			}
+
+			// TODO switch on type
 			StormFrontFileParser fileParser = new StormFrontFileParser(scriptName);
 			fileParser.parse(this);
 
