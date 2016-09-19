@@ -49,6 +49,10 @@ public class ProgramImpl implements Program {
 			if ("".equals(getType())) {
 				// default scripts to .sf extension
 				setType("sf");
+
+				if (!getName().endsWith(getType())) {
+					setName(getName()+ "." + getType());
+				}
 			}
 
 			// TODO switch on type
