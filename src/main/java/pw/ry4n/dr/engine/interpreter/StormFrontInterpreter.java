@@ -75,27 +75,30 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 
 			while (!State.STOPPED.equals(state) && currentLineNumber < program.getLines().size()) {
 				synchronized (monitorObject) {
-					while (State.PAUSED.equals(state) || State.WAITING.equals(state)) {
+					while (State.PAUSED.equals(state) || State.WAITING.equals(state) || State.MATCHING.equals(state)) {
 						try {
-							monitorObject.wait();
-							waitForRoundtime();
-						} catch (InterruptedException e) {
-							// do nothing
-						}
-					}
+							switch (state) {
+							case MATCHING:
+								if (matchTimeout > 0) {
+									monitorObject.wait(matchTimeout);
+								} else {
+									monitorObject.wait();
+								}
 
-					while (State.MATCHING.equals(state)) {
-						try {
-							if (matchTimeout > 0) {
-								monitorObject.wait(matchTimeout);
-							} else {
-								monitorObject.wait();
-							}
-							// it is possible that the script was manually
-							// paused while waiting, so do not just resume.
-							if (!State.PAUSED.equals(state)) {
-								resumeScript();
 								matchList.clear();
+
+								// it is possible that the script was manually
+								// paused while waiting, so do not just resume.
+								if (!State.PAUSED.equals(state)) {
+									resumeScript();
+								}
+								break;
+							case PAUSED:
+							case WAITING:
+								monitorObject.wait();
+								break;
+							default:
+								break;
 							}
 						} catch (InterruptedException e) {
 							// do nothing
@@ -256,11 +259,13 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 	}
 
 	void match(StormFrontLine currentLine) {
-		matchList.add(new MatchToken(MatchToken.STRING, currentLine.getArguments()[0], replaceVariables(currentLine.getArguments()[1])));
+		matchList.add(new MatchToken(MatchToken.STRING, currentLine.getArguments()[0],
+				replaceVariables(currentLine.getArguments()[1])));
 	}
 
 	void matchre(StormFrontLine currentLine) {
-		matchList.add(new MatchToken(MatchToken.REGEX, currentLine.getArguments()[0], replaceVariables(currentLine.getArguments()[1])));
+		matchList.add(new MatchToken(MatchToken.REGEX, currentLine.getArguments()[0],
+				replaceVariables(currentLine.getArguments()[1])));
 	}
 
 	void matchwait(StormFrontLine currentLine) {
@@ -287,7 +292,10 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 
 			// sometimes pause is triggered before RT is parsed always check for
 			// more RT before continuing.
-			waitForRoundtime();
+			roundTimeLeft = commandSender.getRoundTimeOver() - System.currentTimeMillis();
+			if (roundTimeLeft > 0) {
+				Thread.sleep(roundTimeLeft);
+			}
 		} catch (InterruptedException e) {
 			// do not worry about interrupts
 		}
@@ -522,13 +530,6 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 		}
 	}
 
-	void waitForRoundtime() throws InterruptedException {
-		long roundTimeLeft = commandSender.getRoundTimeOver() - System.currentTimeMillis();
-		if (roundTimeLeft > 0) {
-			Thread.sleep(roundTimeLeft);
-		}
-	}
-
 	@Override
 	public void notify(String line) {
 		synchronized (monitorObject) {
@@ -537,7 +538,8 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 				resumeScript();
 				return;
 			} else if (line.startsWith("GS") && !line.startsWith("GSo")) {
-				// ignore SIMU-PROTOCOL, except for GSo which we use for nextroom()
+				// ignore SIMU-PROTOCOL, except for GSo which we use for
+				// nextroom()
 				return;
 			}
 
