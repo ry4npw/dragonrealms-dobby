@@ -27,24 +27,22 @@ import pw.ry4n.dr.proxy.StreamListener;
  * @author Ryan Powell
  */
 public class StormFrontInterpreter implements StreamListener, Runnable {
-	private CommandQueue commandSender; // send commands to server
-	private AbstractProxy sendToServer; // listen to upstream commands from
-										// client
-	private AbstractProxy sendToClient; // listen to downstream responses from
-										// server and send messages to client
+	protected CommandQueue commandSender; // send commands to server
+	protected AbstractProxy sendToServer; // listen to upstream commands from client
+	protected AbstractProxy sendToClient; // listen to downstream responses from server and send messages to client
 
-	private Object monitorObject = new Object(); // thread synchronization
+	protected Object monitorObject = new Object(); // thread synchronization
 
-	private ProgramImpl program;
-	private int counter = 0;
-	private int currentLineNumber = 0;
+	protected ProgramImpl program;
+	protected int counter = 0;
+	protected int currentLineNumber = 0;
 
-	List<MatchToken> matchList = Collections.synchronizedList(new ArrayList<MatchToken>());
-	long matchTimeout = 200;
-	MatchToken waitForMatchToken = null;
+	protected List<MatchToken> matchList = Collections.synchronizedList(new ArrayList<MatchToken>());
+	protected long matchTimeout = 200;
+	protected MatchToken waitForMatchToken = null;
 
-	State state = State.INITIALIZING;
-	private State lastState = null;
+	protected State state = State.INITIALIZING;
+	protected State lastState = null;
 
 	StormFrontInterpreter(ProgramImpl program) {
 		this.program = program;
@@ -73,7 +71,7 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 
 			long startTime = System.currentTimeMillis();
 
-			while (!State.STOPPED.equals(state) && currentLineNumber < program.getLines().size()) {
+			while (!State.STOPPED.equals(state)) {
 				synchronized (monitorObject) {
 					while (State.PAUSED.equals(state) || State.WAITING.equals(state) || State.MATCHING.equals(state)) {
 						try {
@@ -106,8 +104,10 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 					}
 				}
 
-				if (!State.STOPPED.equals(state)) {
+				if (!State.STOPPED.equals(state) && currentLineNumber < program.getLines().size()) {
 					executeLine(program.getLines().get(currentLineNumber));
+				} else {
+					state = State.STOPPED;
 				}
 			}
 
@@ -419,6 +419,8 @@ public class StormFrontInterpreter implements StreamListener, Runnable {
 						// c is a special case (counter)
 						result.append(counter);
 					} else {
+						// TODO %s should be global, not program scope
+						//
 						// other variables (including the save %s variable), we
 						// look up in the program variable list
 						String value = program.getVariables().get(variable);

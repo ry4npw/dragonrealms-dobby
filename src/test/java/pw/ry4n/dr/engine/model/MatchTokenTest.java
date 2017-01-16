@@ -27,4 +27,12 @@ public class MatchTokenTest {
 		MatchToken token = new MatchToken(MatchToken.REGEX, "/out of reach|remove|What were you|can't seem|Wield what\\?/i");
 		assertTrue(token.match("Wield what?"));
 	}
+
+	@Test
+	public void testGetGroup() {
+		MatchToken token = new MatchToken(MatchToken.REGEX, "(nugget|tear)");
+		assertTrue(token.match(
+				"When the dust clears, both a soapstone pebble and a huge platinum nugget are visible on the ground."));
+		assertEquals("nugget", token.getGroup());
+	}
 }
