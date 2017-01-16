@@ -8,6 +8,7 @@ import java.util.Map;
 
 import pw.ry4n.dr.engine.core.Program;
 import pw.ry4n.dr.engine.core.State;
+import pw.ry4n.dr.engine.interpreter.GenieInterpreter;
 import pw.ry4n.dr.engine.interpreter.StormFrontInterpreter;
 import pw.ry4n.dr.engine.parser.StormFrontFileParser;
 import pw.ry4n.dr.engine.parser.StormFrontLineParser;
@@ -130,6 +131,10 @@ public class ProgramImpl implements Program {
 	 */
 	public void run() {
 		switch (type) {
+		case "ge":
+			interpreter = new GenieInterpreter(sendToServer, sendToClient, this);
+			interpreter.run();
+			break;
 		case "sf":
 			interpreter = new StormFrontInterpreter(sendToServer, sendToClient, this);
 			interpreter.run();
@@ -137,6 +142,10 @@ public class ProgramImpl implements Program {
 		default:
 			throw new RuntimeException("'" + type + "' is an unsupported script format. Valid formats are: sf");
 		}
+	}
+
+	public StormFrontInterpreter getInterpreter() {
+		return interpreter;
 	}
 
 	public State getState() {

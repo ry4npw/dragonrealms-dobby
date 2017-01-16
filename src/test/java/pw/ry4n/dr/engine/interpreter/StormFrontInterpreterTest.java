@@ -2,20 +2,14 @@ package pw.ry4n.dr.engine.interpreter;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 
 import org.junit.Test;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
+import pw.ry4n.dr.LoggingTest;
 import pw.ry4n.dr.engine.core.State;
-import pw.ry4n.dr.engine.interpreter.StormFrontInterpreter;
 import pw.ry4n.dr.engine.model.MatchToken;
 import pw.ry4n.dr.engine.model.ProgramImpl;
 import pw.ry4n.dr.engine.model.StormFrontCommands;
@@ -24,7 +18,7 @@ import pw.ry4n.dr.proxy.AbstractProxy;
 import pw.ry4n.dr.proxy.CommandQueue;
 import pw.ry4n.dr.proxy.InterceptingProxy;
 
-public class StormFrontInterpreterTest {
+public class StormFrontInterpreterTest extends LoggingTest {
 	@Test
 	public void testFormatArgument() {
 		ProgramImpl program = new ProgramImpl();
@@ -62,8 +56,6 @@ public class StormFrontInterpreterTest {
 		String output = interpreter.getVariable0();
 
 		assertEquals("one two", output);
-
-		
 	}
 
 	@Test
@@ -258,17 +250,5 @@ public class StormFrontInterpreterTest {
 		interpreter.notify("GSQ" + System.currentTimeMillis());
 
 		assertTrue(State.RUNNING.equals(interpreter.getState()));
-	}
-
-	private Answer<Object> log(final String proxyName) {
-		return new Answer<Object>() {
-			public Object answer(InvocationOnMock invocation) {
-				Object[] args = invocation.getArguments();
-				for (Object arg : args) {
-					System.out.println(proxyName + "." + invocation.getMethod().getName() + "(" + arg + ")");
-				}
-				return null;
-			}
-		};
 	}
 }
