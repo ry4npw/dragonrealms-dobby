@@ -22,13 +22,13 @@ public class GenieInterpreterTest extends LoggingTest {
 		ProgramImpl program = new ProgramImpl();
 		GenieInterpreter interpreter = new GenieInterpreter(program);
 
-		String match = "([A-Z]{3,}\\s?[A-Z]+)";
+		String match = "You make the final fold.* (\\w+)\\.";
 		interpreter.matchre(new StormFrontLine(StormFrontCommands.MATCHRE, new String[]{"label", match}));
 
-		interpreter.match("You get the impression that if you DANCE HAPPY, you'll have fulfilled your part and be left alone.");
+		interpreter.match("You make the final fold and gaze proudly at your new plain origami ox.");
 
 		String result = interpreter.replaceVariables("$1");
-		assertEquals("DANCE HAPPY", result);
+		assertEquals("ox", result);
 	}
 
 	@Test

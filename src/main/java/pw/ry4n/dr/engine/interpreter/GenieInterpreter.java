@@ -204,7 +204,7 @@ public class GenieInterpreter extends StormFrontInterpreter {
 		Matcher matcher = Pattern.compile("\\$(\\d+)").matcher(argument);
 		if (matcher.find() && lastMatch != null) {
 			// 1. find/replace regex matches
-			String value = lastMatch.getGroup(Integer.parseInt(matcher.group(1))-1);
+			String value = lastMatch.getGroup(Integer.parseInt(matcher.group(1)));
 			argument = argument.replace("$"+matcher.group(1), value);
 
 			// 2. TODO find/replace global variables
