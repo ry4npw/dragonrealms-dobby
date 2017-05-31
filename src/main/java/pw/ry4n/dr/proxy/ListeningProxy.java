@@ -16,7 +16,9 @@ public class ListeningProxy extends AbstractProxy {
 	@Override
 	protected void filter(byte[] buffer, int count) throws IOException {
 		// write output direct to client
-		to.write(buffer, 0, count);
+		synchronized (to) {
+			to.write(buffer, 0, count);
+		}
 
 		String bufferString = new String(buffer, 0, count, "iso-8859-1");
 		System.out.println(bufferString);
@@ -37,6 +39,8 @@ public class ListeningProxy extends AbstractProxy {
 	public void send(String line) throws IOException {
 		String dobby = "dobby [" + line + "]\n";
 		// write once to prevent conflicts with other threads
-		to.write(dobby.getBytes());
+		synchronized (to) {
+			to.write(dobby.getBytes());
+		}
 	}
 }
